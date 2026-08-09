@@ -1,0 +1,616 @@
+{
+  "users": [
+    {
+      "id": "usr-admin-1",
+      "userId": "VSBEC",
+      "name": "System Administrator (VY NEXTGEN)",
+      "role": "admin",
+      "rawPassword": "VSBSMS",
+      "permissions": [
+        "send_sms",
+        "upload_results",
+        "manage_students",
+        "manage_staff",
+        "view_reports",
+        "manage_settings"
+      ],
+      "createdAt": "2026-08-07T02:24:06.397Z"
+    },
+    {
+      "id": "stf-1786097390445-rblya",
+      "userId": "Vali1278",
+      "name": "VALIULLAH",
+      "role": "staff",
+      "department": "AIML",
+      "phoneNumber": "8754020556",
+      "rawPassword": "VSBVali1278",
+      "permissions": [
+        "send_sms",
+        "upload_results"
+      ],
+      "createdAt": "2026-08-07T10:09:50.445Z"
+    }
+  ],
+  "students": [
+    {
+      "registerNumber": "921321104001",
+      "name": "Anish Kumar",
+      "phoneNumber": "+918754020556",
+      "department": "CSE",
+      "id": "std-1786097995510-f9rja",
+      "createdAt": "2026-08-07T10:19:55.510Z"
+    },
+    {
+      "registerNumber": "922524148117",
+      "name": "Valiullah",
+      "phoneNumber": "+918754020556",
+      "department": "AIML",
+      "id": "std-1786070186130-kvzti",
+      "createdAt": "2026-08-07T02:36:26.130Z"
+    }
+  ],
+  "staff": [
+    {
+      "name": "VALIULLAH",
+      "staffId": "Vali1278",
+      "department": "AIML",
+      "phoneNumber": "8754020556",
+      "permissions": [
+        "send_sms",
+        "upload_results"
+      ],
+      "id": "stf-1786097390445-rblya",
+      "createdAt": "2026-08-07T10:09:50.445Z"
+    }
+  ],
+  "departments": [
+    {
+      "id": "dept-aiml",
+      "code": "AIML",
+      "name": "Artificial Intelligence & Machine Learning",
+      "headOfDepartment": "Dr. A. Ramesh",
+      "createdAt": "2026-08-07T02:24:06.396Z"
+    },
+    {
+      "id": "dept-aids",
+      "code": "AIDS",
+      "name": "Artificial Intelligence & Data Science",
+      "headOfDepartment": "Dr. S. Karthik",
+      "createdAt": "2026-08-07T02:24:06.396Z"
+    },
+    {
+      "id": "dept-cse",
+      "code": "CSE",
+      "name": "Computer Science & Engineering",
+      "headOfDepartment": "Dr. R. Sharma",
+      "createdAt": "2026-08-07T02:24:06.396Z"
+    },
+    {
+      "id": "dept-cce",
+      "code": "CCE",
+      "name": "Computer & Communication Engineering",
+      "headOfDepartment": "Dr. V. Lakshmi",
+      "createdAt": "2026-08-07T02:24:06.396Z"
+    },
+    {
+      "id": "dept-ece",
+      "code": "ECE",
+      "name": "Electronics & Communication Engineering",
+      "headOfDepartment": "Dr. S. Priya",
+      "createdAt": "2026-08-07T02:24:06.396Z"
+    },
+    {
+      "id": "dept-eee",
+      "code": "EEE",
+      "name": "Electrical & Electronics Engineering",
+      "headOfDepartment": "Dr. M. Kumar",
+      "createdAt": "2026-08-07T02:24:06.396Z"
+    },
+    {
+      "id": "dept-mech",
+      "code": "MECH",
+      "name": "Mechanical Engineering",
+      "headOfDepartment": "MRS.DHANABAL",
+      "createdAt": "2026-08-07T02:24:06.396Z"
+    },
+    {
+      "id": "dept-csbs",
+      "code": "CSBS",
+      "name": "Computer Science & Business Systems",
+      "headOfDepartment": "Dr. P. Venkatesh",
+      "createdAt": "2026-08-07T02:24:06.396Z"
+    },
+    {
+      "id": "dept-chemical",
+      "code": "CHEMICAL",
+      "name": "Chemical Engineering",
+      "headOfDepartment": "Dr. N. Sundaram",
+      "createdAt": "2026-08-07T02:24:06.396Z"
+    },
+    {
+      "id": "dept-civil",
+      "code": "CIVIL",
+      "name": "Civil Engineering",
+      "headOfDepartment": "Dr. G. Moorthy",
+      "createdAt": "2026-08-07T02:24:06.396Z"
+    }
+  ],
+  "smsLogs": [
+    {
+      "recipientName": "Anish Kumar",
+      "registerNumber": "921321104001",
+      "phoneNumber": "+918754020556",
+      "department": "CSE",
+      "messageType": "Exam Result",
+      "messageContent": "Dear Anish Kumar,\n\nYour Semester Results:\n\nReg No: 921321104001\n\nMaths: 85\nPhysics: 90\nChemistry: 78\nC Programming: 88\nEnglish: 92\n\nResult: PASS\n\n- VSB Engineering College",
+      "channel": "Fast2SMS Gateway",
+      "status": "Sent",
+      "sentAt": "2026-08-07T10:19:58.172Z",
+      "sentBy": "VSBEC",
+      "id": "sms-1786097998172-irwrz"
+    },
+    {
+      "recipientName": "Valiullah",
+      "registerNumber": "922524148117",
+      "phoneNumber": "+918754020556",
+      "department": "AIML",
+      "messageType": "Exam Result",
+      "messageContent": "VSB: Dear Parent, Valiullah (Reg No: 922524148117) scored 483 marks. Result: PASS. - VY NEXTGEN TECHNOLOGY",
+      "channel": "Fast2SMS Gateway",
+      "status": "Sent",
+      "sentAt": "2026-08-07T10:16:13.873Z",
+      "sentBy": "Vali1278",
+      "id": "sms-1786097773873-7wqqx"
+    },
+    {
+      "recipientName": "Anish Kumar",
+      "registerNumber": "921321104001",
+      "phoneNumber": "+918754020556",
+      "department": "AIML",
+      "messageType": "General Notification",
+      "messageContent": "Notice: Dear Student Anish Kumar (921321104001), {messageText}. Issued on {date} by VY NEXTGEN TECHNOLOGY.",
+      "channel": "SMS",
+      "status": "Sent",
+      "sentAt": "2026-08-07T10:08:54.704Z",
+      "sentBy": "VSBEC",
+      "id": "sms-1786097334704-rgsaf"
+    },
+    {
+      "recipientName": "Anish Kumar",
+      "registerNumber": "921321104001",
+      "phoneNumber": "+918754020556",
+      "department": "AIML",
+      "messageType": "Exam Result",
+      "messageContent": "Dear Parent/Student, Result for 921321104001 (Anish Kumar) - AIML: Total Marks: {marks}. Result: {status}. - VY NEXTGEN TECHNOLOGY",
+      "channel": "SMS",
+      "status": "Sent",
+      "sentAt": "2026-08-07T09:22:33.920Z",
+      "sentBy": "VSBEC",
+      "id": "sms-1786094553920-fj3sr"
+    },
+    {
+      "recipientName": "Anish Kumar",
+      "registerNumber": "921321104001",
+      "phoneNumber": "+918754020556",
+      "department": "AIML",
+      "messageType": "Exam Result",
+      "messageContent": "VSB: Dear Parent, Anish Kumar (Reg No: 921321104001) scored 341 marks. Result: PASS. - VY NEXTGEN TECHNOLOGY",
+      "channel": "Fast2SMS Gateway",
+      "status": "Sent",
+      "sentAt": "2026-08-07T02:36:28.937Z",
+      "sentBy": "VSBEC",
+      "id": "sms-1786070188937-qmans"
+    }
+  ],
+  "examBatches": [
+    {
+      "id": "exm-1786097995510-ad8b6",
+      "title": "Semester 5 Results",
+      "department": "CSE",
+      "examDate": "2026-08-07",
+      "results": [
+        {
+          "sNo": 1,
+          "registerNumber": "921321104001",
+          "studentName": "Anish Kumar",
+          "phoneNumber": "+918754020556",
+          "department": "CSE",
+          "subjects": [
+            {
+              "subjectCode": "MATHS",
+              "subjectName": "Maths",
+              "marks": 85,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "PHY",
+              "subjectName": "Physics",
+              "marks": 90,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CHEM",
+              "subjectName": "Chemistry",
+              "marks": 78,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CP",
+              "subjectName": "C Programming",
+              "marks": 88,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "ENG",
+              "subjectName": "English",
+              "marks": 92,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "totalMarks": 433,
+          "overallStatus": "PASS",
+          "smsSent": true,
+          "smsSentAt": "2026-08-07T10:19:58.172Z",
+          "smsStatus": "Sent"
+        }
+      ],
+      "uploadedAt": "2026-08-07T10:19:55.510Z",
+      "uploadedBy": "VSBEC",
+      "totalStudents": 1,
+      "smsSentCount": 1
+    },
+    {
+      "id": "exm-1786097757284-2ggs9",
+      "title": "INTERNAL",
+      "department": "AIML",
+      "examDate": "2026-08-07",
+      "results": [
+        {
+          "sNo": "1",
+          "registerNumber": "922524148117",
+          "studentName": "Valiullah",
+          "phoneNumber": "+918754020556",
+          "department": "AIML",
+          "subjects": [
+            {
+              "subjectCode": "MATHEMATICS",
+              "subjectName": "MATHEMATICS",
+              "marks": 85,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "PHYSICS",
+              "subjectName": "PHYSICS",
+              "marks": 90,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DATA STRUCTU",
+              "subjectName": "DATA STRUCTURES",
+              "marks": 78,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DDM",
+              "subjectName": "DDM",
+              "marks": 87,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "PYTHON",
+              "subjectName": "PYTHON",
+              "marks": 88,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "ML",
+              "subjectName": "ML",
+              "marks": 55,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "totalMarks": 483,
+          "overallStatus": "PASS",
+          "smsSent": true,
+          "smsSentAt": "2026-08-07T10:16:13.873Z",
+          "smsStatus": "Sent"
+        }
+      ],
+      "uploadedAt": "2026-08-07T10:15:57.284Z",
+      "uploadedBy": "Vali1278",
+      "totalStudents": 1,
+      "smsSentCount": 1
+    },
+    {
+      "id": "exm-1786070186131-uphzj",
+      "title": "Semester 5 End Exam",
+      "department": "AIML",
+      "examDate": "2026-08-06",
+      "results": [
+        {
+          "sNo": 1,
+          "registerNumber": "921321104001",
+          "studentName": "Anish Kumar",
+          "phoneNumber": "+918754020556",
+          "department": "AIML",
+          "subjects": [
+            {
+              "subjectCode": "MATHS",
+              "subjectName": "Mathematics",
+              "marks": 85,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "totalMarks": 341,
+          "overallStatus": "PASS",
+          "smsSent": true,
+          "smsSentAt": "2026-08-07T02:36:28.937Z",
+          "smsStatus": "Sent"
+        }
+      ],
+      "uploadedAt": "2026-08-07T02:36:26.131Z",
+      "uploadedBy": "VSBEC",
+      "totalStudents": 1,
+      "smsSentCount": 1
+    }
+  ],
+  "smsTemplates": [
+    {
+      "id": "tpl-1",
+      "title": "Exam Result Notification",
+      "type": "Exam Result",
+      "templateText": "Dear Parent/Student, Result for {regNo} ({name}) - {department}: Total Marks: {marks}. Result: {status}. - VY NEXTGEN TECHNOLOGY",
+      "createdAt": "2026-08-07T02:24:06.396Z"
+    },
+    {
+      "id": "tpl-2",
+      "title": "Attendance Alert",
+      "type": "Attendance Alert",
+      "templateText": "Alert: Student {name} ({regNo}), Dept: {department} has overall attendance of {attendance}% as of {date}. Please ensure regular attendance. - VY NEXTGEN",
+      "createdAt": "2026-08-07T02:24:06.396Z"
+    },
+    {
+      "id": "tpl-3",
+      "title": "General Circular",
+      "type": "General Notification",
+      "templateText": "Notice: Dear Student {name} ({regNo}), {messageText}. Issued on {date} by VY NEXTGEN TECHNOLOGY.",
+      "createdAt": "2026-08-07T02:24:06.396Z"
+    }
+  ],
+  "settings": {
+    "provider": "Fast2SMS",
+    "fast2smsApiKey": "",
+    "fast2smsSenderId": "VSBEC",
+    "fast2smsRoute": "dlt",
+    "fast2smsEnabled": true,
+    "twilioAccountSid": "",
+    "twilioAuthToken": "",
+    "twilioFromNumber": "+18005550199",
+    "whatsAppEnabled": false,
+    "whatsAppApiKey": "",
+    "autoSendResultSms": false,
+    "defaultSenderName": "VSBEC VY NEXTGEN"
+  },
+  "activityLogs": [
+    {
+      "id": "act-1786097998173-2mzfy",
+      "action": "Result SMS Dispatched via Fast2SMS",
+      "details": "Sent exam result SMS for batch \"Semester 5 Results\" (1 sent, 0 failed)",
+      "user": "VSBEC",
+      "type": "result",
+      "timestamp": "2026-08-07T10:19:58.173Z"
+    },
+    {
+      "id": "act-1786097995510-2qtqq",
+      "action": "Uploaded Exam Results",
+      "details": "Uploaded result set \"Semester 5 Results\" (CSE) with 1 student records",
+      "user": "VSBEC",
+      "type": "result",
+      "timestamp": "2026-08-07T10:19:55.510Z"
+    },
+    {
+      "id": "act-1786097995510-7vyu5",
+      "action": "Student Added",
+      "details": "Added student Anish Kumar (921321104001) - Dept: CSE",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-08-07T10:19:55.510Z"
+    },
+    {
+      "id": "act-1786097819311-30vcp",
+      "action": "Template Updated",
+      "details": "Updated template \"Exam Result Notification\"",
+      "user": "Vali1278",
+      "type": "sms",
+      "timestamp": "2026-08-07T10:16:59.311Z"
+    },
+    {
+      "id": "act-1786097773874-yj15g",
+      "action": "Result SMS Dispatched via Fast2SMS",
+      "details": "Sent exam result SMS for batch \"INTERNAL\" (1 sent, 0 failed)",
+      "user": "Vali1278",
+      "type": "result",
+      "timestamp": "2026-08-07T10:16:13.874Z"
+    },
+    {
+      "id": "act-1786097757284-nnmyt",
+      "action": "Uploaded Exam Results",
+      "details": "Uploaded result set \"INTERNAL\" (AIML) with 1 student records",
+      "user": "Vali1278",
+      "type": "result",
+      "timestamp": "2026-08-07T10:15:57.284Z"
+    },
+    {
+      "id": "act-1786097757283-hivq4",
+      "action": "Student Updated",
+      "details": "Updated details for Valiullah (922524148117)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-08-07T10:15:57.283Z"
+    },
+    {
+      "id": "act-1786097564313-o3qsx",
+      "action": "Student Updated",
+      "details": "Updated details for valiullah (922524148117)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-08-07T10:12:44.313Z"
+    },
+    {
+      "id": "act-1786097536174-elfs3",
+      "action": "Staff Updated",
+      "details": "Updated staff VALIULLAH",
+      "user": "Vali1278",
+      "type": "staff",
+      "timestamp": "2026-08-07T10:12:16.174Z"
+    },
+    {
+      "id": "act-1786097518207-fml89",
+      "action": "Staff Updated",
+      "details": "Updated staff VALIULLAH",
+      "user": "Vali1278",
+      "type": "staff",
+      "timestamp": "2026-08-07T10:11:58.207Z"
+    },
+    {
+      "id": "act-1786097469268-a4oat",
+      "action": "User Login",
+      "details": "Logged in successfully as VALIULLAH",
+      "user": "Vali1278",
+      "type": "auth",
+      "timestamp": "2026-08-07T10:11:09.268Z"
+    },
+    {
+      "id": "act-1786097446408-n8x1o",
+      "action": "Staff Updated",
+      "details": "Updated staff VALIULLAH",
+      "user": "VSBEC",
+      "type": "staff",
+      "timestamp": "2026-08-07T10:10:46.408Z"
+    },
+    {
+      "id": "act-1786097436069-5buym",
+      "action": "User Login",
+      "details": "Logged in successfully as System Administrator (VY NEXTGEN)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-07T10:10:36.069Z"
+    },
+    {
+      "id": "act-1786097390445-7ks8f",
+      "action": "Staff Account Created",
+      "details": "Created staff account for VALIULLAH (Vali1278)",
+      "user": "VSBEC",
+      "type": "staff",
+      "timestamp": "2026-08-07T10:09:50.445Z"
+    },
+    {
+      "id": "act-1786097334704-lhszg",
+      "action": "SMS Dispatched via Fast2SMS",
+      "details": "Sent 1 SMS successfully (0 failed)",
+      "user": "VSBEC",
+      "type": "sms",
+      "timestamp": "2026-08-07T10:08:54.704Z"
+    },
+    {
+      "id": "act-1786097295389-kpvr1",
+      "action": "User Login",
+      "details": "Logged in successfully as System Administrator (VY NEXTGEN)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-07T10:08:15.389Z"
+    },
+    {
+      "id": "act-1786094553921-4k1j3",
+      "action": "SMS Dispatched via Fast2SMS",
+      "details": "Sent 1 SMS successfully (0 failed)",
+      "user": "VSBEC",
+      "type": "sms",
+      "timestamp": "2026-08-07T09:22:33.921Z"
+    },
+    {
+      "id": "act-1786093587268-9qb5g",
+      "action": "User Login",
+      "details": "Logged in successfully as System Administrator (VY NEXTGEN)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-07T09:06:27.268Z"
+    },
+    {
+      "id": "act-1786093492580-4fr61",
+      "action": "User Login",
+      "details": "Logged in successfully as System Administrator (VY NEXTGEN)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-07T09:04:52.580Z"
+    },
+    {
+      "id": "act-1786070188938-udh0k",
+      "action": "Result SMS Dispatched via Fast2SMS",
+      "details": "Sent exam result SMS for batch \"Semester 5 End Exam\" (1 sent, 0 failed)",
+      "user": "VSBEC",
+      "type": "result",
+      "timestamp": "2026-08-07T02:36:28.938Z"
+    },
+    {
+      "id": "act-1786070186131-galy8",
+      "action": "Uploaded Exam Results",
+      "details": "Uploaded result set \"Semester 5 End Exam\" (AIML) with 1 student records",
+      "user": "VSBEC",
+      "type": "result",
+      "timestamp": "2026-08-07T02:36:26.131Z"
+    },
+    {
+      "id": "act-1786070186130-91ujj",
+      "action": "Student Added",
+      "details": "Added student Anish Kumar (921321104001) - Dept: AIML",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-08-07T02:36:26.130Z"
+    },
+    {
+      "id": "act-1786069682189-17ogn",
+      "action": "User Login",
+      "details": "Logged in successfully as System Administrator (VY NEXTGEN)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-07T02:28:02.189Z"
+    },
+    {
+      "id": "act-1786069529582-oy2nv",
+      "action": "Department Updated",
+      "details": "Updated department MECH",
+      "user": "VSBEC",
+      "type": "settings",
+      "timestamp": "2026-08-07T02:25:29.582Z"
+    },
+    {
+      "id": "act-1786069490860-9nlh6",
+      "action": "User Login",
+      "details": "Logged in successfully as System Administrator (VY NEXTGEN)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-07T02:24:50.860Z"
+    },
+    {
+      "id": "act-1786069446397-3yppx",
+      "action": "System Initialized",
+      "details": "Default Admin VSBEC configured",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-07T02:24:06.397Z"
+    }
+  ]
+}

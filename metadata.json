@@ -1,0 +1,6 @@
+{
+  "name": "VY NextGen SMS Management System",
+  "description": "SMS & Communication Management System for Educational Institutions by VY NextGen Technology",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

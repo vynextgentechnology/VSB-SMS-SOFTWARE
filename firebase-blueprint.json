@@ -1,0 +1,104 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "System user profiles and authentication mapping",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string", "maxLength": 100 },
+        "name": { "type": "string", "maxLength": 100 },
+        "role": { "type": "string", "enum": ["admin", "hod", "staff"] },
+        "department": { "type": "string", "maxLength": 100 },
+        "phoneNumber": { "type": "string", "maxLength": 20 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "name", "role", "createdAt"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Enrolled college students",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "registerNumber": { "type": "string", "maxLength": 50 },
+        "department": { "type": "string", "maxLength": 100 },
+        "phoneNumber": { "type": "string", "maxLength": 20 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "registerNumber", "department", "createdAt"]
+    },
+    "ParentEnrollment": {
+      "title": "ParentEnrollment",
+      "description": "Parent mobile enrollment for SMS notifications",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "parentName": { "type": "string", "maxLength": 100 },
+        "parentPhoneNumber": { "type": "string", "maxLength": 20 },
+        "studentName": { "type": "string", "maxLength": 100 },
+        "registerNumber": { "type": "string", "maxLength": 50 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "parentName", "parentPhoneNumber", "registerNumber", "createdAt"]
+    },
+    "ExamBatch": {
+      "title": "ExamBatch",
+      "description": "Uploaded Excel result batches and generated reports",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "maxLength": 200 },
+        "department": { "type": "string", "maxLength": 100 },
+        "examDate": { "type": "string" },
+        "uploadedAt": { "type": "string" },
+        "uploadedBy": { "type": "string", "maxLength": 100 },
+        "totalStudents": { "type": "number" },
+        "smsSentCount": { "type": "number" }
+      },
+      "required": ["id", "title", "department", "uploadedAt", "uploadedBy"]
+    },
+    "SmsLog": {
+      "title": "SmsLog",
+      "description": "SMS dispatch logs and Fast2SMS status reports",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "recipientName": { "type": "string", "maxLength": 100 },
+        "registerNumber": { "type": "string", "maxLength": 50 },
+        "phoneNumber": { "type": "string", "maxLength": 20 },
+        "department": { "type": "string", "maxLength": 100 },
+        "messageType": { "type": "string" },
+        "messageContent": { "type": "string", "maxLength": 1000 },
+        "channel": { "type": "string" },
+        "status": { "type": "string" },
+        "sentAt": { "type": "string" },
+        "sentBy": { "type": "string" }
+      },
+      "required": ["id", "registerNumber", "phoneNumber", "messageContent", "status", "sentAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profile collection"
+    },
+    "/students/{studentId}": {
+      "schema": { "$ref": "#/entities/Student" },
+      "description": "Student roster collection"
+    },
+    "/parents/{parentId}": {
+      "schema": { "$ref": "#/entities/ParentEnrollment" },
+      "description": "Parent enrollment directory"
+    },
+    "/exam_batches/{batchId}": {
+      "schema": { "$ref": "#/entities/ExamBatch" },
+      "description": "Exam result batches"
+    },
+    "/sms_logs/{logId}": {
+      "schema": { "$ref": "#/entities/SmsLog" },
+      "description": "Dispatch SMS logs"
+    }
+  }
+}

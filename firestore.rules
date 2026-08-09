@@ -1,0 +1,47 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Connection test document
+    match /test/{docId} {
+      allow read, write: if true;
+    }
+
+    // User accounts
+    match /users/{userId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // Students directory
+    match /students/{studentId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // Parent enrollment directory
+    match /parents/{parentId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // Exam result batches & generated reports
+    match /exam_batches/{batchId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // Dispatch SMS logs
+    match /sms_logs/{logId} {
+      allow read, write: if isSignedIn();
+    }
+  }
+}
