@@ -9,7 +9,7 @@ import JSZip from 'jszip';
 import { GoogleGenAI } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
 import { db } from './src/server/db.js';
-import { sendSMS } from './src/server/smsService.js';
+import { sendSMS, getSmsApiKeyPoolStatus, rotateToNextKey } from './src/server/smsService.js';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -764,6 +764,256 @@ app.post('/api/sms/send', async (req, res) => {
     });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
+  }
+});
+
+// SMS API Key Pool Status & Manual Rotation
+app.get('/api/sms/keys-status', (req, res) => {
+  try {
+    const status = getSmsApiKeyPoolStatus();
+    return res.json(status);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/sms/rotate-key', (req, res) => {
+  try {
+    const newIdx = rotateToNextKey();
+    const status = getSmsApiKeyPoolStatus();
+    return res.json({
+      success: true,
+      message: `Rotated to SMS API Key #${newIdx + 1}`,
+      activeKeyIndex: newIdx,
+      status,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// Parse Excel File for SMS Preview
+app.post('/api/sms/parse-excel', upload.single('file'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No Excel file attached' });
+    }
+
+    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+    if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+      return res.status(400).json({ error: 'Excel file has no worksheet' });
+    }
+
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const rawRows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+
+    if (!rawRows || rawRows.length < 2) {
+      return res.status(400).json({ error: 'Excel file contains no data rows' });
+    }
+
+    let headerRowIdx = -1;
+    for (let i = 0; i < Math.min(10, rawRows.length); i++) {
+      if (rawRows[i] && rawRows[i].some((c: any) => c !== null && c !== undefined && String(c).trim().length > 0)) {
+        headerRowIdx = i;
+        break;
+      }
+    }
+
+    if (headerRowIdx === -1) {
+      return res.status(400).json({ error: 'Could not locate header row in Excel worksheet' });
+    }
+
+    const headers = rawRows[headerRowIdx].map((h: any) => String(h || '').trim());
+
+    let phoneIdx = -1;
+    let nameIdx = -1;
+    let marksIdx = -1;
+
+    headers.forEach((h, idx) => {
+      const clean = h.toUpperCase().replace(/[^A-Z0-9\s_]/g, '').trim();
+      if (/^(MOBILE|PHONE|PHONE NUMBER|CONTACT|MOBILE NO|PARENT MOBILE|PARENT PHONE)$/.test(clean) || clean.includes('MOBILE') || clean.includes('PHONE')) {
+        phoneIdx = idx;
+      } else if (/^(NAME|STUDENT NAME|STUDENT_NAME|FULL NAME)$/.test(clean) || clean.includes('NAME')) {
+        nameIdx = idx;
+      } else if (/^(MARKS|MARK|SCORE|RESULT|TOTAL MARKS|GRADE)$/.test(clean) || clean.includes('MARK') || clean.includes('SCORE') || clean.includes('RESULT')) {
+        marksIdx = idx;
+      }
+    });
+
+    if (nameIdx === -1 && headers.length > 0) nameIdx = 0;
+    if (phoneIdx === -1 && headers.length > 1) phoneIdx = 1;
+    if (marksIdx === -1 && headers.length > 2) marksIdx = 2;
+
+    const previewList: Array<{
+      sNo: number;
+      studentName: string;
+      phoneNumber: string;
+      marks: string;
+      isValid: boolean;
+    }> = [];
+
+    for (let r = headerRowIdx + 1; r < rawRows.length; r++) {
+      const row = rawRows[r];
+      if (!row || row.length === 0) continue;
+
+      const studentName = nameIdx >= 0 && row[nameIdx] !== undefined ? String(row[nameIdx]).trim() : '';
+      const phoneNumber = phoneIdx >= 0 && row[phoneIdx] !== undefined ? String(row[phoneIdx]).trim().replace(/[^0-9+]/g, '') : '';
+      const marks = marksIdx >= 0 && row[marksIdx] !== undefined ? String(row[marksIdx]).trim() : '';
+
+      if (!studentName && !phoneNumber && !marks) continue;
+
+      const isValid = Boolean(phoneNumber && phoneNumber.replace(/\D/g, '').length >= 10);
+
+      previewList.push({
+        sNo: previewList.length + 1,
+        studentName: studentName || 'Student',
+        phoneNumber,
+        marks: marks || 'N/A',
+        isValid,
+      });
+    }
+
+    return res.json({
+      success: true,
+      fileName: req.file.originalname,
+      totalParsed: previewList.length,
+      validCount: previewList.filter((p) => p.isValid).length,
+      records: previewList,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: `Excel parse failed: ${err.message}` });
+  }
+});
+
+// Excel SMS Upload & Loop Dispatch with Automatic API Key Rotation
+app.post('/api/sms/upload-excel-send', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No Excel file provided for SMS dispatch' });
+    }
+
+    const templateText = req.body.templateText || 'Dear Parent, your child {name} scored {marks}.';
+    const messageType = req.body.messageType || 'Exam Result SMS';
+
+    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+    if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+      return res.status(400).json({ error: 'Excel file contains no sheets' });
+    }
+
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const rawRows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+
+    if (!rawRows || rawRows.length < 2) {
+      return res.status(400).json({ error: 'Excel file contains no data rows' });
+    }
+
+    let headerRowIdx = -1;
+    for (let i = 0; i < Math.min(10, rawRows.length); i++) {
+      if (rawRows[i] && rawRows[i].some((c: any) => c !== null && c !== undefined && String(c).trim().length > 0)) {
+        headerRowIdx = i;
+        break;
+      }
+    }
+
+    if (headerRowIdx === -1) {
+      return res.status(400).json({ error: 'Could not locate header row in Excel worksheet' });
+    }
+
+    const headers = rawRows[headerRowIdx].map((h: any) => String(h || '').trim());
+
+    let phoneIdx = -1;
+    let nameIdx = -1;
+    let marksIdx = -1;
+
+    headers.forEach((h, idx) => {
+      const clean = h.toUpperCase().replace(/[^A-Z0-9\s_]/g, '').trim();
+      if (/^(MOBILE|PHONE|PHONE NUMBER|CONTACT|MOBILE NO|PARENT MOBILE|PARENT PHONE)$/.test(clean) || clean.includes('MOBILE') || clean.includes('PHONE')) {
+        phoneIdx = idx;
+      } else if (/^(NAME|STUDENT NAME|STUDENT_NAME|FULL NAME)$/.test(clean) || clean.includes('NAME')) {
+        nameIdx = idx;
+      } else if (/^(MARKS|MARK|SCORE|RESULT|TOTAL MARKS|GRADE)$/.test(clean) || clean.includes('MARK') || clean.includes('SCORE') || clean.includes('RESULT')) {
+        marksIdx = idx;
+      }
+    });
+
+    if (nameIdx === -1 && headers.length > 0) nameIdx = 0;
+    if (phoneIdx === -1 && headers.length > 1) phoneIdx = 1;
+    if (marksIdx === -1 && headers.length > 2) marksIdx = 2;
+
+    const senderStaffId = (req as any).currentUser || 'STAFF';
+    const newSmsLogs: any[] = [];
+
+    for (let r = headerRowIdx + 1; r < rawRows.length; r++) {
+      const row = rawRows[r];
+      if (!row || row.length === 0) continue;
+
+      const studentName = nameIdx >= 0 && row[nameIdx] !== undefined ? String(row[nameIdx]).trim() : 'Student';
+      const phoneNumber = phoneIdx >= 0 && row[phoneIdx] !== undefined ? String(row[phoneIdx]).trim().replace(/[^0-9+]/g, '') : '';
+      const marks = marksIdx >= 0 && row[marksIdx] !== undefined ? String(row[marksIdx]).trim() : 'N/A';
+
+      if (!phoneNumber) continue;
+
+      // Dynamic placeholder replacement
+      const messageContent = templateText
+        .replace(/\{name\}/g, studentName)
+        .replace(/\{marks\}/g, marks)
+        .replace(/\{phone\}/g, phoneNumber)
+        .replace(/\{date\}/g, new Date().toLocaleDateString());
+
+      let status = 'Sent';
+      let errorMsg: string | undefined = undefined;
+
+      const smsResult = await sendSMS(phoneNumber, messageContent);
+      if (!smsResult.success) {
+        status = 'Failed';
+        errorMsg = typeof smsResult.error === 'string' ? smsResult.error : JSON.stringify(smsResult.error);
+      }
+
+      newSmsLogs.push({
+        recipientName: studentName,
+        registerNumber: 'Excel Upload',
+        phoneNumber,
+        department: 'Excel Batch',
+        messageType,
+        messageContent,
+        channel: 'Fast2SMS Multi-Key Gateway',
+        status,
+        sentAt: new Date().toISOString(),
+        sentBy: senderStaffId,
+        errorMessage: errorMsg,
+      });
+    }
+
+    if (newSmsLogs.length === 0) {
+      return res.status(400).json({ error: 'No valid phone numbers found in uploaded Excel file.' });
+    }
+
+    const savedLogs = db.addSmsLogs(newSmsLogs);
+    const sentCount = savedLogs.filter((l) => l.status === 'Sent').length;
+    const failedCount = savedLogs.filter((l) => l.status === 'Failed').length;
+
+    db.addActivity(
+      'sms',
+      'Excel Bulk SMS Dispatched',
+      `Sent ${sentCount} SMS from Excel (${failedCount} failed) by Staff: ${senderStaffId}`,
+      senderStaffId
+    );
+
+    return res.json({
+      success: true,
+      message: `Excel SMS Dispatch Completed! ${sentCount} Sent, ${failedCount} Failed.`,
+      totalDispatched: savedLogs.length,
+      sentCount,
+      failedCount,
+      staffId: senderStaffId,
+      logs: savedLogs,
+      keyPoolStatus: getSmsApiKeyPoolStatus(),
+    });
+
+  } catch (err: any) {
+    return res.status(500).json({ error: `Excel SMS Upload failed: ${err.message}` });
   }
 });
 

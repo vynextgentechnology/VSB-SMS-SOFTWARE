@@ -242,6 +242,99 @@ export const api = {
       body: JSON.stringify(payload),
     }),
 
+  getSmsKeyPoolStatus: (): Promise<{
+    totalKeys: number;
+    activeKeyIndex: number;
+    activeKeyMasked: string;
+    keys: Array<{
+      id: number;
+      keyMasked: string;
+      status: string;
+      sendCount: number;
+      failCount: number;
+      lastUsed?: string;
+      lastError?: string;
+    }>;
+  }> => request('/api/sms/keys-status'),
+
+  rotateSmsApiKey: (): Promise<{ success: boolean; message: string; activeKeyIndex: number }> =>
+    request('/api/sms/rotate-key', { method: 'POST' }),
+
+  parseSmsExcel: async (file: File): Promise<{
+    success: boolean;
+    fileName: string;
+    totalParsed: number;
+    validCount: number;
+    records: Array<{
+      sNo: number;
+      studentName: string;
+      phoneNumber: string;
+      marks: string;
+      isValid: boolean;
+    }>;
+  }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const headers: Record<string, string> = {
+      'x-user-id': currentUserId,
+    };
+    if (currentToken) {
+      headers['Authorization'] = `Bearer ${currentToken}`;
+    }
+
+    const res = await fetch(`${baseUrl}/api/sms/parse-excel`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to parse Excel file');
+    }
+    return data;
+  },
+
+  sendSmsFromExcel: async (
+    file: File,
+    templateText: string,
+    messageType: string = 'Exam Result SMS'
+  ): Promise<{
+    success: boolean;
+    message: string;
+    totalDispatched: number;
+    sentCount: number;
+    failedCount: number;
+    staffId: string;
+    logs: SmsLog[];
+    keyPoolStatus: any;
+  }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('templateText', templateText);
+    formData.append('messageType', messageType);
+
+    const headers: Record<string, string> = {
+      'x-user-id': currentUserId,
+    };
+    if (currentToken) {
+      headers['Authorization'] = `Bearer ${currentToken}`;
+    }
+
+    const res = await fetch(`${baseUrl}/api/sms/upload-excel-send`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to send SMS from Excel file');
+    }
+    return data;
+  },
+
   getSmsReports: (): Promise<SmsLog[]> => request<SmsLog[]>('/api/sms/reports'),
   clearSmsReports: (): Promise<{ success: boolean }> => request('/api/sms/reports', { method: 'DELETE' }),
 
