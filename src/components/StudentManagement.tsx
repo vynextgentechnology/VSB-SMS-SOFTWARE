@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import * as XLSX from 'xlsx';
 import { Student, Department, User } from '../types';
 import { api } from '../lib/api';
 import {
@@ -125,22 +126,186 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
     }
   };
 
-  const handleExcelFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Excel Preview state
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [excelFile, setExcelFile] = useState<File | null>(null);
+  const [previewRecords, setPreviewRecords] = useState<
+    Array<{
+      sNo: number;
+      name: string;
+      registerNumber: string;
+      department: string;
+      phoneNumber: string;
+      marks?: string;
+      isValid: boolean;
+      reason?: string;
+    }>
+  >([]);
+  const [excelUploadLoading, setExcelUploadLoading] = useState(false);
+
+  const downloadSampleTemplate = () => {
+    const sampleData = [
+      {
+        'Register Number': '921321104001',
+        'Student Name': 'S. Ananya',
+        'Department': 'CSE',
+        'Parent Phone Number': '9876543210',
+        'Marks': '88',
+      },
+      {
+        'Register Number': '921321104002',
+        'Student Name': 'K. Vignesh',
+        'Department': 'AIDS',
+        'Parent Phone Number': '9123456789',
+        'Marks': '92',
+      },
+    ];
+
+    const ws = XLSX.utils.json_to_sheet(sampleData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'StudentEnrollment');
+    XLSX.writeFile(wb, 'VSBEC_Student_Enrollment_Template.xlsx');
+  };
+
+  const handleExcelFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setError(null);
     setLoading(true);
+
     try {
-      const res = await api.uploadStudentsExcel(file);
-      setSuccessMsg(`Excel import completed! Added: ${res.added}, Updated: ${res.updated}`);
-      onRefresh();
-      setTimeout(() => setSuccessMsg(null), 4000);
+      if (!file.name.match(/\.(xlsx|xls|csv)$/i)) {
+        throw new Error('Please select a valid Excel spreadsheet file (.xlsx or .xls).');
+      }
+
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: 'array' });
+      if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+        throw new Error('Uploaded Excel file has no worksheets.');
+      }
+
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const rawRows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+
+      if (!rawRows || rawRows.length < 2) {
+        throw new Error('Excel file contains no data rows.');
+      }
+
+      let headerRowIdx = -1;
+      for (let i = 0; i < Math.min(10, rawRows.length); i++) {
+        if (rawRows[i] && rawRows[i].some((cell: any) => cell !== null && cell !== undefined && String(cell).trim().length > 0)) {
+          headerRowIdx = i;
+          break;
+        }
+      }
+
+      if (headerRowIdx === -1) {
+        throw new Error('Could not locate header row in Excel file.');
+      }
+
+      const headers = rawRows[headerRowIdx].map((h: any) => (h !== null && h !== undefined ? String(h).trim() : ''));
+
+      let nameIdx = -1;
+      let regNoIdx = -1;
+      let deptIdx = -1;
+      let phoneIdx = -1;
+      let marksIdx = -1;
+
+      headers.forEach((h, idx) => {
+        const clean = h.toUpperCase().replace(/[^A-Z0-9\s_]/g, '').trim();
+        if (/^(REGISTER|REG|REGISTRATION|REGISTER NO|REG NO|REGISTER NUMBER|STUDENT ID|ROLL NO)$/.test(clean) || clean.includes('REGISTER') || clean.includes('REG NO')) {
+          regNoIdx = idx;
+        } else if (/^(NAME|STUDENT NAME|STUDENT_NAME|FULL NAME)$/.test(clean) || clean.includes('NAME')) {
+          nameIdx = idx;
+        } else if (/^(DEPARTMENT|DEPT|BRANCH|DEPT CODE)$/.test(clean) || clean.includes('DEPT') || clean.includes('BRANCH')) {
+          deptIdx = idx;
+        } else if (/^(MOBILE|PHONE|PHONE NUMBER|CONTACT|MOBILE NO|PARENT MOBILE|PARENT PHONE)$/.test(clean) || clean.includes('MOBILE') || clean.includes('PHONE')) {
+          phoneIdx = idx;
+        } else if (/^(MARKS|MARK|SCORE|RESULT|TOTAL MARKS|GRADE)$/.test(clean) || clean.includes('MARK') || clean.includes('RESULT')) {
+          marksIdx = idx;
+        }
+      });
+
+      if (nameIdx === -1 && headers.length > 0) nameIdx = 0;
+      if (regNoIdx === -1 && headers.length > 1) regNoIdx = 1;
+      if (deptIdx === -1 && headers.length > 2) deptIdx = 2;
+      if (phoneIdx === -1 && headers.length > 3) phoneIdx = 3;
+
+      const records: Array<{
+        sNo: number;
+        name: string;
+        registerNumber: string;
+        department: string;
+        phoneNumber: string;
+        marks?: string;
+        isValid: boolean;
+        reason?: string;
+      }> = [];
+
+      for (let r = headerRowIdx + 1; r < rawRows.length; r++) {
+        const row = rawRows[r];
+        if (!row || row.length === 0) continue;
+
+        const name = nameIdx >= 0 && row[nameIdx] !== undefined ? String(row[nameIdx]).trim() : '';
+        const registerNumber = regNoIdx >= 0 && row[regNoIdx] !== undefined ? String(row[regNoIdx]).trim() : '';
+        const department = deptIdx >= 0 && row[deptIdx] !== undefined ? String(row[deptIdx]).trim().toUpperCase() : userDept;
+        const phoneNumber = phoneIdx >= 0 && row[phoneIdx] !== undefined ? String(row[phoneIdx]).trim().replace(/[^0-9+]/g, '') : '';
+        const marks = marksIdx >= 0 && row[marksIdx] !== undefined ? String(row[marksIdx]).trim() : '';
+
+        if (!name && !registerNumber && !phoneNumber) continue;
+
+        const isValid = Boolean(name && registerNumber && phoneNumber);
+        const missingFields: string[] = [];
+        if (!registerNumber) missingFields.push('Reg No');
+        if (!name) missingFields.push('Name');
+        if (!phoneNumber) missingFields.push('Phone');
+
+        records.push({
+          sNo: records.length + 1,
+          name: name || 'N/A',
+          registerNumber: registerNumber || 'N/A',
+          department: department || userDept,
+          phoneNumber: phoneNumber || 'N/A',
+          marks,
+          isValid,
+          reason: missingFields.length > 0 ? `Missing: ${missingFields.join(', ')}` : undefined,
+        });
+      }
+
+      if (records.length === 0) {
+        throw new Error('No readable student records found in file. Expected headers: Register Number, Student Name, Department, Parent Phone Number.');
+      }
+
+      setExcelFile(file);
+      setPreviewRecords(records);
+      setIsPreviewModalOpen(true);
     } catch (err: any) {
-      setError(err.message || 'Failed to process Excel file');
+      setError(err.message || 'Failed to read Excel file');
     } finally {
       setLoading(false);
       e.target.value = '';
+    }
+  };
+
+  const confirmUploadExcelToServer = async () => {
+    if (!excelFile) return;
+    setExcelUploadLoading(true);
+    setError(null);
+
+    try {
+      const res = await api.uploadStudentsExcel(excelFile);
+      setSuccessMsg(`Excel upload complete! ${res.added} new students added, ${res.updated} existing records updated.`);
+      setIsPreviewModalOpen(false);
+      setExcelFile(null);
+      setPreviewRecords([]);
+      onRefresh();
+      setTimeout(() => setSuccessMsg(null), 5000);
+    } catch (err: any) {
+      setError(err.message || 'Error uploading Excel file to server');
+    } finally {
+      setExcelUploadLoading(false);
     }
   };
 
@@ -218,13 +383,23 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={downloadSampleTemplate}
+            className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-sm border border-slate-300 text-xs flex items-center gap-1.5 transition-all uppercase tracking-wider"
+            title="Download sample Excel template"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+            <span>Sample Excel</span>
+          </button>
+
           <label className="cursor-pointer px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-sm shadow-sm text-xs flex items-center gap-2 transition-all uppercase tracking-wider">
-            <FileSpreadsheet className="w-4 h-4" />
+            <Upload className="w-4 h-4" />
             <span>Upload Excel (.xlsx)</span>
             <input
               type="file"
-              accept=".xlsx, .xls"
-              onChange={handleExcelFileUpload}
+              accept=".xlsx, .xls, .csv"
+              onChange={handleExcelFileSelected}
               className="hidden"
             />
           </label>
@@ -568,39 +743,151 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
         </div>
       )}
 
-      {/* Delete Student Confirmation Modal */}
-      {deletingStudent && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
-          <div className="bg-white border border-slate-200 w-full max-w-md rounded-sm shadow-xl p-6 space-y-4">
-            <div className="flex items-center gap-3 text-rose-600">
-              <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-full">
-                <Trash2 className="w-6 h-6" />
+      {/* Excel Import Preview Modal */}
+      {isPreviewModalOpen && excelFile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="bg-white border border-slate-300 w-full max-w-4xl max-h-[90vh] rounded-sm shadow-2xl flex flex-col overflow-hidden">
+            {/* Modal Header */}
+            <div className="bg-[#0f172a] text-white p-4 flex items-center justify-between border-b border-slate-800">
+              <div className="flex items-center space-x-2">
+                <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
+                <div>
+                  <h3 className="text-xs font-black uppercase tracking-widest text-emerald-400">
+                    Excel Enrollment Import Preview
+                  </h3>
+                  <p className="text-[11px] text-slate-400 font-mono">
+                    File: <span className="text-white font-bold">{excelFile.name}</span> ({previewRecords.length} records parsed)
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">Confirm Student Deletion</h3>
-                <p className="text-xs font-medium text-slate-500">This action cannot be undone.</p>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={confirmUploadExcelToServer}
+                  disabled={excelUploadLoading}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider rounded-sm flex items-center gap-1.5 transition-all shadow-sm"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>{excelUploadLoading ? 'Uploading to Server...' : 'Confirm & Save to Database'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPreviewModalOpen(false);
+                    setExcelFile(null);
+                    setPreviewRecords([]);
+                  }}
+                  className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs uppercase tracking-wider rounded-sm transition-all"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
 
-            <div className="text-xs text-slate-700 bg-slate-50 p-3 rounded border border-slate-200 font-medium leading-relaxed">
-              Are you sure you want to delete student record for <strong className="text-slate-900 font-bold">{deletingStudent.name}</strong>?
+            {/* Error Banner inside Modal */}
+            {error && (
+              <div className="p-3 bg-rose-50 border-b border-rose-200 text-rose-800 text-xs font-bold flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Stats Summary Bar */}
+            <div className="bg-slate-50 border-b border-slate-200 p-3 px-6 flex flex-wrap items-center justify-between gap-4 text-xs font-medium">
+              <div className="flex items-center space-x-4">
+                <div>
+                  <span className="text-slate-500 font-bold uppercase text-[10px] block">Total Records</span>
+                  <strong className="text-slate-900 font-black text-sm">{previewRecords.length}</strong>
+                </div>
+                <div>
+                  <span className="text-slate-500 font-bold uppercase text-[10px] block">Valid Records</span>
+                  <strong className="text-emerald-700 font-black text-sm">
+                    {previewRecords.filter((r) => r.isValid).length}
+                  </strong>
+                </div>
+                <div>
+                  <span className="text-slate-500 font-bold uppercase text-[10px] block">Incomplete / Invalid</span>
+                  <strong className="text-rose-700 font-black text-sm">
+                    {previewRecords.filter((r) => !r.isValid).length}
+                  </strong>
+                </div>
+              </div>
+
+              <div className="text-right">
+                <span className="text-[11px] text-slate-500 font-bold">
+                  Existing students with matching Register No will be automatically updated.
+                </span>
+              </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setDeletingStudent(null)}
-                className="px-4 py-2 border border-slate-300 rounded-sm text-xs font-bold uppercase tracking-wider text-slate-600 hover:bg-slate-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmDeleteStudent}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-sm text-xs font-black uppercase tracking-wider shadow-sm"
-              >
-                Yes, Delete Student
-              </button>
+            {/* Scrollable Table */}
+            <div className="p-4 overflow-y-auto max-h-[60vh] space-y-4">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-[#0f172a] text-amber-400 font-black uppercase text-[10px] tracking-wider sticky top-0">
+                    <th className="p-2.5 border border-slate-800 text-center">#</th>
+                    <th className="p-2.5 border border-slate-800">Register Number</th>
+                    <th className="p-2.5 border border-slate-800">Student Name</th>
+                    <th className="p-2.5 border border-slate-800">Department</th>
+                    <th className="p-2.5 border border-slate-800">Parent Phone</th>
+                    <th className="p-2.5 border border-slate-800 text-center">Marks / Score</th>
+                    <th className="p-2.5 border border-slate-800 text-center">Validation</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 text-slate-800 font-medium">
+                  {previewRecords.map((r, i) => (
+                    <tr key={i} className={r.isValid ? 'hover:bg-slate-50' : 'bg-rose-50/50 hover:bg-rose-100/50'}>
+                      <td className="p-2 border border-slate-200 text-center font-mono font-bold text-slate-500">{r.sNo}</td>
+                      <td className="p-2 border border-slate-200 font-mono font-black text-slate-900">{r.registerNumber}</td>
+                      <td className="p-2 border border-slate-200 font-black text-slate-900">{r.name}</td>
+                      <td className="p-2 border border-slate-200 font-bold text-blue-700">{r.department}</td>
+                      <td className="p-2 border border-slate-200 font-mono font-bold">{r.phoneNumber}</td>
+                      <td className="p-2 border border-slate-200 text-center font-bold text-slate-700">{r.marks || '-'}</td>
+                      <td className="p-2 border border-slate-200 text-center">
+                        {r.isValid ? (
+                          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold text-[10px] inline-flex items-center gap-1">
+                            <Check className="w-3 h-3 text-emerald-600" /> Valid
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-bold text-[10px] inline-flex items-center gap-1" title={r.reason}>
+                            <AlertCircle className="w-3 h-3 text-rose-600" /> {r.reason || 'Invalid'}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-slate-100 border-t border-slate-200 p-4 flex items-center justify-between text-xs">
+              <span className="text-slate-500 font-bold">
+                Target Database: Firestore & Memory Storage
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPreviewModalOpen(false);
+                    setExcelFile(null);
+                    setPreviewRecords([]);
+                  }}
+                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs uppercase tracking-wider rounded-sm transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmUploadExcelToServer}
+                  disabled={excelUploadLoading}
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest rounded-sm shadow-md transition-all flex items-center gap-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>{excelUploadLoading ? 'Saving...' : 'Import All Records'}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -37,6 +37,17 @@ const PORT = 3000;
 
 app.use(express.json({ limit: '10mb' }));
 
+// Enable CORS and custom headers
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-user-id, x-api-key');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 // Middleware to extract user info from Authorization JWT header, API Key, or x-user-id header
 app.use((req, res, next) => {
   const apiKeyHeader = (req.headers['x-api-key'] as string) || (req.headers['authorization']?.startsWith('Bearer vsb_live_sk_') ? req.headers['authorization'].replace('Bearer ', '') : null);
@@ -282,6 +293,161 @@ app.post('/api/students/batch', (req, res) => {
     return res.json(result);
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/students/upload-excel', upload.single('file'), (req, res) => {
+  try {
+    console.log('[Excel Upload API] Received file upload request...');
+
+    if (!req.file) {
+      console.error('[Excel Upload Error] No file attached in request');
+      return res.status(400).json({ error: 'No Excel file selected. Please choose a valid .xlsx or .xls spreadsheet file.' });
+    }
+
+    const origName = req.file.originalname || '';
+    console.log(`[Excel Upload API] File name: "${origName}", Size: ${req.file.size} bytes, MimeType: ${req.file.mimetype}`);
+
+    if (!origName.match(/\.(xlsx|xls|csv)$/i)) {
+      console.error(`[Excel Upload Error] Invalid file format: ${origName}`);
+      return res.status(400).json({
+        error: 'Unsupported file format. Please upload a Microsoft Excel spreadsheet (.xlsx or .xls).'
+      });
+    }
+
+    let workbook;
+    try {
+      workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+    } catch (parseErr: any) {
+      console.error('[Excel Upload Error] Failed to parse workbook:', parseErr);
+      return res.status(400).json({
+        error: `Failed to read Excel file: ${parseErr.message || 'File may be corrupted or password protected.'}`
+      });
+    }
+
+    if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+      return res.status(400).json({ error: 'Excel file contains no worksheet sheets.' });
+    }
+
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const rawRows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+
+    if (!rawRows || rawRows.length === 0) {
+      return res.status(400).json({ error: 'Excel worksheet is completely empty.' });
+    }
+
+    // Locate header row
+    let headerRowIdx = -1;
+    for (let i = 0; i < Math.min(10, rawRows.length); i++) {
+      if (rawRows[i] && rawRows[i].some((cell: any) => cell !== null && cell !== undefined && String(cell).trim().length > 0)) {
+        headerRowIdx = i;
+        break;
+      }
+    }
+
+    if (headerRowIdx === -1) {
+      return res.status(400).json({ error: 'Could not locate header row in Excel worksheet.' });
+    }
+
+    const headers = rawRows[headerRowIdx].map((h: any) => (h !== null && h !== undefined ? String(h).trim() : ''));
+    console.log(`[Excel Upload API] Detected headers at row ${headerRowIdx + 1}:`, headers);
+
+    let nameIdx = -1;
+    let regNoIdx = -1;
+    let deptIdx = -1;
+    let phoneIdx = -1;
+    let marksIdx = -1;
+
+    headers.forEach((h, idx) => {
+      const clean = h.toUpperCase().replace(/[^A-Z0-9\s_]/g, '').trim();
+      if (/^(REGISTER|REG|REGISTRATION|REGISTER NO|REG NO|REGISTER NUMBER|STUDENT ID|ROLL NO|REG_NO)$/.test(clean) || clean.includes('REGISTER') || clean.includes('REG NO') || clean.includes('ROLL')) {
+        regNoIdx = idx;
+      } else if (/^(NAME|STUDENT NAME|STUDENT_NAME|FULL NAME)$/.test(clean) || clean.includes('NAME')) {
+        nameIdx = idx;
+      } else if (/^(DEPARTMENT|DEPT|BRANCH|DEPT CODE|STREAM)$/.test(clean) || clean.includes('DEPT') || clean.includes('BRANCH')) {
+        deptIdx = idx;
+      } else if (/^(MOBILE|PHONE|PHONE NUMBER|CONTACT|MOBILE NO|PARENT MOBILE|PARENT PHONE|GUARDIAN PHONE)$/.test(clean) || clean.includes('MOBILE') || clean.includes('PHONE')) {
+        phoneIdx = idx;
+      } else if (/^(MARKS|MARK|SCORE|RESULT|TOTAL MARKS|GRADE)$/.test(clean) || clean.includes('MARK') || clean.includes('RESULT') || clean.includes('SCORE')) {
+        marksIdx = idx;
+      }
+    });
+
+    // Smart index fallbacks
+    if (nameIdx === -1 && headers.length > 0) nameIdx = 0;
+    if (regNoIdx === -1 && headers.length > 1) regNoIdx = 1;
+    if (deptIdx === -1 && headers.length > 2) deptIdx = 2;
+    if (phoneIdx === -1 && headers.length > 3) phoneIdx = 3;
+
+    const parsedStudents: Array<{ name: string; registerNumber: string; department: string; phoneNumber: string; marks?: string }> = [];
+    const validationErrors: string[] = [];
+
+    for (let r = headerRowIdx + 1; r < rawRows.length; r++) {
+      const row = rawRows[r];
+      if (!row || row.length === 0) continue;
+
+      const name = nameIdx >= 0 && row[nameIdx] !== undefined ? String(row[nameIdx]).trim() : '';
+      const registerNumber = regNoIdx >= 0 && row[regNoIdx] !== undefined ? String(row[regNoIdx]).trim() : '';
+      const department = deptIdx >= 0 && row[deptIdx] !== undefined ? String(row[deptIdx]).trim().toUpperCase() : 'CSE';
+      const phoneNumber = phoneIdx >= 0 && row[phoneIdx] !== undefined ? String(row[phoneIdx]).trim().replace(/[^0-9+]/g, '') : '';
+      const marks = marksIdx >= 0 && row[marksIdx] !== undefined ? String(row[marksIdx]).trim() : '';
+
+      // Skip totally blank rows
+      if (!name && !registerNumber && !phoneNumber) {
+        continue;
+      }
+
+      // Check required fields
+      if (!registerNumber) {
+        validationErrors.push(`Row ${r + 1}: Missing Register Number`);
+        continue;
+      }
+      if (!name) {
+        validationErrors.push(`Row ${r + 1} (${registerNumber}): Missing Student Name`);
+        continue;
+      }
+      if (!phoneNumber) {
+        validationErrors.push(`Row ${r + 1} (${registerNumber} - ${name}): Missing Parent Phone Number`);
+        continue;
+      }
+
+      parsedStudents.push({
+        name,
+        registerNumber,
+        department: department || 'CSE',
+        phoneNumber,
+        ...(marks ? { marks } : {})
+      });
+    }
+
+    if (parsedStudents.length === 0) {
+      const detailMsg = validationErrors.length > 0
+        ? `Excel validation errors: ${validationErrors.slice(0, 4).join('; ')}`
+        : 'No valid student records found in Excel. Expected columns: Register Number, Student Name, Department, Parent Phone Number.';
+      console.error(`[Excel Upload Error] ${detailMsg}`);
+      return res.status(400).json({ error: detailMsg, validationErrors });
+    }
+
+    console.log(`[Excel Upload API] Parsed ${parsedStudents.length} valid student records. Storing in database...`);
+
+    const result = db.importStudentsBatch(parsedStudents, (req as any).currentUser);
+
+    console.log(`[Excel Upload API] Database save success. Added: ${result.addedCount}, Updated: ${result.updatedCount || result.skippedCount}`);
+
+    return res.json({
+      success: true,
+      message: `Excel import successful! Added ${result.addedCount} new students, updated ${result.updatedCount || result.skippedCount} existing records.`,
+      added: result.addedCount,
+      updated: result.updatedCount || result.skippedCount,
+      totalParsed: parsedStudents.length,
+      parsedStudents,
+      validationWarnings: validationErrors.length > 0 ? validationErrors : undefined
+    });
+
+  } catch (err: any) {
+    console.error('[Excel Upload Fatal Server Error]:', err);
+    return res.status(500).json({ error: `Internal server error during Excel processing: ${err.message || 'Unknown error'}` });
   }
 });
 
@@ -895,11 +1061,106 @@ app.post('/api/gemini/generate', async (req, res) => {
   }
 });
 
+// --- API KEYS MANAGEMENT ENDPOINTS ---
+app.get('/api/keys', (req, res) => {
+  const keys = db.getApiKeys();
+  res.json(keys);
+});
+
+app.post('/api/keys', (req, res) => {
+  const { name, role, department, scopes, description } = req.body;
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'Key name is required' });
+  }
+  const newKey = db.addApiKey({ name, role, department, scopes, description });
+  res.json(newKey);
+});
+
+app.patch('/api/keys/:id/toggle', (req, res) => {
+  const updated = db.toggleApiKey(req.params.id);
+  if (!updated) {
+    return res.status(404).json({ error: 'API key not found' });
+  }
+  res.json(updated);
+});
+
+app.delete('/api/keys/:id', (req, res) => {
+  const success = db.deleteApiKey(req.params.id);
+  if (!success) {
+    return res.status(404).json({ error: 'API key not found' });
+  }
+  res.json({ success: true });
+});
+
+// --- COMPLETE SOURCE CODE DOWNLOAD ENDPOINT ---
+app.get('/api/download/source-code', async (req, res) => {
+  try {
+    const zip = new JSZip();
+    const rootDir = process.cwd();
+
+    const addFilesToZip = (dirPath: string, zipFolder: JSZip) => {
+      const items = fs.readdirSync(dirPath);
+      for (const item of items) {
+        if (
+          item === 'node_modules' ||
+          item === '.git' ||
+          item === 'dist' ||
+          item === '.cache' ||
+          item === 'data' ||
+          item.endsWith('.log')
+        ) {
+          continue;
+        }
+        const fullPath = path.join(dirPath, item);
+        const stat = fs.statSync(fullPath);
+        if (stat.isDirectory()) {
+          const subFolder = zipFolder.folder(item);
+          if (subFolder) addFilesToZip(fullPath, subFolder);
+        } else if (stat.isFile()) {
+          const content = fs.readFileSync(fullPath);
+          zipFolder.file(item, content);
+        }
+      }
+    };
+
+    addFilesToZip(rootDir, zip);
+
+    const archiveBuffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
+
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="vsbec_sms_management_system.zip"');
+    res.setHeader('Content-Length', archiveBuffer.length);
+    res.send(archiveBuffer);
+  } catch (err: any) {
+    console.error('Download source code error:', err);
+    res.status(500).json({ error: 'Failed to build source code ZIP' });
+  }
+});
+
+// --- API 404 HANDLER ---
+// Catch all unmatched /api requests and return clean JSON 404 instead of falling back to index.html
+app.all('/api/*', (req, res) => {
+  res.status(404).json({
+    error: `API route not found: ${req.method} ${req.path}`,
+  });
+});
+
+// --- GLOBAL EXPRESS ERROR HANDLER ---
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Unhandled Express Error:', err);
+  if (res.headersSent) {
+    return next(err);
+  }
+  res.status(err.status || 500).json({
+    error: err.message || 'An unexpected server error occurred.',
+  });
+});
+
 // Start Server with Vite Middleware for dev / static output in prod
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: { middlewareMode: true, hmr: false },
       appType: 'spa',
     });
     app.use(vite.middlewares);

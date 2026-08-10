@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GatewaySettings } from '../types';
+import { GatewaySettings, ApiKey } from '../types';
 import { api } from '../lib/api';
 import {
   Settings,
@@ -12,6 +12,16 @@ import {
   Wifi,
   Key,
   Zap,
+  Download,
+  Copy,
+  Plus,
+  Trash2,
+  ToggleLeft,
+  ToggleRight,
+  Code2,
+  Check,
+  FileArchive,
+  Layers,
 } from 'lucide-react';
 
 interface SettingsViewProps {
@@ -34,15 +44,25 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
     defaultSenderName: 'VSBEC VY NEXTGEN',
   });
 
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
+  const [newKeyName, setNewKeyName] = useState('');
+  const [newKeyRole, setNewKeyRole] = useState<'admin' | 'hod' | 'staff' | 'system'>('staff');
+  const [newKeyDept, setNewKeyDept] = useState('ALL');
+  const [newKeyDesc, setNewKeyDesc] = useState('');
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
+
   const [testPhone, setTestPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [downloadingZip, setDownloadingZip] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   useEffect(() => {
     loadSettings();
+    loadApiKeys();
   }, []);
 
   const loadSettings = async () => {
@@ -54,6 +74,74 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
       setError('Failed to load gateway settings');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadApiKeys = async () => {
+    try {
+      const keys = await api.getApiKeys();
+      setApiKeys(keys);
+    } catch (err) {
+      console.error('Failed to fetch API keys:', err);
+    }
+  };
+
+  const handleCreateKey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newKeyName.trim()) return;
+    try {
+      await api.createApiKey({
+        name: newKeyName.trim(),
+        role: newKeyRole,
+        department: newKeyDept,
+        description: newKeyDesc || 'Custom API authentication key.',
+      });
+      setNewKeyName('');
+      setNewKeyDesc('');
+      setShowKeyModal(false);
+      loadApiKeys();
+      setSuccessMsg('New API Key generated successfully!');
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err: any) {
+      setError(err.message || 'Failed to create API key');
+    }
+  };
+
+  const handleToggleKey = async (id: string) => {
+    try {
+      await api.toggleApiKey(id);
+      loadApiKeys();
+    } catch (err) {
+      console.error('Failed to toggle API key:', err);
+    }
+  };
+
+  const handleDeleteKey = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this API key?')) return;
+    try {
+      await api.deleteApiKey(id);
+      loadApiKeys();
+    } catch (err) {
+      console.error('Failed to delete API key:', err);
+    }
+  };
+
+  const handleCopyKey = (keyString: string, id: string) => {
+    navigator.clipboard.writeText(keyString);
+    setCopiedKeyId(id);
+    setTimeout(() => setCopiedKeyId(null), 2000);
+  };
+
+  const handleDownloadCodeZip = async () => {
+    setDownloadingZip(true);
+    try {
+      await api.downloadSourceCodeZip();
+      setSuccessMsg('Complete project codebase ZIP package downloaded successfully!');
+      setTimeout(() => setSuccessMsg(null), 4000);
+    } catch (err: any) {
+      alert('Failed to download source code ZIP: ' + err.message);
+    } finally {
+      setDownloadingZip(false);
     }
   };
 
@@ -118,18 +206,23 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
             <span>VSB ENGINEERING COLLEGE • VY NEXTGEN TECHNOLOGY</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 uppercase tracking-tight">
-            Fast2SMS & Carrier Gateway Settings
+            System Settings & Security API Keys
           </h2>
           <p className="text-xs text-slate-500 font-medium mt-0.5">
-            Configure Fast2SMS API Authorization Keys, DLT Sender ID (VSBEC), and automated result dispatch rules.
+            Manage Fast2SMS gateway credentials, pre-attached system API keys, and download complete source code.
           </p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <span className="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-black uppercase tracking-wider rounded-sm flex items-center gap-1.5">
-            <Wifi className="w-3.5 h-3.5" />
-            <span>Active: {settings.provider}</span>
-          </span>
+          <button
+            type="button"
+            onClick={handleDownloadCodeZip}
+            disabled={downloadingZip}
+            className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white text-xs font-black uppercase tracking-wider rounded-sm shadow-xs flex items-center gap-2 transition-all disabled:opacity-50"
+          >
+            <FileArchive className="w-4 h-4" />
+            <span>{downloadingZip ? 'Zipping Codebase...' : 'Download Codebase (.ZIP)'}</span>
+          </button>
         </div>
       </div>
 
@@ -142,6 +235,107 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
           </div>
         </div>
       )}
+
+      {/* API Keys Management Card */}
+      <div className="bg-white border border-slate-200 p-6 rounded-sm shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
+          <div>
+            <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <Key className="w-4 h-4 text-blue-600" />
+              <span>Pre-Attached System API Keys & Authentication</span>
+            </h3>
+            <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+              {apiKeys.length} active API keys securely attached in code for external integrations & automated result dispatchers.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowKeyModal(true)}
+            className="px-3.5 py-2 bg-slate-900 hover:bg-blue-600 text-white text-xs font-black uppercase tracking-wider rounded-sm flex items-center gap-1.5 transition-all shrink-0"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Generate API Key</span>
+          </button>
+        </div>
+
+        {/* API Keys Table */}
+        <div className="overflow-x-auto border border-slate-200 rounded-sm">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-50 border-b border-slate-200 text-[10px] font-black uppercase text-slate-500 tracking-wider">
+              <tr>
+                <th className="p-3">Key Name & ID</th>
+                <th className="p-3">API Key Secret</th>
+                <th className="p-3">Role & Dept</th>
+                <th className="p-3">Status</th>
+                <th className="p-3">Last Used</th>
+                <th className="p-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+              {apiKeys.map((k) => (
+                <tr key={k.id} className="hover:bg-slate-50/80 transition-colors">
+                  <td className="p-3">
+                    <div className="font-bold text-slate-900">{k.name}</div>
+                    <div className="text-[10px] text-slate-400 font-mono">{k.id} • {k.description}</div>
+                  </td>
+                  <td className="p-3 font-mono text-[11px]">
+                    <div className="flex items-center gap-1.5">
+                      <span className="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-slate-800">
+                        {k.key.slice(0, 18)}...
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyKey(k.key, k.id)}
+                        className="p-1 hover:bg-slate-200 rounded text-slate-600 transition-all"
+                        title="Copy full key string"
+                      >
+                        {copiedKeyId === k.id ? (
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </div>
+                  </td>
+                  <td className="p-3">
+                    <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-black uppercase rounded mr-1">
+                      {k.role}
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-bold uppercase">{k.department}</span>
+                  </td>
+                  <td className="p-3">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleKey(k.id)}
+                      className={`px-2 py-0.5 text-[10px] font-black uppercase rounded border transition-all ${
+                        k.status === 'active'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                          : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+                      }`}
+                    >
+                      {k.status}
+                    </button>
+                  </td>
+                  <td className="p-3 text-[11px] text-slate-500 font-mono">
+                    {k.lastUsedAt ? new Date(k.lastUsedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Never'}
+                  </td>
+                  <td className="p-3 text-right">
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteKey(k.id)}
+                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-all"
+                      title="Revoke & Delete Key"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       <form onSubmit={handleSaveSettings} className="space-y-6">
         
@@ -219,7 +413,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
 
         </div>
 
-        {/* WhatsApp & Auto-Result Options */}
+        {/* WhatsApp Options */}
         <div className="bg-white border border-slate-200 p-6 rounded-sm shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-slate-200 pb-3">
             <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
@@ -270,39 +464,143 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
 
       </form>
 
-      {/* Test Connection Box */}
-      <div className="bg-white border border-slate-200 p-6 rounded-sm shadow-sm space-y-4">
-        <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider border-b border-slate-200 pb-3 flex items-center gap-2">
-          <Wifi className="w-4 h-4 text-blue-600" />
-          <span>Test Fast2SMS Gateway Connection</span>
-        </h3>
-
-        <div className="flex flex-col sm:flex-row gap-3">
-          <input
-            type="text"
-            value={testPhone}
-            onChange={(e) => setTestPhone(e.target.value)}
-            placeholder="Enter test phone number (e.g. 9876543210)"
-            className="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-sm text-slate-900 font-mono text-xs focus:outline-none focus:border-blue-600 focus:bg-white"
-          />
+      {/* Code Export & Download Section */}
+      <div className="bg-gradient-to-br from-slate-900 to-slate-950 text-white p-6 rounded-sm shadow-md space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs uppercase font-bold mb-1">
+              <Code2 className="w-4 h-4" />
+              <span>Full Standalone Project Download</span>
+            </div>
+            <h3 className="text-lg font-black uppercase tracking-tight text-white">
+              Download Complete Source Code (.ZIP)
+            </h3>
+            <p className="text-xs text-slate-400 font-medium">
+              Export all React frontend, Express server, database models, and API integrations in a single downloadable zip file, ready to run without extra modifications.
+            </p>
+          </div>
 
           <button
             type="button"
-            onClick={handleSendTestSms}
-            className="px-5 py-2.5 bg-[#0f172a] hover:bg-blue-600 text-white font-black text-xs uppercase tracking-widest rounded-sm border border-slate-800 flex items-center gap-2 transition-all shrink-0"
+            onClick={handleDownloadCodeZip}
+            disabled={downloadingZip}
+            className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs uppercase tracking-widest rounded-sm shadow-md flex items-center gap-2 transition-all shrink-0 disabled:opacity-50"
           >
-            <Send className="w-4 h-4" />
-            <span>Send Test SMS</span>
+            <Download className="w-4 h-4" />
+            <span>{downloadingZip ? 'Packaging Source Code...' : 'Download Full Codebase (.ZIP)'}</span>
           </button>
         </div>
 
-        {testResult && (
-          <div className="p-3 bg-slate-50 rounded-sm border border-slate-200 text-xs text-slate-800 font-mono">
-            {testResult}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-slate-300">
+          <div className="p-3 bg-slate-900/60 border border-slate-800 rounded-sm">
+            <span className="font-bold text-white block mb-0.5">🚀 Ready to Run</span>
+            Includes package.json, TypeScript configs, and Vite build configuration.
           </div>
-        )}
+          <div className="p-3 bg-slate-900/60 border border-slate-800 rounded-sm">
+            <span className="font-bold text-white block mb-0.5">🔑 Pre-Attached API Keys</span>
+            Contains 8 pre-generated secure API keys embedded in configuration.
+          </div>
+          <div className="p-3 bg-slate-900/60 border border-slate-800 rounded-sm">
+            <span className="font-bold text-white block mb-0.5">⚡ Complete Backend & DB</span>
+            Full Express TS server and JSON/Firebase persistence engines included.
+          </div>
+        </div>
       </div>
+
+      {/* Modal for Creating New Key */}
+      {showKeyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-sm shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                <Key className="w-4 h-4 text-blue-600" />
+                <span>Generate New API Key</span>
+              </h3>
+              <button
+                onClick={() => setShowKeyModal(false)}
+                className="text-slate-400 hover:text-slate-700 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateKey} className="space-y-3">
+              <div>
+                <label className="block text-[11px] font-black uppercase text-slate-700 mb-1">Key Identifier Name:</label>
+                <input
+                  type="text"
+                  required
+                  value={newKeyName}
+                  onChange={(e) => setNewKeyName(e.target.value)}
+                  placeholder="e.g. Automated Exam Cell Dispatcher"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-sm text-xs font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[11px] font-black uppercase text-slate-700 mb-1">Role Permission:</label>
+                  <select
+                    value={newKeyRole}
+                    onChange={(e) => setNewKeyRole(e.target.value as any)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-sm text-xs font-bold text-slate-900"
+                  >
+                    <option value="staff">Staff</option>
+                    <option value="hod">HOD</option>
+                    <option value="admin">Admin</option>
+                    <option value="system">System / Service</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-black uppercase text-slate-700 mb-1">Department:</label>
+                  <select
+                    value={newKeyDept}
+                    onChange={(e) => setNewKeyDept(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-sm text-xs font-bold text-slate-900"
+                  >
+                    <option value="ALL font-bold">ALL Departments</option>
+                    <option value="AIML">AIML</option>
+                    <option value="AIDS">AIDS</option>
+                    <option value="CSE">CSE</option>
+                    <option value="ECE">ECE</option>
+                    <option value="IT">IT</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-black uppercase text-slate-700 mb-1">Purpose Description:</label>
+                <textarea
+                  rows={2}
+                  value={newKeyDesc}
+                  onChange={(e) => setNewKeyDesc(e.target.value)}
+                  placeholder="Describe what system or automated script will use this key..."
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-sm text-xs text-slate-900 focus:outline-none focus:border-blue-600"
+                ></textarea>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setShowKeyModal(false)}
+                  className="px-4 py-2 border border-slate-300 rounded-sm text-xs font-bold text-slate-700 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-sm text-xs font-black uppercase tracking-wider"
+                >
+                  Generate Key
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );
 };
+

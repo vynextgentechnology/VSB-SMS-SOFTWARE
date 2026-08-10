@@ -12,6 +12,7 @@ import {
   ActivityLog,
   UserRole,
   LoginLog,
+  ApiKey,
 } from '../types.js';
 
 let currentUserId = localStorage.getItem('vy_sms_user_id') || '';
@@ -35,9 +36,12 @@ export function setAuthToken(token: string) {
   }
 }
 
+const baseUrl = ((import.meta as any).env?.VITE_API_BASE_URL || '').replace(/\/$/, '');
+
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
     'x-user-id': currentUserId,
     ...(options.headers as Record<string, string>),
   };
@@ -46,14 +50,36 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers['Authorization'] = `Bearer ${currentToken}`;
   }
 
-  const res = await fetch(endpoint, { ...options, headers });
-  const data = await res.json();
+  const url = endpoint.startsWith('http') ? endpoint : `${baseUrl}${endpoint}`;
 
-  if (!res.ok) {
-    throw new Error(data.error || 'Invalid credentials or wrong role');
+  let res: Response;
+  try {
+    res = await fetch(url, { ...options, headers });
+  } catch (netErr: any) {
+    throw new Error(`Network connection error: ${netErr.message || 'Unable to connect to server'}`);
   }
 
-  return data as T;
+  const contentType = res.headers.get('content-type') || '';
+  const text = await res.text();
+
+  let data: any;
+  if (text && text.trim()) {
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      if (!res.ok) {
+        throw new Error(`Server returned non-JSON response (${res.status} ${res.statusText}) for ${endpoint}. Please check API route configuration.`);
+      }
+      throw new Error(`Invalid JSON returned from ${endpoint}. HTML fallback was received.`);
+    }
+  }
+
+  if (!res.ok) {
+    const errorMsg = data?.error || data?.message || `HTTP Error ${res.status}: ${res.statusText || 'Request failed'}`;
+    throw new Error(errorMsg);
+  }
+
+  return (data ?? {}) as T;
 }
 
 export const api = {
@@ -134,6 +160,36 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ students }),
     }),
+  uploadStudentsExcel: async (file: File): Promise<{
+    success: boolean;
+    message: string;
+    added: number;
+    updated: number;
+    totalParsed: number;
+    parsedStudents: any[];
+  }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const headers: Record<string, string> = {
+      'x-user-id': currentUserId,
+    };
+    if (currentToken) {
+      headers['Authorization'] = `Bearer ${currentToken}`;
+    }
+
+    const res = await fetch(`${baseUrl}/api/students/upload-excel`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to upload Excel file');
+    }
+    return data;
+  },
   updateStudent: (id: string, updates: Partial<Student>): Promise<Student> =>
     request<Student>(`/api/students/${id}`, {
       method: 'PUT',
@@ -233,28 +289,6 @@ export const api = {
   getActivityLogs: (): Promise<ActivityLog[]> => request<ActivityLog[]>('/api/activity-logs'),
   getLoginHistory: (): Promise<LoginLog[]> => request<LoginLog[]>('/api/login-history'),
 
-  // Student Excel File Upload
-  uploadStudentsExcel: async (file: File): Promise<{ success: boolean; message: string; added: number; updated: number }> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    const token = localStorage.getItem('vbs_auth_token');
-    const headers: Record<string, string> = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-    const response = await fetch('/api/students/upload-excel', {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({ error: 'Upload failed' }));
-      throw new Error(err.error || 'Failed to upload Excel file');
-    }
-
-    return response.json();
-  },
-
   // Gemini AI
   getGeminiStatus: (): Promise<{ configured: boolean; keyName: string; model: string }> =>
     request('/api/gemini/status'),
@@ -263,4 +297,29 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ prompt, systemInstruction }),
     }),
+
+  // API Keys Management
+  getApiKeys: (): Promise<ApiKey[]> => request<ApiKey[]>('/api/keys'),
+  createApiKey: (data: { name: string; role?: 'admin' | 'hod' | 'staff' | 'system'; department?: string; scopes?: string[]; description?: string }): Promise<ApiKey> =>
+    request<ApiKey>('/api/keys', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  toggleApiKey: (id: string): Promise<ApiKey> => request<ApiKey>(`/api/keys/${id}/toggle`, { method: 'PATCH' }),
+  deleteApiKey: (id: string): Promise<{ success: boolean }> => request<{ success: boolean }>(`/api/keys/${id}`, { method: 'DELETE' }),
+
+  // Download Complete Codebase
+  downloadSourceCodeZip: async (): Promise<void> => {
+    const res = await fetch('/api/download/source-code');
+    if (!res.ok) throw new Error('Failed to download source code archive');
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'vsbec_sms_management_system.zip';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  },
 };

@@ -639,33 +639,47 @@ class Database {
   public importStudentsBatch(students: Omit<Student, 'id' | 'createdAt'>[], user: string) {
     let addedCount = 0;
     let skippedCount = 0;
+    let updatedCount = 0;
 
     for (const std of students) {
-      const exists = this.data.students.some(
-        (s) => s.registerNumber.toUpperCase() === std.registerNumber.toUpperCase()
+      const cleanReg = std.registerNumber.trim().toUpperCase();
+      const existingIdx = this.data.students.findIndex(
+        (s) => s.registerNumber.trim().toUpperCase() === cleanReg
       );
-      if (exists) {
-        skippedCount++;
-        continue;
-      }
 
-      const newStudent: Student = {
-        ...std,
-        id: `std-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-        createdAt: new Date().toISOString(),
-      };
-      this.data.students.push(newStudent);
-      addedCount++;
+      if (existingIdx !== -1) {
+        // Update existing student details
+        this.data.students[existingIdx] = {
+          ...this.data.students[existingIdx],
+          name: std.name.trim() || this.data.students[existingIdx].name,
+          department: (std.department || this.data.students[existingIdx].department).trim().toUpperCase(),
+          phoneNumber: std.phoneNumber.trim() || this.data.students[existingIdx].phoneNumber,
+        };
+        updatedCount++;
+        skippedCount++;
+      } else {
+        const newStudent: Student = {
+          ...std,
+          registerNumber: std.registerNumber.trim(),
+          name: std.name.trim(),
+          department: (std.department || 'CSE').trim().toUpperCase(),
+          phoneNumber: std.phoneNumber.trim(),
+          id: `std-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          createdAt: new Date().toISOString(),
+        };
+        this.data.students.push(newStudent);
+        addedCount++;
+      }
     }
 
     this.addActivity(
       'student',
       'Batch Import Students',
-      `Batch imported ${addedCount} students (${skippedCount} duplicates skipped)`,
+      `Batch imported ${addedCount} students (${updatedCount} updated)`,
       user
     );
     this.save();
-    return { addedCount, skippedCount, total: this.data.students.length };
+    return { addedCount, skippedCount, updatedCount, total: this.data.students.length };
   }
 
   // --- Department Methods ---

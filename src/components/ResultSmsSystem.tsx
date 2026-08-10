@@ -78,6 +78,7 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [showPrintModal, setShowPrintModal] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -394,6 +395,106 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
     }
   };
 
+  // --- Handle Print Report ---
+  const handlePrintReport = () => {
+    if (!selectedBatch) return;
+
+    try {
+      const printWin = window.open('', '_blank');
+      if (printWin) {
+        const studentRows = selectedBatch.results
+          .map((r, i) => {
+            const totalDisplay =
+              r.totalMarks !== undefined && r.totalMarks !== null && r.totalMarks !== ''
+                ? r.totalMarks
+                : r.subjects
+                ? r.subjects.reduce((sum, s) => sum + s.marks, 0)
+                : 'N/A';
+
+            return `
+              <tr>
+                <td style="border: 1px solid #cbd5e1; padding: 6px; text-align: center;">${r.sNo || i + 1}</td>
+                <td style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold;">${r.registerNumber}</td>
+                <td style="border: 1px solid #cbd5e1; padding: 6px;">${r.studentName}</td>
+                <td style="border: 1px solid #cbd5e1; padding: 6px;">${r.phoneNumber || 'N/A'}</td>
+                <td style="border: 1px solid #cbd5e1; padding: 6px; text-align: center; font-weight: bold;">${totalDisplay}</td>
+                <td style="border: 1px solid #cbd5e1; padding: 6px; text-align: center; font-weight: bold; color: ${r.overallStatus === 'PASS' ? '#047857' : '#b91c1c'};">${r.overallStatus}</td>
+                <td style="border: 1px solid #cbd5e1; padding: 6px; text-align: center;">${r.smsStatus || (r.smsSent ? 'Sent' : 'Pending')}</td>
+              </tr>
+            `;
+          })
+          .join('');
+
+        printWin.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>${selectedBatch.title} - Official Exam Result Report</title>
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 24px; color: #0f172a; }
+                .header { text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 20px; }
+                .header h2 { margin: 0; font-size: 14px; color: #d97706; text-transform: uppercase; letter-spacing: 1px; }
+                .header h1 { margin: 4px 0; font-size: 20px; color: #0f172a; text-transform: uppercase; }
+                .meta { display: flex; justify-content: space-between; font-size: 12px; background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+                table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                th { background: #0f172a; color: #fbbf24; padding: 8px; text-align: left; text-transform: uppercase; font-size: 11px; }
+                .footer { margin-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; font-size: 12px; }
+              </style>
+            </head>
+            <body>
+              <div class="header">
+                <h2>VSB ENGINEERING COLLEGE • VY NEXTGEN TECHNOLOGY</h2>
+                <h1>DEPARTMENT OF ${selectedBatch.department} - EXAM RESULT REPORT</h1>
+                <p style="margin: 4px 0 0 0; font-size: 12px; font-weight: bold;">${selectedBatch.title} | Exam Date: ${selectedBatch.examDate}</p>
+              </div>
+              <div class="meta">
+                <div>Total Students: <strong>${selectedBatch.totalStudents}</strong></div>
+                <div>Pass Rate: <strong>${batchStats ? batchStats.passRate : 'N/A'}%</strong></div>
+                <div>Uploaded By: <strong>${selectedBatch.uploadedBy}</strong></div>
+                <div>Report Date: <strong>${new Date().toLocaleDateString()}</strong></div>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Register Number</th>
+                    <th>Student Name</th>
+                    <th>Parent Phone</th>
+                    <th>Total Marks</th>
+                    <th>Result Status</th>
+                    <th>SMS Delivery</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${studentRows}
+                </tbody>
+              </table>
+              <div class="footer">
+                <div>Generated via VSBEC Result SMS Management System</div>
+                <div style="text-align: right;">
+                  <p>HOD / Principal Signature</p>
+                  <p>___________________________</p>
+                </div>
+              </div>
+              <script>
+                window.onload = function() {
+                  window.print();
+                };
+              </script>
+            </body>
+          </html>
+        `);
+        printWin.document.close();
+        return;
+      }
+    } catch (e) {
+      console.warn('Popup window error or blocked:', e);
+    }
+
+    // Fallback: Show Print Modal
+    setShowPrintModal(true);
+  };
+
   // --- Download CSV Report ---
   const downloadCsvReport = (batch: ExamBatch) => {
     const headers = [
@@ -689,7 +790,7 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
                 <div className="flex flex-wrap items-center gap-2 shrink-0">
                   <button
                     id="print-report-btn"
-                    onClick={() => window.print()}
+                    onClick={handlePrintReport}
                     className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs uppercase tracking-wider rounded-sm border border-slate-300 flex items-center gap-1.5 transition-all"
                     title="Print generated report"
                   >
@@ -1281,6 +1382,129 @@ Result: [Pass/Fail]
               </div>
             </form>
 
+          </div>
+        </div>
+      )}
+
+      {/* Print Report Preview Modal */}
+      {showPrintModal && selectedBatch && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="bg-white border border-slate-300 w-full max-w-4xl max-h-[90vh] rounded-sm shadow-2xl flex flex-col overflow-hidden">
+            {/* Modal Header */}
+            <div className="bg-[#0f172a] text-white p-4 flex items-center justify-between no-print border-b border-slate-800">
+              <div className="flex items-center space-x-2">
+                <Printer className="w-4 h-4 text-amber-400" />
+                <h3 className="text-xs font-black uppercase tracking-widest text-amber-400">
+                  Official Exam Result Print Preview
+                </h3>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-sm flex items-center gap-1.5 transition-all shadow-sm"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print Document</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPrintModal(false)}
+                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs uppercase tracking-wider rounded-sm transition-all"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+
+            {/* Printable Area */}
+            <div className="p-8 overflow-y-auto printable-report bg-white text-slate-900 space-y-6">
+              <div className="text-center border-b-2 border-slate-900 pb-4">
+                <h2 className="text-sm font-black text-amber-600 uppercase tracking-widest">
+                  VSB ENGINEERING COLLEGE • VY NEXTGEN TECHNOLOGY
+                </h2>
+                <h1 className="text-xl font-black text-slate-900 uppercase tracking-tight mt-1">
+                  DEPARTMENT OF {selectedBatch.department} - EXAM RESULT REPORT
+                </h1>
+                <p className="text-xs font-bold text-slate-600 mt-1">
+                  {selectedBatch.title} • Exam Date: {selectedBatch.examDate}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-3 bg-slate-50 border border-slate-200 text-xs font-medium rounded-sm">
+                <div>
+                  <span className="text-slate-500 uppercase font-bold text-[10px] block">Total Students</span>
+                  <strong className="text-slate-900 font-black text-sm">{selectedBatch.totalStudents}</strong>
+                </div>
+                <div>
+                  <span className="text-slate-500 uppercase font-bold text-[10px] block">Pass Rate</span>
+                  <strong className="text-emerald-700 font-black text-sm">{batchStats ? batchStats.passRate : 'N/A'}%</strong>
+                </div>
+                <div>
+                  <span className="text-slate-500 uppercase font-bold text-[10px] block">Uploaded By</span>
+                  <strong className="text-slate-900 font-black">{selectedBatch.uploadedBy}</strong>
+                </div>
+                <div>
+                  <span className="text-slate-500 uppercase font-bold text-[10px] block">Report Date</span>
+                  <strong className="text-slate-900 font-black">{new Date().toLocaleDateString()}</strong>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs text-slate-800 border-collapse">
+                  <thead>
+                    <tr className="bg-[#0f172a] text-amber-400 font-black uppercase text-[10px] tracking-wider">
+                      <th className="p-2 border border-slate-800 text-center">#</th>
+                      <th className="p-2 border border-slate-800">Register Number</th>
+                      <th className="p-2 border border-slate-800">Student Name</th>
+                      <th className="p-2 border border-slate-800">Parent Phone</th>
+                      <th className="p-2 border border-slate-800 text-center">Total Marks</th>
+                      <th className="p-2 border border-slate-800 text-center">Result</th>
+                      <th className="p-2 border border-slate-800 text-center">SMS Delivery</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {selectedBatch.results.map((r, i) => {
+                      const totalDisplay =
+                        r.totalMarks !== undefined && r.totalMarks !== null && r.totalMarks !== ''
+                          ? r.totalMarks
+                          : r.subjects
+                          ? r.subjects.reduce((sum, s) => sum + s.marks, 0)
+                          : 'N/A';
+
+                      return (
+                        <tr key={i} className="hover:bg-slate-50">
+                          <td className="p-2 border border-slate-200 text-center font-mono font-bold text-slate-500">{r.sNo || i + 1}</td>
+                          <td className="p-2 border border-slate-200 font-mono font-black text-slate-900">{r.registerNumber}</td>
+                          <td className="p-2 border border-slate-200 font-black text-slate-900">{r.studentName}</td>
+                          <td className="p-2 border border-slate-200 font-mono font-bold">{r.phoneNumber || 'N/A'}</td>
+                          <td className="p-2 border border-slate-200 text-center font-black">{totalDisplay}</td>
+                          <td className="p-2 border border-slate-200 text-center font-black">
+                            <span className={r.overallStatus === 'PASS' ? 'text-emerald-700' : 'text-rose-700'}>
+                              {r.overallStatus}
+                            </span>
+                          </td>
+                          <td className="p-2 border border-slate-200 text-center font-bold text-slate-600">
+                            {r.smsStatus || (r.smsSent ? 'Sent' : 'Pending')}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="pt-8 flex justify-between items-end text-xs font-bold text-slate-600">
+                <div>
+                  <p>VSBEC VY NEXTGEN SMS MANAGEMENT SYSTEM</p>
+                  <p className="text-[10px] text-slate-400 font-normal">Official System Document • Confidential</p>
+                </div>
+                <div className="text-right space-y-8">
+                  <p>Authorized Signatory (HOD / Principal)</p>
+                  <p className="border-b border-slate-400 w-48 inline-block"></p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
