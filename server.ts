@@ -1410,7 +1410,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-// Start Server with Vite Middleware for dev / static output in prod
+// Start Server with Vite Middleware for dev / static output in prod (only when NOT on Vercel)
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
@@ -1431,6 +1431,8 @@ async function startServer() {
   });
 }
 
-startServer();
+if (!process.env.VERCEL && !process.env.NOW_REGION) {
+  startServer();
+}
 
 export default app;

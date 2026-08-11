@@ -20,7 +20,8 @@ import {
 } from '../types.js';
 import { INITIAL_API_KEYS } from '../config/apiKeys.js';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
+const isVercel = Boolean(process.env.VERCEL || process.env.NOW_REGION);
+const DATA_DIR = isVercel ? '/tmp/data' : path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DATA_DIR, 'sms_system.json');
 
 interface DatabaseSchema {
@@ -123,8 +124,12 @@ class Database {
   }
 
   private ensureDirectory() {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
+    try {
+      if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+      }
+    } catch (err) {
+      console.warn('Directory creation warning:', err);
     }
   }
 
