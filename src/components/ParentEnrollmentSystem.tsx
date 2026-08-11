@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ParentEnrollment } from '../types';
-import { api } from '../lib/api';
+import { api, formatErrorMessage } from '../lib/api';
 import {
   UserPlus,
   Upload,
@@ -93,7 +93,10 @@ export const ParentEnrollmentSystem: React.FC<ParentEnrollmentSystemProps> = ({
       setDeletingParent(null);
       onRefresh();
     } catch (err: any) {
-      setError(err.message || 'Failed to delete record.');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     }
   };
 
@@ -148,7 +151,10 @@ export const ParentEnrollmentSystem: React.FC<ParentEnrollmentSystemProps> = ({
         setSuccessMsg(`Batch import complete: ${res.addedCount} added, ${res.skippedCount} duplicates skipped out of ${res.total} records.`);
         onRefresh();
       } catch (err: any) {
-        setError('Error processing file: ' + err.message);
+        console.log(err);
+        if (err?.message) console.log(err.message);
+        if (err?.response?.data) console.log(err.response?.data);
+        setError('Error processing file: ' + formatErrorMessage(err));
       } finally {
         setIsBatchImporting(false);
         e.target.value = '';
@@ -235,7 +241,7 @@ export const ParentEnrollmentSystem: React.FC<ParentEnrollmentSystemProps> = ({
         <div className="bg-rose-50 border-l-4 border-rose-500 p-4 text-rose-800 text-xs font-bold flex items-center justify-between">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
-            <span>{error}</span>
+            <span>{typeof error === 'string' ? error : formatErrorMessage(error)}</span>
           </div>
           <button onClick={() => setError(null)} className="text-rose-500 hover:text-rose-700">✕</button>
         </div>

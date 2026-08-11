@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import { ExamBatch, Department, StudentExamResult, SubjectMark } from '../types';
-import { api } from '../lib/api';
+import { api, formatErrorMessage } from '../lib/api';
 import {
   FileCheck2,
   Upload,
@@ -257,7 +257,10 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
         setValidMobileCount(validMob);
         setSkippedMobileCount(skippedMob);
       } catch (err: any) {
-        setError(`Failed to parse Excel file: ${err.message}`);
+        console.log(err);
+        if (err?.message) console.log(err.message);
+        if (err?.response?.data) console.log(err.response?.data);
+        setError(`Failed to parse Excel file: ${formatErrorMessage(err)}`);
       }
     };
 
@@ -359,7 +362,10 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
       setSelectedBatch(created);
       setTimeout(() => setSuccessMsg(null), 5000);
     } catch (err: any) {
-      setError(err.message || 'Failed to upload result batch');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -389,7 +395,10 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
       }
       setTimeout(() => setSuccessMsg(null), 5000);
     } catch (err: any) {
-      setError(err.message || 'Failed to dispatch result SMS');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     } finally {
       setSendingSmsBatchId(null);
     }
@@ -680,7 +689,7 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
         <div className="p-4 rounded-sm bg-rose-50 border border-rose-300 text-rose-900 text-xs font-bold flex items-center justify-between shadow-xs">
           <div className="flex items-center space-x-2">
             <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
-            <span>{error}</span>
+            <span>{typeof error === 'string' ? error : formatErrorMessage(error)}</span>
           </div>
         </div>
       )}
@@ -1193,7 +1202,7 @@ Result: [Pass/Fail]
               {error && (
                 <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold rounded-sm flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
-                  <span>{error}</span>
+                  <span>{typeof error === 'string' ? error : formatErrorMessage(error)}</span>
                 </div>
               )}
 

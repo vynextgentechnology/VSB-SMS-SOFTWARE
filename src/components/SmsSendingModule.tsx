@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { Student, Department, SmsTemplate, MessageType, DeliveryChannel, User } from '../types';
-import { api } from '../lib/api';
+import { api, formatErrorMessage } from '../lib/api';
 import {
   Send,
   Users,
@@ -146,7 +146,10 @@ export const SmsSendingModule: React.FC<SmsSendingModuleProps> = ({
       await loadKeyPoolStatus();
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
-      setError(err.message || 'Failed to rotate SMS API Key');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     } finally {
       setKeyRotating(false);
     }
@@ -242,7 +245,10 @@ export const SmsSendingModule: React.FC<SmsSendingModuleProps> = ({
       await loadKeyPoolStatus();
       onRefresh();
     } catch (err: any) {
-      setError(err.message || 'Failed to dispatch SMS batch');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     } finally {
       setSending(false);
     }
@@ -261,7 +267,10 @@ export const SmsSendingModule: React.FC<SmsSendingModuleProps> = ({
       const parsed = await api.parseSmsExcel(file);
       setParsedExcelRecords(parsed.records);
     } catch (err: any) {
-      setError(err.message || 'Failed to parse Excel file');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
       setParsedExcelRecords([]);
     } finally {
       setExcelParseLoading(false);
@@ -295,7 +304,10 @@ export const SmsSendingModule: React.FC<SmsSendingModuleProps> = ({
       onRefresh();
       setTimeout(() => setSuccessMsg(null), 5000);
     } catch (err: any) {
-      setError(err.message || 'Failed to send SMS from Excel file');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     } finally {
       setExcelSendLoading(false);
     }
@@ -447,7 +459,7 @@ export const SmsSendingModule: React.FC<SmsSendingModuleProps> = ({
       {error && (
         <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold rounded-sm flex items-start gap-2 animate-in fade-in">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
-          <span>{error}</span>
+          <span>{typeof error === 'string' ? error : formatErrorMessage(error)}</span>
         </div>
       )}
 

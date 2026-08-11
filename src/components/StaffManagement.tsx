@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Staff, Department, Permission, User } from '../types';
-import { api } from '../lib/api';
+import { api, formatErrorMessage } from '../lib/api';
 import {
   UserCheck,
   UserPlus,
@@ -128,7 +128,10 @@ export const StaffManagement: React.FC<StaffManagementProps> = ({
       onRefresh();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err.message || 'Failed to save staff record');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -148,7 +151,10 @@ export const StaffManagement: React.FC<StaffManagementProps> = ({
       onRefresh();
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
-      setError(err.message || 'Failed to delete staff');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     }
   };
 
@@ -334,7 +340,7 @@ export const StaffManagement: React.FC<StaffManagementProps> = ({
               {error && (
                 <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold rounded-sm flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
-                  <span>{error}</span>
+                  <span>{typeof error === 'string' ? error : formatErrorMessage(error)}</span>
                 </div>
               )}
 

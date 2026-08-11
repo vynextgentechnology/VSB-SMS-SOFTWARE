@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SmsTemplate, MessageType } from '../types';
-import { api } from '../lib/api';
+import { api, formatErrorMessage } from '../lib/api';
 import {
   FileCode2,
   Plus,
@@ -88,7 +88,10 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({
       onRefresh();
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
-      setError(err.message || 'Failed to save template');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -108,7 +111,10 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({
       onRefresh();
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
-      setError(err.message || 'Failed to delete template');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     }
   };
 
@@ -214,7 +220,7 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({
               {error && (
                 <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-xl flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>{error}</span>
+                  <span>{typeof error === 'string' ? error : formatErrorMessage(error)}</span>
                 </div>
               )}
 

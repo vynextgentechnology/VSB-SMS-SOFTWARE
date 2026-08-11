@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GatewaySettings, ApiKey } from '../types';
-import { api } from '../lib/api';
+import { api, formatErrorMessage } from '../lib/api';
 import {
   Settings,
   Shield,
@@ -71,7 +71,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
       const data = await api.getSettings();
       if (data) setSettings(data);
     } catch (err: any) {
-      setError('Failed to load gateway settings');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError('Failed to load gateway settings: ' + formatErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -81,8 +84,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
     try {
       const keys = await api.getApiKeys();
       setApiKeys(keys);
-    } catch (err) {
-      console.error('Failed to fetch API keys:', err);
+    } catch (err: any) {
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
     }
   };
 
@@ -103,7 +108,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
       setSuccessMsg('New API Key generated successfully!');
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
-      setError(err.message || 'Failed to create API key');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     }
   };
 
@@ -111,8 +119,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
     try {
       await api.toggleApiKey(id);
       loadApiKeys();
-    } catch (err) {
-      console.error('Failed to toggle API key:', err);
+    } catch (err: any) {
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
     }
   };
 
@@ -121,8 +131,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
     try {
       await api.deleteApiKey(id);
       loadApiKeys();
-    } catch (err) {
-      console.error('Failed to delete API key:', err);
+    } catch (err: any) {
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
     }
   };
 
@@ -139,7 +151,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
       setSuccessMsg('Complete project codebase ZIP package downloaded successfully!');
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      alert('Failed to download source code ZIP: ' + err.message);
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      alert('Failed to download source code ZIP: ' + formatErrorMessage(err));
     } finally {
       setDownloadingZip(false);
     }
@@ -157,7 +172,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
       onRefresh();
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
-      setError(err.message || 'Failed to save settings');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     } finally {
       setSaving(false);
     }
@@ -191,7 +209,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
         setTestResult('❌ Test SMS Failed to deliver. Please verify API Key or Phone format.');
       }
     } catch (err: any) {
-      setTestResult('❌ Gateway Error: ' + err.message);
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setTestResult('❌ Gateway Error: ' + formatErrorMessage(err));
     }
   };
 

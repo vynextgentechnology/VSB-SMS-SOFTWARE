@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Department, Student, Staff } from '../types';
+import { formatErrorMessage } from '../lib/api';
 import { Building2, Plus, Search, Edit2, Trash2, CheckCircle2, AlertCircle, Users, UserCheck, RefreshCw } from 'lucide-react';
 
 interface DepartmentManagementProps {
@@ -80,7 +81,10 @@ export const DepartmentManagement: React.FC<DepartmentManagementProps> = ({
       }
       setIsModalOpen(false);
     } catch (err: any) {
-      setError(err.message || 'Failed to save department.');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -97,7 +101,10 @@ export const DepartmentManagement: React.FC<DepartmentManagementProps> = ({
       await onDeleteDepartment(id);
       setDeletingDept(null);
     } catch (err: any) {
-      setError(err.message || 'Failed to delete department');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     }
   };
 
@@ -107,7 +114,10 @@ export const DepartmentManagement: React.FC<DepartmentManagementProps> = ({
       try {
         await onSeedDepartments();
       } catch (err: any) {
-        alert(err.message || 'Failed to seed default departments');
+        console.log(err);
+        if (err?.message) console.log(err.message);
+        if (err?.response?.data) console.log(err.response?.data);
+        alert(formatErrorMessage(err));
       } finally {
         setSeeding(false);
       }
@@ -291,7 +301,7 @@ export const DepartmentManagement: React.FC<DepartmentManagementProps> = ({
               {error && (
                 <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-sm flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>{error}</span>
+                  <span>{typeof error === 'string' ? error : formatErrorMessage(error)}</span>
                 </div>
               )}
 

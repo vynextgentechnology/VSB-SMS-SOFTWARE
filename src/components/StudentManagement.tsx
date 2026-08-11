@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { Student, Department, User } from '../types';
-import { api } from '../lib/api';
+import { api, formatErrorMessage } from '../lib/api';
 import {
   Users,
   UserPlus,
@@ -102,7 +102,10 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
       onRefresh();
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
-      setError(err.message || 'Failed to save student record');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -122,7 +125,10 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
       onRefresh();
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
-      setError(err.message || 'Failed to delete student');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     }
   };
 
@@ -282,7 +288,10 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
       setPreviewRecords(records);
       setIsPreviewModalOpen(true);
     } catch (err: any) {
-      setError(err.message || 'Failed to read Excel file');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     } finally {
       setLoading(false);
       e.target.value = '';
@@ -303,7 +312,10 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
       onRefresh();
       setTimeout(() => setSuccessMsg(null), 5000);
     } catch (err: any) {
-      setError(err.message || 'Error uploading Excel file to server');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     } finally {
       setExcelUploadLoading(false);
     }
@@ -347,7 +359,10 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
       onRefresh();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      setError(err.message || 'Error processing batch import');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -594,7 +609,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
               {error && (
                 <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold rounded-sm flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
-                  <span>{error}</span>
+                  <span>{typeof error === 'string' ? error : formatErrorMessage(error)}</span>
                 </div>
               )}
 
@@ -702,7 +717,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
               {error && (
                 <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold rounded-sm flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
-                  <span>{error}</span>
+                  <span>{typeof error === 'string' ? error : formatErrorMessage(error)}</span>
                 </div>
               )}
 
@@ -789,7 +804,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
             {error && (
               <div className="p-3 bg-rose-50 border-b border-rose-200 text-rose-800 text-xs font-bold flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                <span>{error}</span>
+                <span>{typeof error === 'string' ? error : formatErrorMessage(error)}</span>
               </div>
             )}
 

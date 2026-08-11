@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { api } from '../lib/api';
+import { api, formatErrorMessage } from '../lib/api';
 import { User, UserRole } from '../types';
 import { Building2, ShieldCheck, Lock, User as UserIcon, AlertCircle, ArrowRight, UserCheck, GraduationCap } from 'lucide-react';
 
@@ -42,7 +42,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
         setError('Invalid credentials or wrong role');
       }
     } catch (err: any) {
-      setError(err.message || 'Invalid credentials or wrong role');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -116,7 +119,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
           {error && (
             <div className="p-3.5 rounded-sm bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold flex items-start space-x-2.5">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
-              <span>{error}</span>
+              <span>{typeof error === 'string' ? error : formatErrorMessage(error)}</span>
             </div>
           )}
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, UserRole, Department } from '../types';
-import { api } from '../lib/api';
+import { api, formatErrorMessage } from '../lib/api';
 import {
   ShieldCheck,
   UserPlus,
@@ -112,7 +112,10 @@ export const AdminManagement: React.FC<AdminManagementProps> = ({
       await loadUsers();
       onRefresh();
     } catch (err: any) {
-      setError(err.message || 'Failed to create user account.');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }
@@ -151,7 +154,10 @@ export const AdminManagement: React.FC<AdminManagementProps> = ({
       await loadUsers();
       onRefresh();
     } catch (err: any) {
-      setError(err.message || 'Failed to update user account.');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }
@@ -178,7 +184,10 @@ export const AdminManagement: React.FC<AdminManagementProps> = ({
       await loadUsers();
       onRefresh();
     } catch (err: any) {
-      setError(err.message || 'Failed to delete user.');
+      console.log(err);
+      if (err?.message) console.log(err.message);
+      if (err?.response?.data) console.log(err.response?.data);
+      setError(formatErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }
@@ -242,7 +251,7 @@ export const AdminManagement: React.FC<AdminManagementProps> = ({
         <div className="bg-rose-50 border-l-4 border-rose-500 p-4 text-rose-800 text-xs font-bold flex items-center justify-between">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
-            <span>{error}</span>
+            <span>{typeof error === 'string' ? error : formatErrorMessage(error)}</span>
           </div>
           <button onClick={() => setError(null)} className="text-rose-500 hover:text-rose-700">✕</button>
         </div>

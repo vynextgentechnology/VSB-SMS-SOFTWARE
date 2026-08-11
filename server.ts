@@ -1390,8 +1390,10 @@ app.get('/api/download/source-code', async (req, res) => {
 // --- API 404 HANDLER ---
 // Catch all unmatched /api requests and return clean JSON 404 instead of falling back to index.html
 app.all('/api/*', (req, res) => {
+  const msg = `API route not found: ${req.method} ${req.path}`;
   res.status(404).json({
-    error: `API route not found: ${req.method} ${req.path}`,
+    error: msg,
+    message: msg,
   });
 });
 
@@ -1401,8 +1403,10 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   if (res.headersSent) {
     return next(err);
   }
+  const cleanMsg = typeof err === 'string' ? err : (err?.message || 'An unexpected server error occurred.');
   res.status(err.status || 500).json({
-    error: err.message || 'An unexpected server error occurred.',
+    error: cleanMsg,
+    message: cleanMsg,
   });
 });
 
@@ -1428,3 +1432,5 @@ async function startServer() {
 }
 
 startServer();
+
+export default app;

@@ -36,6 +36,22 @@ export function setAuthToken(token: string) {
   }
 }
 
+export function formatErrorMessage(err: any): string {
+  if (!err) return 'An unexpected error occurred';
+  if (typeof err === 'string') return err;
+  if (err instanceof Error) return err.message;
+  if (err?.message && typeof err.message === 'string') return err.message;
+  if (err?.error && typeof err.error === 'string') return err.error;
+  if (err?.response?.data?.message && typeof err.response.data.message === 'string') return err.response.data.message;
+  if (err?.response?.data?.error && typeof err.response.data.error === 'string') return err.response.data.error;
+  if (err?.response?.data && typeof err.response.data === 'string') return err.response.data;
+  try {
+    return JSON.stringify(err);
+  } catch {
+    return String(err);
+  }
+}
+
 const baseUrl = ((import.meta as any).env?.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -56,10 +72,11 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   try {
     res = await fetch(url, { ...options, headers });
   } catch (netErr: any) {
+    console.log(netErr);
+    if (netErr?.message) console.log(netErr.message);
     throw new Error(`Network connection error: ${netErr.message || 'Unable to connect to server'}`);
   }
 
-  const contentType = res.headers.get('content-type') || '';
   const text = await res.text();
 
   let data: any;
@@ -67,6 +84,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     try {
       data = JSON.parse(text);
     } catch (e) {
+      console.log('Non-JSON response from server:', text);
       if (!res.ok) {
         throw new Error(`Server returned non-JSON response (${res.status} ${res.statusText}) for ${endpoint}. Please check API route configuration.`);
       }
@@ -75,7 +93,9 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   }
 
   if (!res.ok) {
-    const errorMsg = data?.error || data?.message || `HTTP Error ${res.status}: ${res.statusText || 'Request failed'}`;
+    console.log('Error response data:', data);
+    const errorMsg = formatErrorMessage(data) || `HTTP Error ${res.status}: ${res.statusText || 'Request failed'}`;
+    console.log(errorMsg);
     throw new Error(errorMsg);
   }
 
@@ -283,15 +303,32 @@ export const api = {
       headers['Authorization'] = `Bearer ${currentToken}`;
     }
 
-    const res = await fetch(`${baseUrl}/api/sms/parse-excel`, {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
+    let res: Response;
+    try {
+      res = await fetch(`${baseUrl}/api/sms/parse-excel`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+    } catch (netErr: any) {
+      console.log(netErr);
+      if (netErr?.message) console.log(netErr.message);
+      throw new Error(`Network error: ${netErr?.message || 'Failed to upload Excel file'}`);
+    }
 
-    const data = await res.json();
+    const text = await res.text();
+    let data: any = {};
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch {
+      data = { message: text || 'Invalid response from server' };
+    }
+
     if (!res.ok) {
-      throw new Error(data.error || 'Failed to parse Excel file');
+      console.log('Parse Excel Error Data:', data);
+      const errMsg = formatErrorMessage(data) || 'Failed to parse Excel file';
+      console.log(errMsg);
+      throw new Error(errMsg);
     }
     return data;
   },
@@ -322,15 +359,32 @@ export const api = {
       headers['Authorization'] = `Bearer ${currentToken}`;
     }
 
-    const res = await fetch(`${baseUrl}/api/sms/upload-excel-send`, {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
+    let res: Response;
+    try {
+      res = await fetch(`${baseUrl}/api/sms/upload-excel-send`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+    } catch (netErr: any) {
+      console.log(netErr);
+      if (netErr?.message) console.log(netErr.message);
+      throw new Error(`Network error: ${netErr?.message || 'Failed to send SMS from Excel file'}`);
+    }
 
-    const data = await res.json();
+    const text = await res.text();
+    let data: any = {};
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch {
+      data = { message: text || 'Invalid response from server' };
+    }
+
     if (!res.ok) {
-      throw new Error(data.error || 'Failed to send SMS from Excel file');
+      console.log('Send SMS Excel Error Data:', data);
+      const errMsg = formatErrorMessage(data) || 'Failed to send SMS from Excel file';
+      console.log(errMsg);
+      throw new Error(errMsg);
     }
     return data;
   },
@@ -403,8 +457,28 @@ export const api = {
 
   // Download Complete Codebase
   downloadSourceCodeZip: async (): Promise<void> => {
-    const res = await fetch('/api/download/source-code');
-    if (!res.ok) throw new Error('Failed to download source code archive');
+    let res: Response;
+    try {
+      res = await fetch(`${baseUrl}/api/download/source-code`);
+    } catch (netErr: any) {
+      console.log(netErr);
+      if (netErr?.message) console.log(netErr.message);
+      throw new Error(`Network error: ${netErr?.message || 'Failed to download source code archive'}`);
+    }
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = { message: text || 'Failed to download source code archive' };
+      }
+      const errMsg = formatErrorMessage(data) || 'Failed to download source code archive';
+      console.log(errMsg);
+      throw new Error(errMsg);
+    }
+
     const blob = await res.blob();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
