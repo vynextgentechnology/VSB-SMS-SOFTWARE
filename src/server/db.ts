@@ -19,6 +19,11 @@ import {
   ApiKey,
 } from '../types.js';
 import { INITIAL_API_KEYS } from '../config/apiKeys.js';
+import { isMongoDBConnected, connectToMongoDB } from './mongo.js';
+import { ExamBatchModel } from '../models/ExamBatch.js';
+import { SmsLogModel } from '../models/SmsLog.js';
+import { StudentModel } from '../models/Student.js';
+import { UserModel } from '../models/User.js';
 
 const isVercel = Boolean(process.env.VERCEL || process.env.NOW_REGION);
 const DATA_DIR = isVercel ? '/tmp/data' : path.join(process.cwd(), 'data');
@@ -291,6 +296,86 @@ class Database {
     );
 
     return { user: safeUser, token };
+  }
+
+  public async authenticateAsync(
+    userId: string,
+    pass: string,
+    requestedRole?: string,
+    jwtSecret: string = 'VSB_ENGINEERING_COLLEGE_SECRET_KEY_2026'
+  ): Promise<{ user: User; token: string } | null> {
+    const cleanUserId = userId.trim().toUpperCase();
+    const cleanRole = requestedRole ? requestedRole.trim().toLowerCase() : null;
+
+    // 1. Try local memory state first
+    const memoryResult = this.authenticate(userId, pass, requestedRole, jwtSecret);
+    if (memoryResult) {
+      return memoryResult;
+    }
+
+    // 2. Try MongoDB if URI configured
+    try {
+      await connectToMongoDB();
+      if (isMongoDBConnected() && UserModel) {
+        const mongoUser = await (UserModel as any).findOne({ userId: cleanUserId });
+        if (mongoUser) {
+          if (cleanRole && mongoUser.role.toLowerCase() !== cleanRole) {
+            return null;
+          }
+
+          let isPasswordValid = false;
+          if (mongoUser.passwordHash) {
+            try {
+              isPasswordValid = bcrypt.compareSync(pass, mongoUser.passwordHash);
+            } catch (e) {
+              isPasswordValid = false;
+            }
+          }
+
+          if (isPasswordValid) {
+            const userObj: User = {
+              id: mongoUser._id?.toString() || mongoUser.id || `usr-${Date.now()}`,
+              userId: mongoUser.userId,
+              name: mongoUser.name,
+              role: mongoUser.role as UserRole,
+              department: mongoUser.department || 'General',
+              phoneNumber: mongoUser.phoneNumber || '',
+              permissions: mongoUser.permissions || [],
+              createdAt: mongoUser.createdAt ? new Date(mongoUser.createdAt).toISOString() : new Date().toISOString(),
+            };
+
+            if (!this.data.users.some(u => u.userId.toUpperCase() === cleanUserId)) {
+              this.data.users.push({
+                ...userObj,
+                passwordHash: mongoUser.passwordHash,
+              });
+              this.save();
+            }
+
+            this.addActivity('auth', 'User Login', `Logged in as ${userObj.name} (${userObj.role.toUpperCase()})`, userObj.userId);
+            this.addLoginLog(userObj.userId, userObj.name, userObj.role, userObj.department || 'General', 'login');
+
+            const token = jwt.sign(
+              {
+                id: userObj.id,
+                userId: userObj.userId,
+                name: userObj.name,
+                role: userObj.role,
+                department: userObj.department,
+              },
+              jwtSecret,
+              { expiresIn: '24h' }
+            );
+
+            return { user: userObj, token };
+          }
+        }
+      }
+    } catch (mongoErr) {
+      console.error('[MongoDB Authenticate Error]:', mongoErr);
+    }
+
+    return null;
   }
 
   // --- Activity Logs ---
@@ -648,6 +733,8 @@ class Database {
 
     for (const std of students) {
       const cleanReg = std.registerNumber.trim().toUpperCase();
+      if (!cleanReg) continue;
+
       const existingIdx = this.data.students.findIndex(
         (s) => s.registerNumber.trim().toUpperCase() === cleanReg
       );
@@ -665,7 +752,7 @@ class Database {
       } else {
         const newStudent: Student = {
           ...std,
-          registerNumber: std.registerNumber.trim(),
+          registerNumber: cleanReg,
           name: std.name.trim(),
           department: (std.department || 'CSE').trim().toUpperCase(),
           phoneNumber: std.phoneNumber.trim(),
@@ -684,6 +771,113 @@ class Database {
       user
     );
     this.save();
+
+    // Async background sync to MongoDB if connected
+    if (isMongoDBConnected() && StudentModel) {
+      (async () => {
+        try {
+          for (const std of students) {
+            const cleanReg = std.registerNumber.trim().toUpperCase();
+            if (cleanReg) {
+              await (StudentModel as any).findOneAndUpdate(
+                { registerNumber: cleanReg },
+                {
+                  $set: {
+                    name: std.name.trim(),
+                    registerNumber: cleanReg,
+                    department: (std.department || 'CSE').trim().toUpperCase(),
+                    phoneNumber: std.phoneNumber.trim(),
+                  },
+                  $setOnInsert: {
+                    createdAt: new Date(),
+                  },
+                },
+                { upsert: true, new: true }
+              );
+            }
+          }
+        } catch (mongoErr) {
+          console.error('[MongoDB Student Batch Sync Error]:', mongoErr);
+        }
+      })();
+    }
+
+    return { addedCount, skippedCount, updatedCount, total: this.data.students.length };
+  }
+
+  public async importStudentsBatchAsync(students: Omit<Student, 'id' | 'createdAt'>[], user: string) {
+    let addedCount = 0;
+    let skippedCount = 0;
+    let updatedCount = 0;
+
+    for (const std of students) {
+      const cleanReg = std.registerNumber.trim().toUpperCase();
+      if (!cleanReg) continue;
+
+      const existingIdx = this.data.students.findIndex(
+        (s) => s.registerNumber.trim().toUpperCase() === cleanReg
+      );
+
+      if (existingIdx !== -1) {
+        this.data.students[existingIdx] = {
+          ...this.data.students[existingIdx],
+          name: std.name.trim() || this.data.students[existingIdx].name,
+          department: (std.department || this.data.students[existingIdx].department).trim().toUpperCase(),
+          phoneNumber: std.phoneNumber.trim() || this.data.students[existingIdx].phoneNumber,
+        };
+        updatedCount++;
+        skippedCount++;
+      } else {
+        const newStudent: Student = {
+          ...std,
+          registerNumber: cleanReg,
+          name: std.name.trim(),
+          department: (std.department || 'CSE').trim().toUpperCase(),
+          phoneNumber: std.phoneNumber.trim(),
+          id: `std-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          createdAt: new Date().toISOString(),
+        };
+        this.data.students.push(newStudent);
+        addedCount++;
+      }
+    }
+
+    this.addActivity(
+      'student',
+      'Batch Import Students',
+      `Batch imported ${addedCount} students (${updatedCount} updated)`,
+      user
+    );
+    this.save();
+
+    try {
+      await connectToMongoDB();
+      if (isMongoDBConnected() && StudentModel) {
+        for (const std of students) {
+          const cleanReg = std.registerNumber.trim().toUpperCase();
+          if (cleanReg) {
+            await (StudentModel as any).findOneAndUpdate(
+              { registerNumber: cleanReg },
+              {
+                $set: {
+                  name: std.name.trim(),
+                  registerNumber: cleanReg,
+                  department: (std.department || 'CSE').trim().toUpperCase(),
+                  phoneNumber: std.phoneNumber.trim(),
+                },
+                $setOnInsert: {
+                  createdAt: new Date(),
+                },
+              },
+              { upsert: true, new: true }
+            );
+          }
+        }
+      }
+    } catch (err) {
+      console.error('[MongoDB Student Async Import Sync Error]:', err);
+    }
+
     return { addedCount, skippedCount, updatedCount, total: this.data.students.length };
   }
 
@@ -933,6 +1127,54 @@ class Database {
       batch.unmatchedCount = results.filter((r) => r.matchedParent === false).length;
       this.save();
     }
+  }
+
+  public async deleteExamBatch(id: string, user: string): Promise<boolean> {
+    const index = this.data.examBatches.findIndex((b) => b.id === id);
+    if (index === -1) return false;
+
+    const batch = this.data.examBatches[index];
+
+    // Delete SMS logs related ONLY to this batch if any exist
+    this.data.smsLogs = this.data.smsLogs.filter((log) => {
+      if (log.messageType === 'Exam Result') {
+        const matchTitle = log.messageContent && log.messageContent.includes(batch.title);
+        const matchReg = batch.results.some((r) => r.registerNumber === log.registerNumber);
+        if (matchTitle && matchReg) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    // Remove selected batch from examBatches list
+    this.data.examBatches.splice(index, 1);
+
+    this.addActivity(
+      'result',
+      'Deleted Exam Batch',
+      `Deleted Exam Result Batch "${batch.title}" (${batch.department})`,
+      user
+    );
+
+    this.save();
+
+    // If MongoDB Atlas is connected, permanently delete from MongoDB
+    try {
+      if (isMongoDBConnected()) {
+        await ExamBatchModel.deleteOne({ id });
+        if (SmsLogModel) {
+          await SmsLogModel.deleteMany({
+            messageType: 'Exam Result',
+            messageContent: { $regex: batch.title, $options: 'i' },
+          });
+        }
+      }
+    } catch (err) {
+      console.error('MongoDB deleteExamBatch error:', err);
+    }
+
+    return true;
   }
 
   // --- SMS Templates ---

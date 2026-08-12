@@ -52,7 +52,7 @@ export function formatErrorMessage(err: any): string {
   }
 }
 
-const baseUrl = ((import.meta as any).env?.VITE_API_BASE_URL || '').replace(/\/$/, '');
+const baseUrl = ((import.meta as any).env?.VITE_API_BASE_URL || (import.meta as any).env?.VITE_API_URL || '').replace(/\/$/, '');
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = {
@@ -72,11 +72,11 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   try {
     res = await fetch(url, { ...options, headers });
   } catch (netErr: any) {
-    console.log(netErr);
-    if (netErr?.message) console.log(netErr.message);
+    console.error('Fetch error:', netErr);
     throw new Error(`Network connection error: ${netErr.message || 'Unable to connect to server'}`);
   }
 
+  const contentType = res.headers.get('content-type') || '';
   const text = await res.text();
 
   let data: any;
@@ -84,18 +84,20 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     try {
       data = JSON.parse(text);
     } catch (e) {
-      console.log('Non-JSON response from server:', text);
-      if (!res.ok) {
-        throw new Error(`Server returned non-JSON response (${res.status} ${res.statusText}) for ${endpoint}. Please check API route configuration.`);
+      console.error(`Non-JSON response from ${endpoint} (${res.status} ${res.statusText}):`, text.slice(0, 300));
+      if (contentType.includes('text/html') || text.includes('<!DOCTYPE html>') || text.includes('<html')) {
+        throw new Error(`Received HTML response instead of JSON from ${endpoint} (HTTP ${res.status}). Ensure backend API route is registered and Vercel route is not rewriting /api/* to index.html.`);
       }
-      throw new Error(`Invalid JSON returned from ${endpoint}. HTML fallback was received.`);
+      if (!res.ok) {
+        throw new Error(`Server error (${res.status} ${res.statusText}) for ${endpoint}.`);
+      }
+      throw new Error(`Invalid JSON returned from ${endpoint} (HTTP ${res.status}).`);
     }
   }
 
   if (!res.ok) {
-    console.log('Error response data:', data);
+    console.error('API Error response data:', data);
     const errorMsg = formatErrorMessage(data) || `HTTP Error ${res.status}: ${res.statusText || 'Request failed'}`;
-    console.log(errorMsg);
     throw new Error(errorMsg);
   }
 
@@ -175,8 +177,32 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(student),
     }),
-  batchImportStudents: (students: Omit<Student, 'id' | 'createdAt'>[]): Promise<{ addedCount: number; skippedCount: number; total: number }> =>
+  batchImportStudents: (students: Omit<Student, 'id' | 'createdAt'>[]): Promise<{
+    success?: boolean;
+    message?: string;
+    addedCount: number;
+    skippedCount: number;
+    total: number;
+    created?: number;
+    updated?: number;
+    failed?: number;
+  }> =>
     request('/api/students/batch', {
+      method: 'POST',
+      body: JSON.stringify({ students }),
+    }),
+  bulkImportStudents: (students: Omit<Student, 'id' | 'createdAt'>[]): Promise<{
+    success: boolean;
+    message: string;
+    total: number;
+    created: number;
+    updated: number;
+    failed: number;
+    addedCount: number;
+    skippedCount: number;
+    updatedCount: number;
+  }> =>
+    request('/api/students/bulk-import', {
       method: 'POST',
       body: JSON.stringify({ students }),
     }),
@@ -198,15 +224,32 @@ export const api = {
       headers['Authorization'] = `Bearer ${currentToken}`;
     }
 
-    const res = await fetch(`${baseUrl}/api/students/upload-excel`, {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
+    const url = `${baseUrl}/api/students/upload-excel`;
 
-    const data = await res.json();
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+    } catch (netErr: any) {
+      console.error('Excel Upload Fetch Error:', netErr);
+      throw new Error(`API Connection Error: ${netErr.message || 'Unable to connect to server during Excel upload'}`);
+    }
+
+    const text = await res.text();
+    let data: any = {};
+    if (text && text.trim()) {
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        throw new Error(`Server returned non-JSON response (${res.status} ${res.statusText}): ${text.slice(0, 200)}`);
+      }
+    }
+
     if (!res.ok) {
-      throw new Error(data.error || 'Failed to upload Excel file');
+      throw new Error(data.error || data.message || `Upload failed with status ${res.status}`);
     }
     return data;
   },
@@ -404,9 +447,14 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(batch),
     }),
-  sendResultSms: (batchId: string): Promise<{ success: boolean; totalCount: number; sentCount: number; failedCount: number; batch: ExamBatch }> =>
+  sendResultSms: (batchId: string, targetRegNos?: string[]): Promise<{ success: boolean; totalCount: number; sentCount: number; failedCount: number; batch: ExamBatch }> =>
     request(`/api/results/${batchId}/send-sms`, {
       method: 'POST',
+      body: JSON.stringify({ targetRegNos }),
+    }),
+  deleteExamBatch: (batchId: string): Promise<{ success: boolean; message?: string }> =>
+    request<{ success: boolean; message?: string }>(`/api/results/${batchId}`, {
+      method: 'DELETE',
     }),
 
   // Templates

@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import * as XLSX from 'xlsx';
-import { ExamBatch, Department, StudentExamResult, SubjectMark } from '../types';
+import { ExamBatch, Department, StudentExamResult, SubjectMark, Student, ParentEnrollment, User } from '../types';
 import { api, formatErrorMessage } from '../lib/api';
 import {
   FileCheck2,
@@ -33,6 +33,9 @@ import {
 interface ResultSmsSystemProps {
   batches: ExamBatch[];
   departments?: Department[];
+  students?: Student[];
+  parents?: ParentEnrollment[];
+  currentUser?: User | null;
   onRefresh: () => void;
   onNavigateToReports: () => void;
 }
@@ -42,6 +45,9 @@ const DEFAULT_DEPT_CODES = ['AIML', 'AIDS', 'CSE', 'CCE', 'ECE', 'EEE', 'MECH', 
 export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
   batches,
   departments,
+  students,
+  parents,
+  currentUser,
   onRefresh,
 }) => {
   const DEPARTMENTS = departments && departments.length > 0 ? departments.map((d) => d.code) : DEFAULT_DEPT_CODES;
@@ -49,13 +55,68 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
   // View & Modal States
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [selectedBatch, setSelectedBatch] = useState<ExamBatch | null>(batches[0] || null);
+  const [batchToDelete, setBatchToDelete] = useState<ExamBatch | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState<'excel' | 'paste'>('excel');
+
+  // Keep selectedBatch in sync with updated batches list
+  useEffect(() => {
+    if (selectedBatch) {
+      const updated = batches.find((b) => b.id === selectedBatch.id);
+      if (updated) {
+        setSelectedBatch(updated);
+      } else {
+        setSelectedBatch(batches[0] || null);
+      }
+    } else if (batches.length > 0) {
+      setSelectedBatch(batches[0]);
+    }
+  }, [batches]);
+
+  const canDeleteBatch = (batch: ExamBatch): boolean => {
+    if (!currentUser) return true;
+    if (currentUser.role === 'admin') return true;
+    if (currentUser.role === 'hod') {
+      return (
+        Boolean(currentUser.department) &&
+        batch.department.trim().toUpperCase() === currentUser.department.trim().toUpperCase()
+      );
+    }
+    return false;
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!batchToDelete) return;
+    setIsDeleting(true);
+    setError(null);
+
+    try {
+      const res = await api.deleteExamBatch(batchToDelete.id);
+      if (res.success) {
+        setSuccessMsg('Exam batch deleted successfully.');
+        const remaining = batches.filter((b) => b.id !== batchToDelete.id);
+        if (selectedBatch?.id === batchToDelete.id) {
+          setSelectedBatch(remaining.length > 0 ? remaining[0] : null);
+        }
+        setBatchToDelete(null);
+        onRefresh();
+        setTimeout(() => setSuccessMsg(null), 5000);
+      } else {
+        setError(res.message || 'Failed to delete exam batch.');
+      }
+    } catch (err: any) {
+      setError(formatErrorMessage(err));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Search & Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'PASS' | 'FAIL' | 'SENT' | 'FAILED'>('ALL');
   const [reportViewTab, setReportViewTab] = useState<'overview' | 'subjects' | 'students'>('overview');
   const [expandedRegNo, setExpandedRegNo] = useState<string | null>(null);
+  const [selectedRegNos, setSelectedRegNos] = useState<string[]>([]);
 
   // Upload Form States
   const [title, setTitle] = useState('');
@@ -178,6 +239,8 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
         if (nameIdx === -1 && headers.length > 2) nameIdx = 2;
         if (mobileIdx === -1 && headers.length > 3) mobileIdx = 3;
 
+        const parentList = parents || [];
+        const studentList = students || [];
         const parsed: StudentExamResult[] = [];
         let validMob = 0;
         let skippedMob = 0;
@@ -187,10 +250,43 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
           if (!row || row.length === 0) continue;
 
           const regNoVal = regNoIdx >= 0 && row[regNoIdx] !== undefined ? String(row[regNoIdx]).trim() : '';
-          const nameVal = nameIdx >= 0 && row[nameIdx] !== undefined ? String(row[nameIdx]).trim() : '';
+          let nameVal = nameIdx >= 0 && row[nameIdx] !== undefined ? String(row[nameIdx]).trim() : '';
           const rawMobile = mobileIdx >= 0 && row[mobileIdx] !== undefined ? String(row[mobileIdx]).trim().replace(/\D/g, '') : '';
 
           if (!regNoVal && !nameVal) continue;
+
+          const regUpper = regNoVal.toUpperCase();
+          const parentMatch = parentList.find((p) => p.registerNumber.trim().toUpperCase() === regUpper);
+          const studentMatch = studentList.find((s) => s.registerNumber.trim().toUpperCase() === regUpper);
+
+          let finalPhone = '';
+          let isMatched = false;
+
+          if (parentMatch && parentMatch.parentPhoneNumber) {
+            finalPhone = parentMatch.parentPhoneNumber;
+            if (!nameVal && parentMatch.studentName) nameVal = parentMatch.studentName;
+            isMatched = true;
+          } else if (studentMatch && studentMatch.phoneNumber) {
+            finalPhone = studentMatch.phoneNumber;
+            if (!nameVal && studentMatch.name) nameVal = studentMatch.name;
+            isMatched = true;
+          } else if (rawMobile && rawMobile.length >= 10) {
+            finalPhone = rawMobile.startsWith('91') && rawMobile.length === 12 ? `+${rawMobile}` : `+91${rawMobile.slice(-10)}`;
+            isMatched = true;
+          }
+
+          if (finalPhone && !finalPhone.startsWith('+')) {
+            const digits = finalPhone.replace(/\D/g, '');
+            if (digits.length >= 10) {
+              finalPhone = digits.startsWith('91') && digits.length === 12 ? `+${digits}` : `+91${digits.slice(-10)}`;
+            }
+          }
+
+          if (isMatched && finalPhone) {
+            validMob++;
+          } else {
+            skippedMob++;
+          }
 
           const subjectMarks: SubjectMark[] = [];
           let computedTotal = 0;
@@ -227,23 +323,17 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
             overallStatus = hasFail ? 'FAIL' : 'PASS';
           }
 
-          const isValidPhone = rawMobile.length >= 10;
-          if (isValidPhone) {
-            validMob++;
-          } else {
-            skippedMob++;
-          }
-
           parsed.push({
             sNo: sNoIdx >= 0 && row[sNoIdx] !== undefined ? String(row[sNoIdx]).trim() : parsed.length + 1,
             registerNumber: regNoVal,
             studentName: nameVal || `Student ${regNoVal}`,
-            phoneNumber: rawMobile ? (rawMobile.startsWith('91') && rawMobile.length === 12 ? `+${rawMobile}` : `+91${rawMobile.slice(-10)}`) : '',
+            phoneNumber: finalPhone,
             department: department,
             subjects: subjectMarks,
             totalMarks: totalVal,
             overallStatus,
             smsSent: false,
+            matchedParent: isMatched && Boolean(finalPhone),
           });
         }
 
@@ -382,17 +472,18 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
   };
 
   // --- Send Result SMS ---
-  const handleSendResultSms = async (batchId: string) => {
+  const handleSendResultSms = async (batchId: string, targetRegNos?: string[]) => {
     setError(null);
     setSendingSmsBatchId(batchId);
 
     try {
-      const res = await api.sendResultSms(batchId);
+      const res = await api.sendResultSms(batchId, targetRegNos);
       setSuccessMsg(`Dispatched Exam Result SMS via Fast2SMS to ${res.sentCount} parents! (${res.failedCount} failed)`);
       onRefresh();
       if (selectedBatch && selectedBatch.id === batchId) {
         setSelectedBatch(res.batch);
       }
+      setSelectedRegNos([]);
       setTimeout(() => setSuccessMsg(null), 5000);
     } catch (err: any) {
       console.log(err);
@@ -744,22 +835,42 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
                         SMS Sent: <strong className={isSelected ? 'text-amber-400' : 'text-blue-700'}>{batch.smsSentCount} / {batch.totalStudents}</strong>
                       </span>
 
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSendResultSms(batch.id);
-                        }}
-                        disabled={isSending}
-                        className={`px-3 py-1.5 font-black text-[10px] uppercase tracking-wider rounded-sm transition-all flex items-center gap-1 shadow disabled:opacity-50 ${
-                          isSelected
-                            ? 'bg-amber-400 hover:bg-amber-300 text-slate-950'
-                            : 'bg-[#0f172a] hover:bg-blue-600 text-white'
-                        }`}
-                      >
-                        <Send className="w-3 h-3" />
-                        <span>{isSending ? 'Sending...' : 'Send SMS'}</span>
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSendResultSms(batch.id);
+                          }}
+                          disabled={isSending}
+                          className={`px-2.5 py-1.5 font-black text-[10px] uppercase tracking-wider rounded-sm transition-all flex items-center gap-1 shadow disabled:opacity-50 ${
+                            isSelected
+                              ? 'bg-amber-400 hover:bg-amber-300 text-slate-950'
+                              : 'bg-[#0f172a] hover:bg-blue-600 text-white'
+                          }`}
+                        >
+                          <Send className="w-3 h-3" />
+                          <span>{isSending ? 'Sending...' : 'Send SMS'}</span>
+                        </button>
+
+                        {canDeleteBatch(batch) && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setBatchToDelete(batch);
+                            }}
+                            className={`p-1.5 font-black text-[10px] uppercase tracking-wider rounded-sm transition-all flex items-center gap-1 shadow hover:bg-rose-600 hover:text-white ${
+                              isSelected
+                                ? 'bg-rose-500/80 text-white hover:bg-rose-600'
+                                : 'bg-rose-100 text-rose-800 hover:bg-rose-600 hover:text-white border border-rose-200'
+                            }`}
+                            title="Delete Exam Batch"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -817,17 +928,43 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
                     <span>Download Report (CSV)</span>
                   </button>
 
-                  <button
-                    id="dispatch-result-sms-btn"
-                    onClick={() => handleSendResultSms(selectedBatch.id)}
-                    disabled={sendingSmsBatchId === selectedBatch.id}
-                    className="px-4 py-2 bg-[#0f172a] hover:bg-amber-500 hover:text-slate-950 text-amber-400 font-black rounded-sm text-xs uppercase tracking-widest flex items-center gap-2 shadow-md transition-all disabled:opacity-50 border border-amber-500/30"
-                  >
-                    <Send className="w-4 h-4" />
-                    <span>
-                      {sendingSmsBatchId === selectedBatch.id ? 'Dispatching Fast2SMS...' : 'Send SMS to All Parents'}
-                    </span>
-                  </button>
+                  {selectedRegNos.length > 0 ? (
+                    <button
+                      id="dispatch-selected-sms-btn"
+                      onClick={() => handleSendResultSms(selectedBatch.id, selectedRegNos)}
+                      disabled={sendingSmsBatchId === selectedBatch.id}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-sm text-xs uppercase tracking-widest flex items-center gap-2 shadow-md transition-all disabled:opacity-50"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>
+                        {sendingSmsBatchId === selectedBatch.id ? 'Sending...' : `Send Result SMS to Selected (${selectedRegNos.length})`}
+                      </span>
+                    </button>
+                  ) : (
+                    <button
+                      id="dispatch-result-sms-btn"
+                      onClick={() => handleSendResultSms(selectedBatch.id)}
+                      disabled={sendingSmsBatchId === selectedBatch.id}
+                      className="px-4 py-2 bg-[#0f172a] hover:bg-amber-500 hover:text-slate-950 text-amber-400 font-black rounded-sm text-xs uppercase tracking-widest flex items-center gap-2 shadow-md transition-all disabled:opacity-50 border border-amber-500/30"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>
+                        {sendingSmsBatchId === selectedBatch.id ? 'Dispatching Fast2SMS...' : 'Send SMS to All Matched Parents'}
+                      </span>
+                    </button>
+                  )}
+
+                  {canDeleteBatch(selectedBatch) && (
+                    <button
+                      id="delete-selected-batch-btn"
+                      onClick={() => setBatchToDelete(selectedBatch)}
+                      className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase tracking-wider rounded-sm flex items-center gap-1.5 shadow-sm transition-all border border-rose-700/50"
+                      title="Permanently delete this exam batch and its result records"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-white" />
+                      <span>Delete</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -999,15 +1136,73 @@ Result: [Pass/Fail]
                     </div>
                   </div>
 
+                  {/* Selection & Matching Status Summary Bar */}
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-600 px-1 pt-1">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const matchedRegs = filteredStudents
+                            .filter((s) => s.phoneNumber && s.matchedParent !== false)
+                            .map((s) => s.registerNumber);
+                          if (selectedRegNos.length === matchedRegs.length && matchedRegs.length > 0) {
+                            setSelectedRegNos([]);
+                          } else {
+                            setSelectedRegNos(matchedRegs);
+                          }
+                        }}
+                        className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-sm text-[11px] font-black border border-slate-300 transition-all"
+                      >
+                        {selectedRegNos.length > 0 && selectedRegNos.length === filteredStudents.filter(s => s.phoneNumber && s.matchedParent !== false).length
+                          ? 'Deselect All'
+                          : 'Select All Matched'}
+                      </button>
+                      {selectedRegNos.length > 0 && (
+                        <span className="text-emerald-700 text-[11px] font-black">
+                          ✓ {selectedRegNos.length} student(s) selected
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 text-[11px]">
+                      <span className="text-emerald-700 font-black">
+                        ✓ Matched Parents: {selectedBatch.results.filter((r) => r.phoneNumber && r.matchedParent !== false).length}
+                      </span>
+                      <span className="text-amber-700 font-black">
+                        ⚠ Not Found: {selectedBatch.results.filter((r) => !r.phoneNumber || r.matchedParent === false).length}
+                      </span>
+                    </div>
+                  </div>
+
                   {/* Student Results Table with Expandable Details */}
                   <div className="overflow-x-auto border border-slate-200 rounded-sm">
                     <table className="w-full text-left text-xs text-slate-700">
                       <thead className="bg-[#0f172a] text-amber-400 uppercase text-[10px] font-black tracking-wider border-b border-slate-800">
                         <tr>
-                          <th className="px-3 py-3 font-black w-10 text-center">#</th>
+                          <th className="px-2 py-3 text-center w-8">
+                            <input
+                              type="checkbox"
+                              checked={
+                                selectedRegNos.length > 0 &&
+                                selectedRegNos.length === filteredStudents.filter((s) => s.phoneNumber && s.matchedParent !== false).length
+                              }
+                              onChange={() => {
+                                const matchedRegs = filteredStudents
+                                  .filter((s) => s.phoneNumber && s.matchedParent !== false)
+                                  .map((s) => s.registerNumber);
+                                if (selectedRegNos.length === matchedRegs.length && matchedRegs.length > 0) {
+                                  setSelectedRegNos([]);
+                                } else {
+                                  setSelectedRegNos(matchedRegs);
+                                }
+                              }}
+                              className="rounded border-slate-400 text-amber-500 focus:ring-amber-500 cursor-pointer"
+                            />
+                          </th>
+                          <th className="px-2 py-3 font-black w-8 text-center">#</th>
                           <th className="px-3 py-3 font-black">Register No</th>
                           <th className="px-3 py-3 font-black">Student Name</th>
                           <th className="px-3 py-3 font-black">Parent Mobile</th>
+                          <th className="px-3 py-3 font-black text-center">Matching Status</th>
                           <th className="px-3 py-3 font-black text-center">Total Marks</th>
                           <th className="px-3 py-3 font-black text-center">Result</th>
                           <th className="px-3 py-3 font-black text-right">Fast2SMS Delivery</th>
@@ -1017,6 +1212,7 @@ Result: [Pass/Fail]
                         {filteredStudents.length > 0 ? (
                           filteredStudents.map((res, idx) => {
                             const isExpanded = expandedRegNo === res.registerNumber;
+                            const isSelected = selectedRegNos.includes(res.registerNumber);
                             const totalDisplay =
                               res.totalMarks !== undefined && res.totalMarks !== null && res.totalMarks !== ''
                                 ? res.totalMarks
@@ -1027,13 +1223,35 @@ Result: [Pass/Fail]
                             return (
                               <React.Fragment key={idx}>
                                 <tr
-                                  onClick={() => setExpandedRegNo(isExpanded ? null : res.registerNumber)}
-                                  className="hover:bg-slate-50 transition-colors cursor-pointer"
+                                  className={`hover:bg-slate-50 transition-colors cursor-pointer ${
+                                    isSelected ? 'bg-amber-50/50' : ''
+                                  }`}
                                 >
-                                  <td className="px-3 py-3 text-center font-mono text-slate-400 text-[11px]">
+                                  <td className="px-2 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                                    <input
+                                      type="checkbox"
+                                      disabled={!res.phoneNumber || res.matchedParent === false}
+                                      checked={isSelected}
+                                      onChange={() => {
+                                        setSelectedRegNos((prev) =>
+                                          prev.includes(res.registerNumber)
+                                            ? prev.filter((r) => r !== res.registerNumber)
+                                            : [...prev, res.registerNumber]
+                                        );
+                                      }}
+                                      className="rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer disabled:opacity-30"
+                                    />
+                                  </td>
+                                  <td
+                                    onClick={() => setExpandedRegNo(isExpanded ? null : res.registerNumber)}
+                                    className="px-2 py-3 text-center font-mono text-slate-400 text-[11px]"
+                                  >
                                     {res.sNo || idx + 1}
                                   </td>
-                                  <td className="px-3 py-3 font-mono font-black text-slate-900">
+                                  <td
+                                    onClick={() => setExpandedRegNo(isExpanded ? null : res.registerNumber)}
+                                    className="px-3 py-3 font-mono font-black text-slate-900"
+                                  >
                                     <div className="flex items-center gap-1">
                                       {res.subjects && res.subjects.length > 0 ? (
                                         isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-amber-600" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
@@ -1041,21 +1259,49 @@ Result: [Pass/Fail]
                                       <span>{res.registerNumber}</span>
                                     </div>
                                   </td>
-                                  <td className="px-3 py-3 font-black text-slate-900">{res.studentName}</td>
-                                  <td className="px-3 py-3 font-mono font-bold text-slate-700">
+                                  <td
+                                    onClick={() => setExpandedRegNo(isExpanded ? null : res.registerNumber)}
+                                    className="px-3 py-3 font-black text-slate-900"
+                                  >
+                                    {res.studentName}
+                                  </td>
+                                  <td
+                                    onClick={() => setExpandedRegNo(isExpanded ? null : res.registerNumber)}
+                                    className="px-3 py-3 font-mono font-bold text-slate-700"
+                                  >
                                     {res.phoneNumber ? (
                                       <span className="inline-flex items-center gap-1">
                                         <Phone className="w-3 h-3 text-slate-400" />
                                         <span>{res.phoneNumber}</span>
                                       </span>
                                     ) : (
-                                      <span className="text-rose-600 font-bold italic text-[11px]">Missing Mobile</span>
+                                      <span className="text-amber-700 font-bold italic text-[11px]">Not Enrolled</span>
                                     )}
                                   </td>
-                                  <td className="px-3 py-3 text-center font-black text-slate-900 text-sm">
+                                  <td
+                                    onClick={() => setExpandedRegNo(isExpanded ? null : res.registerNumber)}
+                                    className="px-3 py-3 text-center"
+                                  >
+                                    {res.phoneNumber && res.matchedParent !== false ? (
+                                      <span className="px-2 py-0.5 rounded-sm text-[10px] font-bold bg-emerald-100 text-emerald-800 inline-flex items-center gap-1">
+                                        ✓ Matched
+                                      </span>
+                                    ) : (
+                                      <span className="px-2 py-0.5 rounded-sm text-[10px] font-bold bg-amber-100 text-amber-900 inline-flex items-center gap-1">
+                                        ⚠ Not Found
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td
+                                    onClick={() => setExpandedRegNo(isExpanded ? null : res.registerNumber)}
+                                    className="px-3 py-3 text-center font-black text-slate-900 text-sm"
+                                  >
                                     {totalDisplay}
                                   </td>
-                                  <td className="px-3 py-3 text-center">
+                                  <td
+                                    onClick={() => setExpandedRegNo(isExpanded ? null : res.registerNumber)}
+                                    className="px-3 py-3 text-center"
+                                  >
                                     <span
                                       className={`px-2 py-0.5 rounded-sm text-[10px] font-black uppercase tracking-wider ${
                                         res.overallStatus === 'PASS'
@@ -1066,7 +1312,10 @@ Result: [Pass/Fail]
                                       {res.overallStatus}
                                     </span>
                                   </td>
-                                  <td className="px-3 py-3 text-right">
+                                  <td
+                                    onClick={() => setExpandedRegNo(isExpanded ? null : res.registerNumber)}
+                                    className="px-3 py-3 text-right"
+                                  >
                                     {res.smsSent ? (
                                       <span
                                         className={`inline-flex items-center gap-1 font-black text-[11px] uppercase tracking-wider ${
@@ -1091,7 +1340,7 @@ Result: [Pass/Fail]
                                 {/* Expanded Subject Breakdown Row */}
                                 {isExpanded && res.subjects && res.subjects.length > 0 && (
                                   <tr className="bg-slate-50/80 border-b border-slate-200">
-                                    <td colSpan={7} className="p-4">
+                                    <td colSpan={9} className="p-4">
                                       <div className="bg-white border border-slate-200 p-3 rounded-sm space-y-2">
                                         <div className="text-[11px] font-black uppercase text-slate-800 tracking-wider flex items-center justify-between border-b pb-1">
                                           <span>Subject Marks Breakdown for {res.studentName} ({res.registerNumber})</span>
@@ -1119,7 +1368,7 @@ Result: [Pass/Fail]
                           })
                         ) : (
                           <tr>
-                            <td colSpan={7} className="px-4 py-8 text-center text-slate-400 text-xs font-bold">
+                            <td colSpan={9} className="px-4 py-8 text-center text-slate-400 text-xs font-bold">
                               No student result records match search filter.
                             </td>
                           </tr>
@@ -1304,11 +1553,14 @@ Result: [Pass/Fail]
                       )}
 
                       <div className="flex items-center gap-4 text-[11px] font-bold pt-1 border-t border-slate-800">
-                        <span className="text-emerald-400">✓ Valid Parent Mobiles: {validMobileCount}</span>
+                        <span className="text-emerald-400">✓ Parent Mobiles Matched: {validMobileCount}</span>
                         {skippedMobileCount > 0 && (
-                          <span className="text-rose-400">⚠ Missing/Invalid Mobiles: {skippedMobileCount}</span>
+                          <span className="text-amber-300">⚠ Unmatched / Missing in File: {skippedMobileCount} (Will auto-match from MongoDB Enrollment)</span>
                         )}
                       </div>
+                      <p className="text-[10px] text-slate-400 font-medium pt-1">
+                        * Note: Parent Mobile Number is NOT mandatory in the Excel file. The system uses Register Number as the key link to automatically retrieve enrolled parent numbers from MongoDB.
+                      </p>
                     </div>
                   )}
 
@@ -1513,6 +1765,93 @@ Result: [Pass/Fail]
                   <p className="border-b border-slate-400 w-48 inline-block"></p>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Exam Batch Confirmation Modal */}
+      {batchToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="bg-white border border-rose-200 rounded-sm shadow-2xl max-w-md w-full p-6 space-y-5">
+            {/* Modal Header */}
+            <div className="flex items-start gap-3">
+              <div className="p-3 bg-rose-100 rounded-full shrink-0">
+                <Trash2 className="w-6 h-6 text-rose-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">
+                  Delete Exam Batch Confirmation
+                </h3>
+                <p className="text-xs text-slate-600 font-bold mt-1">
+                  Are you sure you want to delete this exam batch?
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3 bg-rose-50/80 border border-rose-200 rounded-sm text-xs text-rose-900 space-y-1">
+              <p className="font-black flex items-center gap-1 text-rose-800">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>This action cannot be undone!</span>
+              </p>
+              <p className="text-[11px] font-medium leading-relaxed">
+                The selected Exam Batch, uploaded results, marks breakdown, calculated statistics, and batch SMS logs will be permanently deleted.
+              </p>
+              <p className="text-[11px] font-bold text-emerald-800 pt-1 border-t border-rose-200/60 mt-1">
+                ✓ Student Enrollment records, Names, Register Numbers, and Parent Mobile Numbers will remain permanently safe in the database.
+              </p>
+            </div>
+
+            {/* Batch Details Specs Box */}
+            <div className="bg-slate-50 border border-slate-200 rounded-sm p-3.5 space-y-2 text-xs">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
+                <span className="text-slate-500 font-bold uppercase text-[10px]">Exam Name</span>
+                <strong className="text-slate-900 font-black uppercase text-xs">{batchToDelete.title}</strong>
+              </div>
+              <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
+                <span className="text-slate-500 font-bold uppercase text-[10px]">Department</span>
+                <span className="px-2 py-0.5 bg-slate-900 text-amber-400 font-black text-[10px] rounded-sm uppercase">
+                  {batchToDelete.department}
+                </span>
+              </div>
+              <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
+                <span className="text-slate-500 font-bold uppercase text-[10px]">Exam Date</span>
+                <strong className="text-slate-800 font-bold">{batchToDelete.examDate}</strong>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 font-bold uppercase text-[10px]">Student Count</span>
+                <strong className="text-slate-900 font-black text-xs">{batchToDelete.totalStudents} Students</strong>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setBatchToDelete(null)}
+                disabled={isDeleting}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs uppercase tracking-wider rounded-sm transition-all border border-slate-300 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
+                className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase tracking-wider rounded-sm shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete Exam Batch</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

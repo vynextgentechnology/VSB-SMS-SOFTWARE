@@ -299,22 +299,41 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
   };
 
   const confirmUploadExcelToServer = async () => {
-    if (!excelFile) return;
+    if (!excelFile && previewRecords.length === 0) return;
     setExcelUploadLoading(true);
     setError(null);
 
     try {
-      const res = await api.uploadStudentsExcel(excelFile);
-      setSuccessMsg(`Excel upload complete! ${res.added} new students added, ${res.updated} existing records updated.`);
+      const validStudents = previewRecords
+        .filter((r) => r.isValid)
+        .map((r) => ({
+          name: r.name,
+          registerNumber: r.registerNumber,
+          department: r.department,
+          phoneNumber: r.phoneNumber,
+        }));
+
+      if (validStudents.length === 0) {
+        setError('No valid student records found in preview. Please ensure Register Number, Name, and Phone Number are present.');
+        setExcelUploadLoading(false);
+        return;
+      }
+
+      // Import via bulk import API
+      const res = await api.bulkImportStudents(validStudents);
+      const created = res.created ?? res.addedCount ?? 0;
+      const updated = res.updated ?? res.updatedCount ?? res.skippedCount ?? 0;
+      const failed = res.failed ?? 0;
+      const total = res.total ?? validStudents.length;
+
+      setSuccessMsg(`Student enrollment imported successfully! ${total} records processed (${created} created, ${updated} updated${failed > 0 ? `, ${failed} failed` : ''}).`);
       setIsPreviewModalOpen(false);
       setExcelFile(null);
       setPreviewRecords([]);
       onRefresh();
       setTimeout(() => setSuccessMsg(null), 5000);
     } catch (err: any) {
-      console.log(err);
-      if (err?.message) console.log(err.message);
-      if (err?.response?.data) console.log(err.response?.data);
+      console.error('Student enrollment import error:', err);
       setError(formatErrorMessage(err));
     } finally {
       setExcelUploadLoading(false);

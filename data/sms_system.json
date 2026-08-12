@@ -29,8 +29,28 @@
         "upload_results"
       ],
       "createdAt": "2026-08-07T10:09:50.445Z"
+    },
+    {
+      "id": "usr-admin-1786532514907",
+      "userId": "ADMIN1",
+      "name": "System Admin",
+      "role": "admin",
+      "department": "CSE",
+      "rawPassword": "password123",
+      "passwordHash": "$2b$10$IJJ5l574cVQphmH3leNZ/.n9bf3ckW/tT3FaQAy24/eBARQ56hzM2",
+      "permissions": [
+        "send_sms",
+        "upload_results",
+        "manage_students",
+        "manage_staff",
+        "view_reports",
+        "manage_settings",
+        "manage_parents"
+      ],
+      "createdAt": "2026-08-12T11:01:55.042Z"
     }
   ],
+  "parentEnrollments": [],
   "students": [
     {
       "registerNumber": "921321104001",
@@ -42,11 +62,499 @@
     },
     {
       "registerNumber": "922524148117",
-      "name": "Valiullah",
-      "phoneNumber": "+918754020556",
+      "name": "VALIULLAH J",
+      "phoneNumber": "7092483276",
       "department": "AIML",
       "id": "std-1786070186130-kvzti",
       "createdAt": "2026-08-07T02:36:26.130Z"
+    },
+    {
+      "name": "MOHANA PRIYA G",
+      "registerNumber": "922524148063",
+      "department": "AIML",
+      "phoneNumber": "7871254655",
+      "id": "std-1786532199893-8eu7o",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "MUHAMMAD NASAR ALI T.A",
+      "registerNumber": "922524148064",
+      "department": "AIML",
+      "phoneNumber": "9994687503",
+      "id": "std-1786532199893-toyiz",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "MUKILA K",
+      "registerNumber": "922524148065",
+      "department": "AIML",
+      "phoneNumber": "6374855308",
+      "id": "std-1786532199893-7krch",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "MUKILAN K",
+      "registerNumber": "922524148066",
+      "department": "AIML",
+      "phoneNumber": "9751872112",
+      "id": "std-1786532199893-2806b",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "MURALI KARTHICK A",
+      "registerNumber": "922524148067",
+      "department": "AIML",
+      "phoneNumber": "7620817193",
+      "id": "std-1786532199893-l5dog",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "NAGULAN.K",
+      "registerNumber": "922524148068",
+      "department": "AIML",
+      "phoneNumber": "9787413247",
+      "id": "std-1786532199893-8nhp1",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "NANDHITHA PT",
+      "registerNumber": "922524148069",
+      "department": "AIML",
+      "phoneNumber": "9942135141",
+      "id": "std-1786532199893-kl9m6",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "NARENDHRA PRASHATH S",
+      "registerNumber": "922524148070",
+      "department": "AIML",
+      "phoneNumber": "9688875559",
+      "id": "std-1786532199893-weqii",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "NARMADHA A",
+      "registerNumber": "922524148071",
+      "department": "AIML",
+      "phoneNumber": "9942423165",
+      "id": "std-1786532199893-14q3d",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "NAVEEN S",
+      "registerNumber": "922524148072",
+      "department": "AIML",
+      "phoneNumber": "7548827109",
+      "id": "std-1786532199893-hd3ha",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "NETHRA K",
+      "registerNumber": "922524148073",
+      "department": "AIML",
+      "phoneNumber": "9443407312",
+      "id": "std-1786532199893-n9uk2",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "POOJA SRI M",
+      "registerNumber": "922524148074",
+      "department": "AIML",
+      "phoneNumber": "9150922072",
+      "id": "std-1786532199893-uo50y",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "PRASHANT.R",
+      "registerNumber": "922524148075",
+      "department": "AIML",
+      "phoneNumber": "8883312075",
+      "id": "std-1786532199893-l33sz",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "PRAVIN T",
+      "registerNumber": "922524148076",
+      "department": "AIML",
+      "phoneNumber": "9965419555",
+      "id": "std-1786532199893-owg2y",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "PRITHIV T",
+      "registerNumber": "922524148078",
+      "department": "AIML",
+      "phoneNumber": "9442681683",
+      "id": "std-1786532199893-954mz",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "PRIYADHARSHAN B",
+      "registerNumber": "922524148079",
+      "department": "AIML",
+      "phoneNumber": "9842690379",
+      "id": "std-1786532199893-nhep8",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "PRIYADHARSHINI R",
+      "registerNumber": "922524148080",
+      "department": "AIML",
+      "phoneNumber": "9715717487",
+      "id": "std-1786532199893-w9aiw",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "RAKSHANA S",
+      "registerNumber": "922524148081",
+      "department": "AIML",
+      "phoneNumber": "9080407060",
+      "id": "std-1786532199893-jkoel",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "RANJANI V",
+      "registerNumber": "922524148082",
+      "department": "AIML",
+      "phoneNumber": "9080747978",
+      "id": "std-1786532199893-g8l2x",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "RATHIKA S",
+      "registerNumber": "922524148084",
+      "department": "AIML",
+      "phoneNumber": "9894021963",
+      "id": "std-1786532199893-23ysf",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "RATHINA KIRUTHIKA S",
+      "registerNumber": "922524148085",
+      "department": "AIML",
+      "phoneNumber": "8608323481",
+      "id": "std-1786532199893-utq41",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "RISHI ADITHYA V. V",
+      "registerNumber": "922524148086",
+      "department": "AIML",
+      "phoneNumber": "9443621362",
+      "id": "std-1786532199893-rl05i",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "RISHIDEV S",
+      "registerNumber": "922524148087",
+      "department": "AIML",
+      "phoneNumber": "8489075401",
+      "id": "std-1786532199893-vomdh",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "RITHAN S",
+      "registerNumber": "922524148088",
+      "department": "AIML",
+      "phoneNumber": "9976496022",
+      "id": "std-1786532199893-0wq5g",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "RITHIKA S",
+      "registerNumber": "922524148089",
+      "department": "AIML",
+      "phoneNumber": "9842849200",
+      "id": "std-1786532199893-jbhjh",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "RITHIKAA J",
+      "registerNumber": "922524148090",
+      "department": "AIML",
+      "phoneNumber": "9894026438",
+      "id": "std-1786532199893-s81af",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "RITHIKASRI P",
+      "registerNumber": "922524148091",
+      "department": "AIML",
+      "phoneNumber": "9786022876",
+      "id": "std-1786532199893-fpr3m",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "RITIKA V",
+      "registerNumber": "922524148092",
+      "department": "AIML",
+      "phoneNumber": "9566730099",
+      "id": "std-1786532199893-h9p0x",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "ROHAN C R",
+      "registerNumber": "922524148093",
+      "department": "AIML",
+      "phoneNumber": "9388453507",
+      "id": "std-1786532199893-bbgqn",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "SABARISH S",
+      "registerNumber": "922524148094",
+      "department": "AIML",
+      "phoneNumber": "9843824012",
+      "id": "std-1786532199893-9rge0",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "SADHANAA R",
+      "registerNumber": "922524148095",
+      "department": "AIML",
+      "phoneNumber": "8754038877",
+      "id": "std-1786532199893-z84nu",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "SAMIKSHA N",
+      "registerNumber": "922524148096",
+      "department": "AIML",
+      "phoneNumber": "9791204222",
+      "id": "std-1786532199893-peaf1",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "SANDHIYA P",
+      "registerNumber": "922524148097",
+      "department": "AIML",
+      "phoneNumber": "9486115261",
+      "id": "std-1786532199893-2p941",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "SANTHOSH.S",
+      "registerNumber": "922524148098",
+      "department": "AIML",
+      "phoneNumber": "9994452882",
+      "id": "std-1786532199893-q7ylf",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "SAKTHIPRIYA L",
+      "registerNumber": "922524148099",
+      "department": "AIML",
+      "phoneNumber": "9442681060",
+      "id": "std-1786532199893-xx8vl",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "SELVA GANAPATHY V P",
+      "registerNumber": "922524148100",
+      "department": "AIML",
+      "phoneNumber": "8015049743",
+      "id": "std-1786532199893-1hp85",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "SELVA JEYAKRISHNAN D",
+      "registerNumber": "922524148101",
+      "department": "AIML",
+      "phoneNumber": "9385926257",
+      "id": "std-1786532199893-64omj",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "SHANTHOSH KANNA R U",
+      "registerNumber": "922524148102",
+      "department": "AIML",
+      "phoneNumber": "9788230275",
+      "id": "std-1786532199893-i1bi9",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "SHIVNESH KUMAR M",
+      "registerNumber": "922524148103",
+      "department": "AIML",
+      "phoneNumber": "9500500336",
+      "id": "std-1786532199893-u8lt5",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "SHRI PRAJITH S",
+      "registerNumber": "922524148104",
+      "department": "AIML",
+      "phoneNumber": "8300005191",
+      "id": "std-1786532199893-k2n52",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "SIVASATHYA K",
+      "registerNumber": "922524148105",
+      "department": "AIML",
+      "phoneNumber": "9942723685",
+      "id": "std-1786532199893-ib8o0",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "SRIVARSHAN M",
+      "registerNumber": "922524148106",
+      "department": "AIML",
+      "phoneNumber": "9443593907",
+      "id": "std-1786532199893-o3fov",
+      "createdAt": "2026-08-12T10:56:39.893Z"
+    },
+    {
+      "name": "SRIVISHNU V",
+      "registerNumber": "922524148107",
+      "department": "AIML",
+      "phoneNumber": "9865417776",
+      "id": "std-1786532199894-c18fy",
+      "createdAt": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "name": "SUBASH P",
+      "registerNumber": "922524148108",
+      "department": "AIML",
+      "phoneNumber": "9844813944",
+      "id": "std-1786532199894-owxs5",
+      "createdAt": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "name": "SUDHAN D",
+      "registerNumber": "922524148109",
+      "department": "AIML",
+      "phoneNumber": "9751413152",
+      "id": "std-1786532199894-kywlk",
+      "createdAt": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "name": "SUJEETH S",
+      "registerNumber": "922524148110",
+      "department": "AIML",
+      "phoneNumber": "9942413211",
+      "id": "std-1786532199894-qt6z6",
+      "createdAt": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "name": "SUJITH P S",
+      "registerNumber": "922524148111",
+      "department": "AIML",
+      "phoneNumber": "9095773507",
+      "id": "std-1786532199894-bb9ht",
+      "createdAt": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "name": "SUPIKSHA C",
+      "registerNumber": "922524148112",
+      "department": "AIML",
+      "phoneNumber": "9362999888",
+      "id": "std-1786532199894-ebrzm",
+      "createdAt": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "name": "TAMILARASAN M",
+      "registerNumber": "922524148113",
+      "department": "AIML",
+      "phoneNumber": "9952895003",
+      "id": "std-1786532199894-nxxif",
+      "createdAt": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "name": "THARUNIKA P",
+      "registerNumber": "922524148114",
+      "department": "AIML",
+      "phoneNumber": "9995999752",
+      "id": "std-1786532199894-7np2s",
+      "createdAt": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "name": "THAGALAKSHMI A",
+      "registerNumber": "922524148115",
+      "department": "AIML",
+      "phoneNumber": "9087498767",
+      "id": "std-1786532199894-z49zb",
+      "createdAt": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "name": "VAISNAVA S",
+      "registerNumber": "922524148116",
+      "department": "AIML",
+      "phoneNumber": "9865125123",
+      "id": "std-1786532199894-446gr",
+      "createdAt": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "name": "VARUN SANKAR M",
+      "registerNumber": "922524148118",
+      "department": "AIML",
+      "phoneNumber": "9629324665",
+      "id": "std-1786532199894-3yivx",
+      "createdAt": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "name": "VELMURUGAN B",
+      "registerNumber": "922524148119",
+      "department": "AIML",
+      "phoneNumber": "6281286751",
+      "id": "std-1786532199894-an0kb",
+      "createdAt": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "name": "VENGADESWARAN T",
+      "registerNumber": "922524148120",
+      "department": "AIML",
+      "phoneNumber": "9750627465",
+      "id": "std-1786532199894-myyid",
+      "createdAt": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "name": "VIJAYRAM J",
+      "registerNumber": "922524148121",
+      "department": "AIML",
+      "phoneNumber": "9500737480",
+      "id": "std-1786532199894-keg5n",
+      "createdAt": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "name": "VISHNU B",
+      "registerNumber": "922524148122",
+      "department": "AIML",
+      "phoneNumber": "8760439110",
+      "id": "std-1786532199894-l9ohc",
+      "createdAt": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "name": "YASWANTH V",
+      "registerNumber": "922524148123",
+      "department": "AIML",
+      "phoneNumber": "9346045673",
+      "id": "std-1786532199894-3j421",
+      "createdAt": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "name": "YESWANTH S M",
+      "registerNumber": "922524148124",
+      "department": "AIML",
+      "phoneNumber": "9629802883",
+      "id": "std-1786532199894-dyqdu",
+      "createdAt": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "name": "YOGALAKSHMI S",
+      "registerNumber": "922524148125",
+      "department": "AIML",
+      "phoneNumber": "9629802883",
+      "id": "std-1786532199894-3p93u",
+      "createdAt": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "name": "YUVAN SHANKAR RAJA R",
+      "registerNumber": "922524148126",
+      "department": "AIML",
+      "phoneNumber": "9751322018",
+      "id": "std-1786532199894-107rf",
+      "createdAt": "2026-08-12T10:56:39.894Z"
     }
   ],
   "staff": [
@@ -405,6 +913,262 @@
   },
   "activityLogs": [
     {
+      "id": "act-1786532521297-8ilak",
+      "action": "User Login",
+      "details": "Logged in as System Admin (ADMIN)",
+      "user": "ADMIN1",
+      "type": "auth",
+      "timestamp": "2026-08-12T11:02:01.297Z"
+    },
+    {
+      "id": "act-1786532515142-zr3fc",
+      "action": "User Login",
+      "details": "Logged in as System Admin (ADMIN)",
+      "user": "ADMIN1",
+      "type": "auth",
+      "timestamp": "2026-08-12T11:01:55.142Z"
+    },
+    {
+      "id": "act-1786532515042-m7evu",
+      "action": "Initial Admin Setup",
+      "details": "Registered Admin account (ADMIN1)",
+      "user": "ADMIN1",
+      "type": "auth",
+      "timestamp": "2026-08-12T11:01:55.042Z"
+    },
+    {
+      "id": "act-1786532321366-p8fw9",
+      "action": "User Login",
+      "details": "Logged in as System Administrator (VY NEXTGEN) (ADMIN)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:58:41.366Z"
+    },
+    {
+      "id": "act-1786532318707-h8wz0",
+      "action": "User Logout",
+      "details": "Logged out (Vali1278)",
+      "user": "Vali1278",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:58:38.707Z"
+    },
+    {
+      "id": "act-1786532243058-gjc12",
+      "action": "User Login",
+      "details": "Logged in as VALIULLAH (STAFF)",
+      "user": "Vali1278",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:57:23.058Z"
+    },
+    {
+      "id": "act-1786532233241-2ad65",
+      "action": "User Logout",
+      "details": "Logged out (VSBEC)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:57:13.241Z"
+    },
+    {
+      "id": "act-1786532199894-jkqhu",
+      "action": "Batch Import Students",
+      "details": "Batch imported 61 students (1 updated)",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-08-12T10:56:39.894Z"
+    },
+    {
+      "id": "act-1786532182915-me6c3",
+      "action": "User Login",
+      "details": "Logged in as System Administrator (VY NEXTGEN) (ADMIN)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:56:22.915Z"
+    },
+    {
+      "id": "act-1786529696216-mqt55",
+      "action": "User Login",
+      "details": "Logged in as VALIULLAH (STAFF)",
+      "user": "Vali1278",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:14:56.216Z"
+    },
+    {
+      "id": "act-1786529677357-zl24g",
+      "action": "User Logout",
+      "details": "Logged out (VSBEC)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:14:37.357Z"
+    },
+    {
+      "id": "act-1786529676836-gij49",
+      "action": "User Logout",
+      "details": "Logged out (VSBEC)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:14:36.836Z"
+    },
+    {
+      "id": "act-1786529676053-8h96f",
+      "action": "User Logout",
+      "details": "Logged out (VSBEC)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:14:36.053Z"
+    },
+    {
+      "id": "act-1786529675838-bphfn",
+      "action": "User Logout",
+      "details": "Logged out (VSBEC)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:14:35.838Z"
+    },
+    {
+      "id": "act-1786529674015-7j05c",
+      "action": "User Logout",
+      "details": "Logged out (VSBEC)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:14:34.015Z"
+    },
+    {
+      "id": "act-1786529373005-iym7e",
+      "action": "Student Updated",
+      "details": "Updated details for Valiullah (922524148117)",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-08-12T10:09:33.005Z"
+    },
+    {
+      "id": "act-1786529363877-4e13c",
+      "action": "User Login",
+      "details": "Logged in as System Administrator (VY NEXTGEN) (ADMIN)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:09:23.877Z"
+    },
+    {
+      "id": "act-1786529354553-hrqpj",
+      "action": "User Logout",
+      "details": "Logged out (Vali1278)",
+      "user": "Vali1278",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:09:14.553Z"
+    },
+    {
+      "id": "act-1786529234521-sssuc",
+      "action": "User Login",
+      "details": "Logged in as VALIULLAH (STAFF)",
+      "user": "Vali1278",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:07:14.521Z"
+    },
+    {
+      "id": "act-1786529208347-u04fj",
+      "action": "User Logout",
+      "details": "Logged out (Vali1278)",
+      "user": "Vali1278",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:06:48.347Z"
+    },
+    {
+      "id": "act-1786529207428-jav1w",
+      "action": "User Logout",
+      "details": "Logged out (Vali1278)",
+      "user": "Vali1278",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:06:47.428Z"
+    },
+    {
+      "id": "act-1786529207188-4it3r",
+      "action": "User Logout",
+      "details": "Logged out (Vali1278)",
+      "user": "Vali1278",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:06:47.188Z"
+    },
+    {
+      "id": "act-1786529206913-8zyr9",
+      "action": "User Logout",
+      "details": "Logged out (Vali1278)",
+      "user": "Vali1278",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:06:46.913Z"
+    },
+    {
+      "id": "act-1786529206014-ha7dr",
+      "action": "User Logout",
+      "details": "Logged out (Vali1278)",
+      "user": "Vali1278",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:06:46.014Z"
+    },
+    {
+      "id": "act-1786529205727-g06g5",
+      "action": "User Logout",
+      "details": "Logged out (Vali1278)",
+      "user": "Vali1278",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:06:45.727Z"
+    },
+    {
+      "id": "act-1786529200050-sl2t8",
+      "action": "User Logout",
+      "details": "Logged out (Vali1278)",
+      "user": "Vali1278",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:06:40.050Z"
+    },
+    {
+      "id": "act-1786529195753-sx2b0",
+      "action": "User Logout",
+      "details": "Logged out (Vali1278)",
+      "user": "Vali1278",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:06:35.753Z"
+    },
+    {
+      "id": "act-1786529195407-4ypje",
+      "action": "User Logout",
+      "details": "Logged out (Vali1278)",
+      "user": "Vali1278",
+      "type": "auth",
+      "timestamp": "2026-08-12T10:06:35.407Z"
+    },
+    {
+      "id": "act-1786526130545-wz18n",
+      "action": "User Login",
+      "details": "Logged in as VALIULLAH (STAFF)",
+      "user": "Vali1278",
+      "type": "auth",
+      "timestamp": "2026-08-12T09:15:30.545Z"
+    },
+    {
+      "id": "act-1786526126898-61a10",
+      "action": "User Logout",
+      "details": "Logged out (VSBEC)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-12T09:15:26.898Z"
+    },
+    {
+      "id": "act-1786526098274-6eh0y",
+      "action": "User Login",
+      "details": "Logged in as System Administrator (VY NEXTGEN) (ADMIN)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-12T09:14:58.274Z"
+    },
+    {
+      "id": "act-1786526079938-2vo03",
+      "action": "User Logout",
+      "details": "Logged out (Vali1278)",
+      "user": "Vali1278",
+      "type": "auth",
+      "timestamp": "2026-08-12T09:14:39.938Z"
+    },
+    {
       "id": "act-1786097998173-2mzfy",
       "action": "Result SMS Dispatched via Fast2SMS",
       "details": "Sent exam result SMS for batch \"Semester 5 Results\" (1 sent, 0 failed)",
@@ -611,6 +1375,402 @@
       "user": "VSBEC",
       "type": "auth",
       "timestamp": "2026-08-07T02:24:06.397Z"
+    }
+  ],
+  "loginLogs": [
+    {
+      "id": "login-1786532521298-iyegc",
+      "userId": "ADMIN1",
+      "name": "System Admin",
+      "role": "admin",
+      "department": "CSE",
+      "action": "login",
+      "timestamp": "2026-08-12T11:02:01.298Z"
+    },
+    {
+      "id": "login-1786532515143-wiipa",
+      "userId": "ADMIN1",
+      "name": "System Admin",
+      "role": "admin",
+      "department": "CSE",
+      "action": "login",
+      "timestamp": "2026-08-12T11:01:55.143Z"
+    },
+    {
+      "id": "login-1786532321367-1ekiv",
+      "userId": "VSBEC",
+      "name": "System Administrator (VY NEXTGEN)",
+      "role": "admin",
+      "department": "General",
+      "action": "login",
+      "timestamp": "2026-08-12T10:58:41.367Z"
+    },
+    {
+      "id": "login-1786532318705-4gwhv",
+      "userId": "Vali1278",
+      "name": "VALIULLAH",
+      "role": "staff",
+      "department": "AIML",
+      "action": "logout",
+      "timestamp": "2026-08-12T10:58:38.705Z"
+    },
+    {
+      "id": "login-1786532243058-znqkl",
+      "userId": "Vali1278",
+      "name": "VALIULLAH",
+      "role": "staff",
+      "department": "AIML",
+      "action": "login",
+      "timestamp": "2026-08-12T10:57:23.058Z"
+    },
+    {
+      "id": "login-1786532233241-5isei",
+      "userId": "VSBEC",
+      "name": "System Administrator (VY NEXTGEN)",
+      "role": "admin",
+      "department": "General",
+      "action": "logout",
+      "timestamp": "2026-08-12T10:57:13.241Z"
+    },
+    {
+      "id": "login-1786532182915-qtxe7",
+      "userId": "VSBEC",
+      "name": "System Administrator (VY NEXTGEN)",
+      "role": "admin",
+      "department": "General",
+      "action": "login",
+      "timestamp": "2026-08-12T10:56:22.915Z"
+    },
+    {
+      "id": "login-1786529696216-a89ep",
+      "userId": "Vali1278",
+      "name": "VALIULLAH",
+      "role": "staff",
+      "department": "AIML",
+      "action": "login",
+      "timestamp": "2026-08-12T10:14:56.216Z"
+    },
+    {
+      "id": "login-1786529677357-0fvgt",
+      "userId": "VSBEC",
+      "name": "System Administrator (VY NEXTGEN)",
+      "role": "admin",
+      "department": "General",
+      "action": "logout",
+      "timestamp": "2026-08-12T10:14:37.357Z"
+    },
+    {
+      "id": "login-1786529676836-ev1kb",
+      "userId": "VSBEC",
+      "name": "System Administrator (VY NEXTGEN)",
+      "role": "admin",
+      "department": "General",
+      "action": "logout",
+      "timestamp": "2026-08-12T10:14:36.836Z"
+    },
+    {
+      "id": "login-1786529676053-gq56h",
+      "userId": "VSBEC",
+      "name": "System Administrator (VY NEXTGEN)",
+      "role": "admin",
+      "department": "General",
+      "action": "logout",
+      "timestamp": "2026-08-12T10:14:36.053Z"
+    },
+    {
+      "id": "login-1786529675838-oxv09",
+      "userId": "VSBEC",
+      "name": "System Administrator (VY NEXTGEN)",
+      "role": "admin",
+      "department": "General",
+      "action": "logout",
+      "timestamp": "2026-08-12T10:14:35.838Z"
+    },
+    {
+      "id": "login-1786529674015-mma8e",
+      "userId": "VSBEC",
+      "name": "System Administrator (VY NEXTGEN)",
+      "role": "admin",
+      "department": "General",
+      "action": "logout",
+      "timestamp": "2026-08-12T10:14:34.015Z"
+    },
+    {
+      "id": "login-1786529363878-m6bf4",
+      "userId": "VSBEC",
+      "name": "System Administrator (VY NEXTGEN)",
+      "role": "admin",
+      "department": "General",
+      "action": "login",
+      "timestamp": "2026-08-12T10:09:23.878Z"
+    },
+    {
+      "id": "login-1786529354553-toq54",
+      "userId": "Vali1278",
+      "name": "VALIULLAH",
+      "role": "staff",
+      "department": "AIML",
+      "action": "logout",
+      "timestamp": "2026-08-12T10:09:14.553Z"
+    },
+    {
+      "id": "login-1786529234522-nlm0u",
+      "userId": "Vali1278",
+      "name": "VALIULLAH",
+      "role": "staff",
+      "department": "AIML",
+      "action": "login",
+      "timestamp": "2026-08-12T10:07:14.522Z"
+    },
+    {
+      "id": "login-1786529208346-6x86x",
+      "userId": "Vali1278",
+      "name": "VALIULLAH",
+      "role": "staff",
+      "department": "AIML",
+      "action": "logout",
+      "timestamp": "2026-08-12T10:06:48.346Z"
+    },
+    {
+      "id": "login-1786529207428-nue2m",
+      "userId": "Vali1278",
+      "name": "VALIULLAH",
+      "role": "staff",
+      "department": "AIML",
+      "action": "logout",
+      "timestamp": "2026-08-12T10:06:47.428Z"
+    },
+    {
+      "id": "login-1786529207188-x3afz",
+      "userId": "Vali1278",
+      "name": "VALIULLAH",
+      "role": "staff",
+      "department": "AIML",
+      "action": "logout",
+      "timestamp": "2026-08-12T10:06:47.188Z"
+    },
+    {
+      "id": "login-1786529206913-wib8u",
+      "userId": "Vali1278",
+      "name": "VALIULLAH",
+      "role": "staff",
+      "department": "AIML",
+      "action": "logout",
+      "timestamp": "2026-08-12T10:06:46.913Z"
+    },
+    {
+      "id": "login-1786529206014-bye0x",
+      "userId": "Vali1278",
+      "name": "VALIULLAH",
+      "role": "staff",
+      "department": "AIML",
+      "action": "logout",
+      "timestamp": "2026-08-12T10:06:46.014Z"
+    },
+    {
+      "id": "login-1786529205727-07hii",
+      "userId": "Vali1278",
+      "name": "VALIULLAH",
+      "role": "staff",
+      "department": "AIML",
+      "action": "logout",
+      "timestamp": "2026-08-12T10:06:45.727Z"
+    },
+    {
+      "id": "login-1786529200049-37l8g",
+      "userId": "Vali1278",
+      "name": "VALIULLAH",
+      "role": "staff",
+      "department": "AIML",
+      "action": "logout",
+      "timestamp": "2026-08-12T10:06:40.049Z"
+    },
+    {
+      "id": "login-1786529195752-n5uxu",
+      "userId": "Vali1278",
+      "name": "VALIULLAH",
+      "role": "staff",
+      "department": "AIML",
+      "action": "logout",
+      "timestamp": "2026-08-12T10:06:35.752Z"
+    },
+    {
+      "id": "login-1786529195407-fmk0b",
+      "userId": "Vali1278",
+      "name": "VALIULLAH",
+      "role": "staff",
+      "department": "AIML",
+      "action": "logout",
+      "timestamp": "2026-08-12T10:06:35.407Z"
+    },
+    {
+      "id": "login-1786526130546-kmq24",
+      "userId": "Vali1278",
+      "name": "VALIULLAH",
+      "role": "staff",
+      "department": "AIML",
+      "action": "login",
+      "timestamp": "2026-08-12T09:15:30.546Z"
+    },
+    {
+      "id": "login-1786526126898-d19pk",
+      "userId": "VSBEC",
+      "name": "System Administrator (VY NEXTGEN)",
+      "role": "admin",
+      "department": "General",
+      "action": "logout",
+      "timestamp": "2026-08-12T09:15:26.898Z"
+    },
+    {
+      "id": "login-1786526098274-fhe7m",
+      "userId": "VSBEC",
+      "name": "System Administrator (VY NEXTGEN)",
+      "role": "admin",
+      "department": "General",
+      "action": "login",
+      "timestamp": "2026-08-12T09:14:58.274Z"
+    },
+    {
+      "id": "login-1786526079938-e72qc",
+      "userId": "Vali1278",
+      "name": "VALIULLAH",
+      "role": "staff",
+      "department": "AIML",
+      "action": "logout",
+      "timestamp": "2026-08-12T09:14:39.938Z"
+    }
+  ],
+  "apiKeys": [
+    {
+      "id": "key-vsb-01",
+      "key": "vsb_live_sk_7f8a9b2c1d3e4f5a6b7c8d9e0f1a2b3c",
+      "name": "Main SMS Gateway Primary Key",
+      "role": "admin",
+      "department": "ALL",
+      "scopes": [
+        "sms:send",
+        "results:read",
+        "results:write",
+        "students:read",
+        "parents:read",
+        "templates:manage"
+      ],
+      "status": "active",
+      "createdAt": "2026-08-01T00:00:00.000Z",
+      "lastUsedAt": "2026-08-08T22:15:00.000Z",
+      "description": "System master key for automated SMS broadcasting and Fast2SMS carrier integration."
+    },
+    {
+      "id": "key-vsb-02",
+      "key": "vsb_live_sk_9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d",
+      "name": "Exam Result Auto-Dispatcher Key",
+      "role": "admin",
+      "department": "EXAM_CELL",
+      "scopes": [
+        "results:read",
+        "results:write",
+        "sms:send",
+        "reports:read"
+      ],
+      "status": "active",
+      "createdAt": "2026-08-02T10:30:00.000Z",
+      "lastUsedAt": "2026-08-08T21:40:00.000Z",
+      "description": "Automated service key for processing semester marksheets and triggering bulk result SMS."
+    },
+    {
+      "id": "key-vsb-03",
+      "key": "vsb_live_sk_3c2b1a0f9e8d7c6b5a4f3e2d1c0b9a8f",
+      "name": "Parent Portal Sync & Enrollment Key",
+      "role": "staff",
+      "department": "STUDENT_AFFAIRS",
+      "scopes": [
+        "parents:read",
+        "parents:write",
+        "students:read"
+      ],
+      "status": "active",
+      "createdAt": "2026-08-03T11:15:00.000Z",
+      "lastUsedAt": "2026-08-08T19:05:00.000Z",
+      "description": "Used by parent enrollment kiosks to synchronize parent phone numbers and student mappings."
+    },
+    {
+      "id": "key-vsb-04",
+      "key": "vsb_live_sk_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d",
+      "name": "Department HOD Integration Key (AIML)",
+      "role": "hod",
+      "department": "AIML",
+      "scopes": [
+        "results:read",
+        "students:read",
+        "sms:send"
+      ],
+      "status": "active",
+      "createdAt": "2026-08-04T09:00:00.000Z",
+      "lastUsedAt": "2026-08-08T18:30:00.000Z",
+      "description": "Departmental key for AI & Machine Learning department head result dispatching."
+    },
+    {
+      "id": "key-vsb-05",
+      "key": "vsb_live_sk_8f7e6d5c4b3a2f1e0d9c8b7a6f5e4d3c",
+      "name": "Attendance & Circular Alert Connector",
+      "role": "staff",
+      "department": "ALL",
+      "scopes": [
+        "sms:send",
+        "templates:read"
+      ],
+      "status": "active",
+      "createdAt": "2026-08-05T14:20:00.000Z",
+      "lastUsedAt": "2026-08-08T20:10:00.000Z",
+      "description": "Connector key for biometric attendance system alerts and urgent circular broadcasts."
+    },
+    {
+      "id": "key-vsb-06",
+      "key": "vsb_live_sk_5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a",
+      "name": "Department HOD Integration Key (AIDS)",
+      "role": "hod",
+      "department": "AIDS",
+      "scopes": [
+        "results:read",
+        "students:read",
+        "sms:send"
+      ],
+      "status": "active",
+      "createdAt": "2026-08-06T08:45:00.000Z",
+      "lastUsedAt": "2026-08-08T15:20:00.000Z",
+      "description": "Departmental key for AI & Data Science department head result dispatching."
+    },
+    {
+      "id": "key-vsb-07",
+      "key": "vsb_live_sk_0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d",
+      "name": "Student Information System (SIS) Sync Key",
+      "role": "system",
+      "department": "ACADEMICS",
+      "scopes": [
+        "students:read",
+        "students:write",
+        "parents:read"
+      ],
+      "status": "active",
+      "createdAt": "2026-08-07T12:00:00.000Z",
+      "lastUsedAt": "2026-08-08T22:00:00.000Z",
+      "description": "Bi-directional sync key connecting main college server ERP to SMS database."
+    },
+    {
+      "id": "key-vsb-08",
+      "key": "vsb_live_sk_4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e",
+      "name": "Mobile App External API Key",
+      "role": "staff",
+      "department": "MOBILE_SERVICES",
+      "scopes": [
+        "sms:send",
+        "results:read",
+        "reports:read"
+      ],
+      "status": "active",
+      "createdAt": "2026-08-08T10:00:00.000Z",
+      "lastUsedAt": "2026-08-08T22:25:00.000Z",
+      "description": "Official API key used by VSBEC Mobile Staff Application for result validation."
     }
   ]
 }

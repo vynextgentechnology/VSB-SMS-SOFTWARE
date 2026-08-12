@@ -81,28 +81,36 @@ app.use((req, res, next) => {
 
 // --- API ROUTES ---
 
+// Health Check Endpoint
+app.get(['/api/health', '/health'], (req, res) => {
+  return res.json({
+    success: true,
+    message: 'API is running'
+  });
+});
+
 // Auth Routes (Strict Role-Based Authentication)
 app.get('/api/auth/me', (req, res) => {
   const userId = req.headers['x-user-id'] as string;
   if (!userId) {
-    return res.status(401).json({ error: 'Not authenticated' });
+    return res.status(401).json({ success: false, message: 'Not authenticated', error: 'Not authenticated' });
   }
   const user = db.getUserByUserId(userId);
   if (!user) {
-    return res.status(404).json({ error: 'User not found' });
+    return res.status(404).json({ success: false, message: 'User not found', error: 'User not found' });
   }
-  return res.json({ user });
+  return res.json({ success: true, user });
 });
 
 app.get('/api/auth/setup-status', (req, res) => {
-  return res.json({ hasAdmin: db.hasAdmin() });
+  return res.json({ success: true, hasAdmin: db.hasAdmin() });
 });
 
 app.post('/api/auth/setup-admin', (req, res) => {
   try {
     const { name, userId, password, department } = req.body;
     if (!name || !userId || !password) {
-      return res.status(400).json({ error: 'Name, User ID, and Password are required for admin setup' });
+      return res.status(400).json({ success: false, message: 'Name, User ID, and Password are required for admin setup' });
     }
     const adminUser = db.setupInitialAdmin(name, userId, password, department || 'General');
     const authResult = db.authenticate(userId, password, 'admin', JWT_SECRET);
@@ -113,22 +121,59 @@ app.post('/api/auth/setup-admin', (req, res) => {
       token: authResult?.token,
     });
   } catch (err: any) {
-    return res.status(400).json({ error: err.message || 'Failed to setup admin account' });
+    return res.status(400).json({ success: false, message: err.message || 'Failed to setup admin account' });
   }
 });
 
-app.post('/api/auth/login', (req, res) => {
-  const { userId, password, role } = req.body;
-  if (!userId || !password) {
-    return res.status(400).json({ error: 'User ID and Password required' });
-  }
+app.post(['/api/auth/login', '/api/login'], async (req, res) => {
+  try {
+    const rawUserId = req.body?.userId || req.body?.username || req.body?.user || '';
+    const rawPassword = req.body?.password || req.body?.pass || '';
+    const rawRole = req.body?.role || '';
 
-  const result = db.authenticate(userId, password, role, JWT_SECRET);
-  if (!result) {
-    return res.status(401).json({ error: 'Invalid credentials or wrong role' });
-  }
+    const userId = rawUserId.toString().trim();
+    const password = rawPassword.toString();
+    const role = rawRole ? rawRole.toString().trim().toLowerCase() : undefined;
 
-  return res.json({ success: true, token: result.token, user: result.user });
+    if (!userId || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Username and password are required',
+      });
+    }
+
+    const result = await db.authenticateAsync(userId, password, role, JWT_SECRET);
+    if (!result) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid username or password',
+      });
+    }
+
+    const userObj = {
+      id: result.user.id,
+      userId: result.user.userId,
+      username: result.user.userId,
+      name: result.user.name,
+      role: result.user.role.toUpperCase(),
+      department: result.user.department || 'General',
+      phoneNumber: result.user.phoneNumber || '',
+      permissions: result.user.permissions || [],
+    };
+
+    return res.json({
+      success: true,
+      message: 'Login successful',
+      user: userObj,
+      token: result.token,
+    });
+  } catch (err: any) {
+    console.error('[Auth Login Error]:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
 });
 
 app.post('/api/auth/logout', (req, res) => {
@@ -194,57 +239,6 @@ app.get('/api/reports/sms-logs', (req, res) => {
   }
 });
 
-// Excel (.xlsx) File Upload Endpoint for Student Enrollment
-app.post('/api/students/upload-excel', upload.single('file'), (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'Excel file (.xlsx or .xls) is required' });
-    }
-
-    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
-    const rawData = XLSX.utils.sheet_to_json<any>(sheet);
-
-    if (!rawData || rawData.length === 0) {
-      return res.status(400).json({ error: 'Uploaded Excel file is empty.' });
-    }
-
-    const parsedStudents: Array<{ name: string; registerNumber: string; department: string; phoneNumber: string }> = [];
-
-    rawData.forEach((row: any) => {
-      const name = (row['Student Name'] || row['Name'] || row['studentName'] || row['Student'] || '').toString().trim();
-      const registerNumber = (row['Register Number'] || row['RegisterNo'] || row['Reg No'] || row['regNo'] || row['Register Number (UNIQUE)'] || '').toString().trim().toUpperCase();
-      const department = (row['Department'] || row['Dept'] || row['dept'] || 'General').toString().trim().toUpperCase();
-      const phoneNumber = (row['Parent Phone Number'] || row['Parent Mobile Number'] || row['Phone Number'] || row['Phone'] || row['Mobile'] || '').toString().trim().replace(/\D/g, '');
-
-      if (name && registerNumber && phoneNumber) {
-        parsedStudents.push({
-          name,
-          registerNumber,
-          department,
-          phoneNumber,
-        });
-      }
-    });
-
-    if (parsedStudents.length === 0) {
-      return res.status(400).json({ error: 'No valid student records found in Excel. Ensure headers include: Student Name, Register Number, Department, Parent Phone Number.' });
-    }
-
-    const importResult = db.importStudentsBatch(parsedStudents, (req as any).currentUser);
-    return res.json({
-      success: true,
-      message: `Processed ${parsedStudents.length} records. Added: ${importResult.addedCount}, Skipped/Duplicates: ${importResult.skippedCount}`,
-      added: importResult.addedCount,
-      updated: importResult.skippedCount,
-      ...importResult,
-    });
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message || 'Failed to parse Excel file' });
-  }
-});
-
 // Dashboard Stats
 app.get('/api/dashboard/stats', (req, res) => {
   try {
@@ -282,21 +276,87 @@ app.post('/api/students', (req, res) => {
   }
 });
 
-app.post('/api/students/batch', (req, res) => {
+app.post(['/api/students/bulk-import', '/api/students/batch'], async (req, res) => {
   try {
-    const { students } = req.body;
-    if (!Array.isArray(students) || students.length === 0) {
-      return res.status(400).json({ error: 'Array of student records required' });
+    const rawStudents = req.body?.students || req.body?.records || (Array.isArray(req.body) ? req.body : []);
+
+    if (!Array.isArray(rawStudents) || rawStudents.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Array of student records is required.',
+        error: 'No student records provided in payload',
+        total: 0,
+        created: 0,
+        updated: 0,
+        failed: 0,
+        addedCount: 0,
+        skippedCount: 0,
+      });
     }
 
-    const result = db.importStudentsBatch(students, (req as any).currentUser);
-    return res.json(result);
+    const validStudents: Array<{ name: string; registerNumber: string; department: string; phoneNumber: string }> = [];
+    let invalidCount = 0;
+
+    rawStudents.forEach((std: any) => {
+      const name = (std.name || std.studentName || '').toString().trim();
+      const registerNumber = (std.registerNumber || std.regNo || std.registerNo || '').toString().trim().toUpperCase();
+      const department = (std.department || std.dept || 'CSE').toString().trim().toUpperCase();
+      const phoneNumber = (std.phoneNumber || std.phone || std.mobile || std.parentPhone || std.parentPhoneNumber || '').toString().trim().replace(/\D/g, '');
+
+      if (name && registerNumber && phoneNumber) {
+        validStudents.push({
+          name,
+          registerNumber,
+          department: department || 'CSE',
+          phoneNumber,
+        });
+      } else {
+        invalidCount++;
+      }
+    });
+
+    if (validStudents.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No valid student records found in payload. Each record must include Name, Register Number, and Parent Phone Number.',
+        error: 'Validation failed for all student records',
+        total: rawStudents.length,
+        created: 0,
+        updated: 0,
+        failed: rawStudents.length,
+        addedCount: 0,
+        skippedCount: 0,
+      });
+    }
+
+    const currentUser = (req as any).currentUser || (req.headers['x-user-id'] as string) || 'VSBEC';
+    const importResult = await db.importStudentsBatchAsync(validStudents, currentUser);
+
+    const created = importResult.addedCount;
+    const updated = importResult.updatedCount || importResult.skippedCount;
+
+    return res.json({
+      success: true,
+      message: `Student enrollment imported successfully! ${validStudents.length} records processed (${created} created, ${updated} updated${invalidCount > 0 ? `, ${invalidCount} skipped` : ''}).`,
+      total: rawStudents.length,
+      created,
+      updated,
+      failed: invalidCount,
+      addedCount: created,
+      skippedCount: updated,
+      updatedCount: updated,
+    });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+    console.error('[Student Bulk Import Fatal Error]:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to process student enrollment import.',
+      error: err.message || 'Server error during student import',
+    });
   }
 });
 
-app.post('/api/students/upload-excel', upload.single('file'), (req, res) => {
+app.post('/api/students/upload-excel', upload.single('file'), async (req, res) => {
   try {
     console.log('[Excel Upload API] Received file upload request...');
 
@@ -431,7 +491,7 @@ app.post('/api/students/upload-excel', upload.single('file'), (req, res) => {
 
     console.log(`[Excel Upload API] Parsed ${parsedStudents.length} valid student records. Storing in database...`);
 
-    const result = db.importStudentsBatch(parsedStudents, (req as any).currentUser);
+    const result = await db.importStudentsBatchAsync(parsedStudents, (req as any).currentUser);
 
     console.log(`[Excel Upload API] Database save success. Added: ${result.addedCount}, Updated: ${result.updatedCount || result.skippedCount}`);
 
@@ -1092,9 +1152,52 @@ app.post('/api/results', (req, res) => {
   }
 });
 
+app.delete('/api/results/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const batches = db.getExamBatches();
+    const batch = batches.find((b) => b.id === id);
+
+    if (!batch) {
+      return res.status(404).json({ error: 'Exam batch not found' });
+    }
+
+    const currentUserId = (req as any).currentUser || (req.headers['x-user-id'] as string) || 'VSBEC';
+    const userRoleOverride = (req as any).userRole;
+    const user = db.getUserByUserId(currentUserId);
+
+    const role = userRoleOverride || user?.role || (currentUserId.toUpperCase() === 'ADMIN' || currentUserId.toUpperCase() === 'VSBEC' ? 'admin' : 'staff');
+    const userDept = user?.department || '';
+
+    // Security Authorization:
+    // Admin: Full delete access
+    // HOD: Can delete only exam batches belonging to their own department
+    // Staff: Do NOT allow exam batch deletion unless explicitly authorized (or admin)
+    if (role === 'staff') {
+      return res.status(403).json({ error: 'Staff members are not authorized to delete exam batches.' });
+    }
+
+    if (role === 'hod') {
+      if (!userDept || batch.department.trim().toUpperCase() !== userDept.trim().toUpperCase()) {
+        return res.status(403).json({ error: `HODs can only delete exam batches belonging to their own department (${userDept || 'unassigned'}).` });
+      }
+    }
+
+    const success = await db.deleteExamBatch(id, currentUserId);
+    if (!success) {
+      return res.status(400).json({ error: 'Failed to delete exam batch.' });
+    }
+
+    return res.json({ success: true, message: 'Exam batch deleted successfully.' });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message || 'Failed to delete exam batch' });
+  }
+});
+
 app.post('/api/results/:id/send-sms', async (req, res) => {
   try {
     const { id } = req.params;
+    const { targetRegNos } = req.body || {};
     const batches = db.getExamBatches();
     const batch = batches.find((b) => b.id === id);
 
@@ -1107,26 +1210,24 @@ app.post('/api/results/:id/send-sms', async (req, res) => {
     const newSmsLogs: any[] = [];
 
     for (const rec of updatedResults) {
+      if (Array.isArray(targetRegNos) && targetRegNos.length > 0) {
+        if (!targetRegNos.includes(rec.registerNumber)) {
+          continue;
+        }
+      }
+
       const totalDisplay = rec.totalMarks !== undefined && rec.totalMarks !== null && rec.totalMarks !== ''
         ? rec.totalMarks
         : (rec.subjects && rec.subjects.length > 0 ? rec.subjects.reduce((sum: number, s: any) => sum + (Number(s.marks) || 0), 0) : 'N/A');
 
       let subjectLines = '';
       if (rec.subjects && rec.subjects.length > 0) {
-        subjectLines = rec.subjects.map((s: any) => `${s.subjectName || s.subjectCode}: ${s.marks}`).join('\n');
+        subjectLines = rec.subjects.map((s: any) => `${s.subjectName || s.subjectCode}: ${s.marks}`).join(', ');
       } else {
         subjectLines = `Total Marks: ${totalDisplay}`;
       }
 
-      const messageContent = `Dear Parent,
-Your ward ${rec.studentName} (Reg: ${rec.registerNumber})
-
-${subjectLines}
-
-Result: ${rec.overallStatus}
-
-- VSB Engineering College
-Powered by VY NEXTGEN TECHNOLOGY`;
+      const messageContent = `Dear Parent, your ward ${rec.studentName} (Reg No: ${rec.registerNumber}) - ${subjectLines}, Total: ${totalDisplay}, Result: ${rec.overallStatus}. - VSB Engineering College`;
 
       let status = 'Sent';
       let errorMessage: string | undefined = undefined;
@@ -1143,7 +1244,7 @@ Powered by VY NEXTGEN TECHNOLOGY`;
       } else {
         status = 'Failed';
         errorMessage = rec.matchedParent === false
-          ? 'Parent Not Enrolled / Unmatched Register Number'
+          ? 'Parent Mobile Not Found in Student Enrollment database'
           : 'Invalid or missing parent mobile number';
       }
 
@@ -1155,7 +1256,7 @@ Powered by VY NEXTGEN TECHNOLOGY`;
       newSmsLogs.push({
         recipientName: rec.studentName,
         registerNumber: rec.registerNumber,
-        phoneNumber: rec.phoneNumber,
+        phoneNumber: rec.phoneNumber || 'N/A',
         department: rec.department || batch.department,
         messageType: 'Exam Result',
         messageContent,
@@ -1389,11 +1490,12 @@ app.get('/api/download/source-code', async (req, res) => {
 
 // --- API 404 HANDLER ---
 // Catch all unmatched /api requests and return clean JSON 404 instead of falling back to index.html
-app.all('/api/*', (req, res) => {
+app.all(['/api', '/api/*'], (req, res) => {
   const msg = `API route not found: ${req.method} ${req.path}`;
   res.status(404).json({
-    error: msg,
+    success: false,
     message: msg,
+    error: msg,
   });
 });
 
@@ -1405,8 +1507,9 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   }
   const cleanMsg = typeof err === 'string' ? err : (err?.message || 'An unexpected server error occurred.');
   res.status(err.status || 500).json({
-    error: cleanMsg,
+    success: false,
     message: cleanMsg,
+    error: cleanMsg,
   });
 });
 
@@ -1422,6 +1525,13 @@ async function startServer() {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
+      if (req.path.startsWith('/api')) {
+        return res.status(404).json({
+          success: false,
+          message: `API endpoint not found: ${req.method} ${req.path}`,
+          error: 'API endpoint not found',
+        });
+      }
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }

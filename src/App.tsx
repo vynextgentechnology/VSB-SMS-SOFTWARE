@@ -255,6 +255,9 @@ export default function App() {
             <ResultSmsSystem
               batches={examBatches}
               departments={departments}
+              students={students}
+              parents={parents}
+              currentUser={currentUser}
               onRefresh={refreshData}
               onNavigateToReports={() => setActiveTab('sms_reports')}
             />
