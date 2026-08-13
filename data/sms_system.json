@@ -29,25 +29,6 @@
         "upload_results"
       ],
       "createdAt": "2026-08-07T10:09:50.445Z"
-    },
-    {
-      "id": "usr-admin-1786532514907",
-      "userId": "ADMIN1",
-      "name": "System Admin",
-      "role": "admin",
-      "department": "CSE",
-      "rawPassword": "password123",
-      "passwordHash": "$2b$10$IJJ5l574cVQphmH3leNZ/.n9bf3ckW/tT3FaQAy24/eBARQ56hzM2",
-      "permissions": [
-        "send_sms",
-        "upload_results",
-        "manage_students",
-        "manage_staff",
-        "view_reports",
-        "manage_settings",
-        "manage_parents"
-      ],
-      "createdAt": "2026-08-12T11:01:55.042Z"
     }
   ],
   "parentEnrollments": [],
@@ -590,7 +571,7 @@
       "id": "dept-cse",
       "code": "CSE",
       "name": "Computer Science & Engineering",
-      "headOfDepartment": "Dr. R. Sharma",
+      "headOfDepartment": "Dr. ANBUMANI",
       "createdAt": "2026-08-07T02:24:06.396Z"
     },
     {
@@ -912,6 +893,54 @@
     "defaultSenderName": "VSBEC VY NEXTGEN"
   },
   "activityLogs": [
+    {
+      "id": "act-1786548738003-sc6fa",
+      "action": "Student Deleted",
+      "details": "Deleted student Delete Test Student (999988887777)",
+      "user": "ADMIN1",
+      "type": "student",
+      "timestamp": "2026-08-12T15:32:18.003Z"
+    },
+    {
+      "id": "act-1786548734776-12rqe",
+      "action": "Department Updated",
+      "details": "Updated department CSE",
+      "user": "VSBEC",
+      "type": "settings",
+      "timestamp": "2026-08-12T15:32:14.776Z"
+    },
+    {
+      "id": "act-1786548645107-xk50j",
+      "action": "Student Added",
+      "details": "Added student Delete Test Student (999988887777) - Dept: CSE",
+      "user": "ADMIN1",
+      "type": "student",
+      "timestamp": "2026-08-12T15:30:45.107Z"
+    },
+    {
+      "id": "act-1786548288978-povxg",
+      "action": "User Account Deleted",
+      "details": "Deleted user System Admin (ADMIN1)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-12T15:24:48.978Z"
+    },
+    {
+      "id": "act-1786548246324-9sv6b",
+      "action": "User Login",
+      "details": "Logged in as System Administrator (VY NEXTGEN) (ADMIN)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-12T15:24:06.324Z"
+    },
+    {
+      "id": "act-1786548237555-suwjg",
+      "action": "User Logout",
+      "details": "Logged out (VSBEC)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-12T15:23:57.555Z"
+    },
     {
       "id": "act-1786532521297-8ilak",
       "action": "User Login",
@@ -1378,6 +1407,24 @@
     }
   ],
   "loginLogs": [
+    {
+      "id": "login-1786548246324-9i2vd",
+      "userId": "VSBEC",
+      "name": "System Administrator (VY NEXTGEN)",
+      "role": "admin",
+      "department": "General",
+      "action": "login",
+      "timestamp": "2026-08-12T15:24:06.324Z"
+    },
+    {
+      "id": "login-1786548237554-3cvci",
+      "userId": "VSBEC",
+      "name": "System Administrator (VY NEXTGEN)",
+      "role": "admin",
+      "department": "General",
+      "action": "logout",
+      "timestamp": "2026-08-12T15:23:57.554Z"
+    },
     {
       "id": "login-1786532521298-iyegc",
       "userId": "ADMIN1",

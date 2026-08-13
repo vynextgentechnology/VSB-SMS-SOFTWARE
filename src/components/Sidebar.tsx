@@ -12,6 +12,7 @@ import {
   Building2,
   ShieldCheck,
   Sparkles,
+  ClipboardList,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -29,7 +30,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   studentCount,
   staffCount,
 }) => {
-  const role = user?.role || 'staff';
+  const role = (user?.role || 'staff').toString().trim().toLowerCase();
 
   const allMenuItems = [
     {
@@ -37,7 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Dashboard',
       icon: LayoutDashboard,
       badge: null,
-      roles: ['admin', 'hod', 'staff'],
+      roles: ['super_admin', 'admin', 'hod', 'staff'],
     },
     {
       id: 'admin_management',
@@ -45,28 +46,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: ShieldCheck,
       badge: 'Admin',
       badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-      roles: ['admin'],
+      roles: ['super_admin', 'admin'],
     },
     {
       id: 'departments',
       label: 'Department Mgmt',
       icon: Building2,
       badge: null,
-      roles: ['admin'],
+      roles: ['super_admin', 'admin'],
     },
     {
       id: 'students',
       label: role === 'staff' ? 'Student Details & Entry' : 'Student Management',
       icon: Users,
       badge: studentCount > 0 ? studentCount : null,
-      roles: ['admin', 'hod', 'staff'],
+      roles: ['super_admin', 'admin', 'hod', 'staff'],
     },
     {
       id: 'staff',
       label: role === 'hod' ? 'Department Staff' : 'Staff Management',
       icon: UserCheck,
       badge: staffCount > 0 ? staffCount : null,
-      roles: ['admin', 'hod'],
+      roles: ['super_admin', 'admin', 'hod'],
     },
     {
       id: 'sms_send',
@@ -74,7 +75,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: Send,
       badge: 'Send',
       badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-      roles: ['admin', 'hod', 'staff'],
+      roles: ['super_admin', 'admin', 'hod', 'staff'],
     },
     {
       id: 'result_sms',
@@ -82,32 +83,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: FileCheck2,
       badge: 'Auto',
       badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-      roles: ['admin', 'hod', 'staff'],
+      roles: ['super_admin', 'admin', 'hod', 'staff'],
     },
     {
       id: 'sms_reports',
       label: 'Reports & Logs',
       icon: FileText,
       badge: null,
-      roles: ['admin'],
+      roles: ['super_admin', 'admin'],
     },
     {
       id: 'templates',
       label: 'Assessment Templates',
       icon: FileCode2,
       badge: null,
-      roles: ['admin', 'hod', 'staff'],
+      roles: ['super_admin', 'admin', 'hod', 'staff'],
     },
     {
       id: 'settings',
       label: 'Gateway Settings',
       icon: Settings,
       badge: null,
-      roles: ['admin'],
+      roles: ['super_admin', 'admin'],
     },
   ];
 
-  const menuItems = allMenuItems.filter((item) => item.roles.includes(role));
+  const menuItems = allMenuItems.filter((item) =>
+    item.roles.some((r) => r === role || (role === 'super_admin' && r === 'admin'))
+  );
 
   return (
     <aside id="main-app-sidebar" className="w-72 bg-[#0f172a] text-slate-300 flex flex-col justify-between shrink-0 min-h-[calc(100vh-5rem)] border-r border-slate-800">
@@ -125,7 +128,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px]">
               <span className="text-slate-400 font-bold uppercase truncate max-w-[130px]">{user.name}</span>
               <span className={`px-2 py-0.5 font-black uppercase rounded-xs ${
-                user.role === 'admin'
+                user.role === 'SUPER_ADMIN'
+                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                  : user.role === 'admin'
                   ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                   : user.role === 'hod'
                   ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'

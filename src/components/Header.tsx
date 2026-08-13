@@ -18,6 +18,10 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeView }) =>
 
   const getViewTitle = () => {
     switch (activeView) {
+      case 'admin_management':
+        return 'User Management & Security Logs';
+      case 'departments':
+        return 'Department Management';
       case 'students':
         return 'Student Directory & Records';
       case 'staff':
@@ -92,8 +96,8 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeView }) =>
                   <div className="text-left hidden sm:block">
                     <div className="text-xs font-black text-slate-900 uppercase tracking-tight flex items-center gap-1">
                       {user.name}
-                      {user.role === 'admin' && (
-                        <ShieldCheck className="w-3.5 h-3.5 text-amber-500 inline" title="Superuser Status" />
+                      {(user.role === 'SUPER_ADMIN' || user.role === 'admin') && (
+                        <ShieldCheck className={`w-3.5 h-3.5 inline ${user.role === 'SUPER_ADMIN' ? 'text-purple-600' : 'text-amber-500'}`} title="Security Access" />
                       )}
                     </div>
                     <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">

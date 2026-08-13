@@ -16,6 +16,7 @@ import {
   Building2,
   Check,
   FileSpreadsheet,
+  Eye,
 } from 'lucide-react';
 
 interface StudentManagementProps {
@@ -46,7 +47,8 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
-  const [deletingStudent, setDeletingStudent] = useState<{ id: string; name: string } | null>(null);
+  const [deletingStudent, setDeletingStudent] = useState<Student | null>(null);
+  const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -111,24 +113,27 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
     }
   };
 
-  const handleDeleteStudent = (id: string, name: string) => {
-    setDeletingStudent({ id, name });
+  const handleDeleteStudent = (std: Student) => {
+    setError(null);
+    setDeletingStudent(std);
   };
 
   const confirmDeleteStudent = async () => {
     if (!deletingStudent) return;
-    const { id, name } = deletingStudent;
+    const { id, name, registerNumber } = deletingStudent;
+    setError(null);
+    setLoading(true);
     try {
       await api.deleteStudent(id);
-      setSuccessMsg(`Deleted student ${name}`);
+      setSuccessMsg(`Student deleted successfully.`);
       setDeletingStudent(null);
       onRefresh();
-      setTimeout(() => setSuccessMsg(null), 3000);
+      setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
-      console.log(err);
-      if (err?.message) console.log(err.message);
-      if (err?.response?.data) console.log(err.response?.data);
+      console.error('[Delete Student Error]:', err);
       setError(formatErrorMessage(err));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -552,7 +557,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
                       </span>
                     </td>
                     <td className="px-6 py-4 font-mono font-bold text-slate-800">{std.phoneNumber}</td>
-                    <td className="px-6 py-4 text-right space-x-2">
+                    <td className="px-6 py-4 text-right space-x-1.5">
                       {onSendSmsToStudent && (
                         <button
                           onClick={() => onSendSmsToStudent(std)}
@@ -564,14 +569,21 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
                         </button>
                       )}
                       <button
+                        onClick={() => setViewingStudent(std)}
+                        title="View Student Details"
+                        className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded transition-colors inline-block"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                      <button
                         onClick={() => openEditModal(std)}
                         title="Edit Student"
-                        className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded transition-colors inline-block"
+                        className="p-1.5 text-slate-500 hover:text-amber-600 hover:bg-slate-100 rounded transition-colors inline-block"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => handleDeleteStudent(std.id, std.name)}
+                        onClick={() => handleDeleteStudent(std)}
                         title="Delete Student"
                         className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-slate-100 rounded transition-colors inline-block"
                       >
@@ -920,6 +932,192 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
                 >
                   <Upload className="w-4 h-4" />
                   <span>{excelUploadLoading ? 'Saving...' : 'Import All Records'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {deletingStudent && (
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-2xl max-w-md w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="bg-rose-600 p-4 text-white flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Trash2 className="w-5 h-5 text-rose-100" />
+                <h3 className="font-black text-sm uppercase tracking-wider">Confirm Delete Student</h3>
+              </div>
+              <button
+                onClick={() => setDeletingStudent(null)}
+                className="text-rose-100 hover:text-white transition-colors"
+                title="Cancel"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-4">
+              <p className="text-slate-800 text-sm font-bold">
+                Are you sure you want to delete this student?
+              </p>
+
+              {/* Student Details Card */}
+              <div className="bg-slate-50 rounded-md p-4 border border-slate-200 space-y-2">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500 font-bold uppercase">Student Name:</span>
+                  <span className="text-slate-900 font-black">{deletingStudent.name}</span>
+                </div>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500 font-bold uppercase">Register Number:</span>
+                  <span className="font-mono font-black text-blue-700">{deletingStudent.registerNumber}</span>
+                </div>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500 font-bold uppercase">Department:</span>
+                  <span className="px-2 py-0.5 bg-slate-900 text-white font-bold text-[10px] rounded uppercase">
+                    {deletingStudent.department}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500 font-bold uppercase">Parent Phone:</span>
+                  <span className="font-mono font-bold text-slate-700">{deletingStudent.phoneNumber}</span>
+                </div>
+              </div>
+
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-md text-amber-800 text-xs flex items-start space-x-2">
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <span>
+                  This record will be permanently deleted from MongoDB storage. This action cannot be undone.
+                </span>
+              </div>
+
+              {error && (
+                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold rounded-md flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Actions */}
+            <div className="bg-slate-100 px-6 py-4 flex items-center justify-end space-x-3 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => setDeletingStudent(null)}
+                disabled={loading}
+                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs uppercase tracking-wider rounded transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteStudent}
+                disabled={loading}
+                className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase tracking-widest rounded shadow-md transition-all flex items-center space-x-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>{loading ? 'Deleting...' : 'Delete'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW STUDENT DETAILS MODAL */}
+      {viewingStudent && (
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-2xl max-w-md w-full border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="bg-[#0f172a] p-4 text-white flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Eye className="w-5 h-5 text-blue-400" />
+                <h3 className="font-black text-sm uppercase tracking-wider">Student Details</h3>
+              </div>
+              <button
+                onClick={() => setViewingStudent(null)}
+                className="text-slate-400 hover:text-white transition-colors"
+                title="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-4">
+              <div className="flex items-center space-x-3 bg-blue-50/70 p-3 rounded-lg border border-blue-100">
+                <div className="w-12 h-12 bg-blue-600 text-white font-black text-lg rounded-full flex items-center justify-center shrink-0 uppercase">
+                  {viewingStudent.name.charAt(0)}
+                </div>
+                <div>
+                  <h4 className="font-black text-slate-900 text-base">{viewingStudent.name}</h4>
+                  <p className="font-mono text-xs text-blue-700 font-bold">{viewingStudent.registerNumber}</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                  <span className="text-slate-500 font-bold uppercase">Register Number</span>
+                  <span className="font-mono font-black text-slate-900 text-sm">{viewingStudent.registerNumber}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                  <span className="text-slate-500 font-bold uppercase">Student Name</span>
+                  <span className="font-black text-slate-900">{viewingStudent.name}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                  <span className="text-slate-500 font-bold uppercase">Department</span>
+                  <span className="px-2.5 py-1 bg-slate-900 text-white font-black rounded uppercase text-[10px]">
+                    {viewingStudent.department}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                  <span className="text-slate-500 font-bold uppercase">Parent Phone Number</span>
+                  <span className="font-mono font-black text-slate-800">{viewingStudent.phoneNumber}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                  <span className="text-slate-500 font-bold uppercase">Registration Date</span>
+                  <span className="font-mono text-slate-600">
+                    {viewingStudent.createdAt ? new Date(viewingStudent.createdAt).toLocaleDateString() : 'N/A'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="bg-slate-100 px-6 py-4 flex items-center justify-between border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => {
+                  const target = viewingStudent;
+                  setViewingStudent(null);
+                  handleDeleteStudent(target);
+                }}
+                className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase tracking-wider rounded flex items-center gap-1 transition-all"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete</span>
+              </button>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const target = viewingStudent;
+                    setViewingStudent(null);
+                    openEditModal(target);
+                  }}
+                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-wider rounded flex items-center gap-1 transition-all"
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                  <span>Edit</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewingStudent(null)}
+                  className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs uppercase tracking-wider rounded transition-all"
+                >
+                  Close
                 </button>
               </div>
             </div>

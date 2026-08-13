@@ -45,6 +45,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
   });
 
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
+  const [dbStatus, setDbStatus] = useState<{ connected: boolean; configured: boolean; lastError: string | null; inCoolDown: boolean } | null>(null);
   const [newKeyName, setNewKeyName] = useState('');
   const [newKeyRole, setNewKeyRole] = useState<'admin' | 'hod' | 'staff' | 'system'>('staff');
   const [newKeyDept, setNewKeyDept] = useState('ALL');
@@ -63,7 +64,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
   useEffect(() => {
     loadSettings();
     loadApiKeys();
+    loadDbStatus();
   }, []);
+
+  const loadDbStatus = async () => {
+    try {
+      const st = await api.getDbStatus();
+      setDbStatus(st);
+    } catch (err) {
+      console.log('Failed to fetch DB status:', err);
+    }
+  };
 
   const loadSettings = async () => {
     setLoading(true);
@@ -254,6 +265,52 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
             <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
             <span>{successMsg}</span>
           </div>
+        </div>
+      )}
+
+      {/* Database Storage Engine Status */}
+      {dbStatus && (
+        <div className="bg-white border border-slate-200 p-6 rounded-sm shadow-sm space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+            <div className="flex items-center space-x-2">
+              <Layers className="w-4 h-4 text-blue-600" />
+              <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider">
+                Database Storage Engine
+              </h3>
+            </div>
+            <span
+              className={`px-2.5 py-1 text-[10px] font-black uppercase rounded border ${
+                dbStatus.connected
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-amber-50 text-amber-800 border-amber-200'
+              }`}
+            >
+              {dbStatus.connected
+                ? 'MongoDB Atlas (Connected)'
+                : 'Local JSON File Engine (Active Fallback)'}
+            </span>
+          </div>
+
+          {!dbStatus.connected && dbStatus.configured && (
+            <div className="p-3 bg-amber-50/80 border border-amber-200 rounded-sm text-xs space-y-1.5 text-amber-900 font-medium">
+              <div className="flex items-center space-x-2 font-bold text-amber-950">
+                <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
+                <span>MongoDB Atlas Unreachable — IP Whitelisting Info</span>
+              </div>
+              <p className="text-[11px] leading-relaxed">
+                The application is running with local JSON file persistence because MongoDB Atlas cluster is rejecting the connection (IP restriction).
+              </p>
+              <div className="bg-white/80 p-2 rounded border border-amber-200 text-[10px] font-mono text-slate-800">
+                To connect Atlas: In MongoDB Atlas Dashboard → Network Access → Add IP Address → Select <b>Allow Access from Anywhere (0.0.0.0/0)</b>.
+              </div>
+            </div>
+          )}
+
+          {dbStatus.connected && (
+            <p className="text-xs text-slate-600 font-medium">
+              ✅ Connected to MongoDB Atlas cluster. All student records, parent enrollments, and SMS logs are synchronized in real-time.
+            </p>
+          )}
         </div>
       )}
 

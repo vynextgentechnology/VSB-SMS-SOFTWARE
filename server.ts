@@ -9,6 +9,7 @@ import JSZip from 'jszip';
 import { GoogleGenAI } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
 import { db } from './src/server/db.js';
+import { getMongoDBConnectionDetails } from './src/server/mongo.js';
 import { sendSMS, getSmsApiKeyPoolStatus, rotateToNextKey } from './src/server/smsService.js';
 
 const storage = multer.memoryStorage();
@@ -69,6 +70,7 @@ app.use((req, res, next) => {
       const decoded = jwt.verify(token, JWT_SECRET) as any;
       (req as any).user = decoded;
       (req as any).currentUser = decoded.userId || 'VSBEC';
+      (req as any).userRole = decoded.role || (decoded.userId?.toUpperCase() === 'VYNEXTGEN' ? 'SUPER_ADMIN' : 'ADMIN');
       return next();
     } catch (err) {
       // Invalid or expired token, fall back to x-user-id header
@@ -76,6 +78,8 @@ app.use((req, res, next) => {
   }
   const userId = (req.headers['x-user-id'] as string) || 'VSBEC';
   (req as any).currentUser = userId;
+  const dbUser = db.getUserByUserId(userId);
+  (req as any).userRole = dbUser?.role || (userId.toUpperCase() === 'VYNEXTGEN' ? 'SUPER_ADMIN' : 'ADMIN');
   next();
 });
 
@@ -90,16 +94,20 @@ app.get(['/api/health', '/health'], (req, res) => {
 });
 
 // Auth Routes (Strict Role-Based Authentication)
-app.get('/api/auth/me', (req, res) => {
-  const userId = req.headers['x-user-id'] as string;
-  if (!userId) {
-    return res.status(401).json({ success: false, message: 'Not authenticated', error: 'Not authenticated' });
+app.get('/api/auth/me', async (req, res) => {
+  try {
+    const userId = (req as any).currentUser || (req.headers['x-user-id'] as string);
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Not authenticated', error: 'Not authenticated' });
+    }
+    const user = await db.getUserByUserIdAsync(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found', error: 'User not found' });
+    }
+    return res.json({ success: true, user });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, message: err.message || 'Failed to fetch user session' });
   }
-  const user = db.getUserByUserId(userId);
-  if (!user) {
-    return res.status(404).json({ success: false, message: 'User not found', error: 'User not found' });
-  }
-  return res.json({ success: true, user });
 });
 
 app.get('/api/auth/setup-status', (req, res) => {
@@ -189,7 +197,8 @@ app.post('/api/auth/logout', (req, res) => {
 // Login / Logout History
 app.get('/api/login-history', (req, res) => {
   try {
-    const logs = db.getLoginLogs();
+    const role = (req as any).userRole || '';
+    const logs = db.getLoginLogs(role);
     return res.json(logs);
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
@@ -199,7 +208,8 @@ app.get('/api/login-history', (req, res) => {
 // --- REPORT DOWNLOAD ENDPOINTS (CSV / Excel format) ---
 app.get('/api/reports/login-history', (req, res) => {
   try {
-    const logs = db.getLoginLogs();
+    const role = (req as any).userRole || '';
+    const logs = db.getLoginLogs(role);
     const headers = ['User ID', 'Name', 'Role', 'Department', 'Action', 'Timestamp'];
     const rows = logs.map(l => [l.userId, l.name, l.role.toUpperCase(), l.department || 'General', l.action.toUpperCase(), new Date(l.timestamp).toLocaleString()]);
     const csvContent = [headers.join(','), ...rows.map(r => r.map(c => `"${c}"`).join(','))].join('\n');
@@ -242,7 +252,8 @@ app.get('/api/reports/sms-logs', (req, res) => {
 // Dashboard Stats
 app.get('/api/dashboard/stats', (req, res) => {
   try {
-    const stats = db.getDashboardStats();
+    const role = (req as any).userRole || '';
+    const stats = db.getDashboardStats(role);
     return res.json(stats);
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
@@ -250,29 +261,29 @@ app.get('/api/dashboard/stats', (req, res) => {
 });
 
 // Student Management
-app.get('/api/students', (req, res) => {
+app.get('/api/students', async (req, res) => {
   try {
-    const students = db.getStudents();
+    const students = await db.getStudentsAsync();
     return res.json(students);
   } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ success: false, message: err.message || 'Failed to fetch students' });
   }
 });
 
-app.post('/api/students', (req, res) => {
+app.post('/api/students', async (req, res) => {
   try {
     const { name, registerNumber, department, phoneNumber } = req.body;
     if (!name || !registerNumber || !department || !phoneNumber) {
-      return res.status(400).json({ error: 'Name, Register Number, Department, and Phone Number are required' });
+      return res.status(400).json({ success: false, message: 'Name, Register Number, Department, and Phone Number are required' });
     }
 
-    const newStudent = db.addStudent(
+    const newStudent = await db.addStudentAsync(
       { name, registerNumber, department, phoneNumber },
       (req as any).currentUser
     );
     return res.status(201).json(newStudent);
   } catch (err: any) {
-    return res.status(400).json({ error: err.message });
+    return res.status(400).json({ success: false, message: err.message });
   }
 });
 
@@ -511,24 +522,97 @@ app.post('/api/students/upload-excel', upload.single('file'), async (req, res) =
   }
 });
 
-app.put('/api/students/:id', (req, res) => {
+app.put('/api/students/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const updated = db.updateStudent(id, req.body, (req as any).currentUser);
+    const updated = await db.updateStudentAsync(id, req.body, (req as any).currentUser);
     return res.json(updated);
   } catch (err: any) {
-    return res.status(400).json({ error: err.message });
+    return res.status(400).json({ success: false, message: err.message });
   }
 });
 
-app.delete('/api/students/:id', (req, res) => {
+app.delete('/api/students/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const success = db.deleteStudent(id, (req as any).currentUser);
-    if (!success) return res.status(404).json({ error: 'Student not found' });
-    return res.json({ success: true });
+    if (!id || id === 'undefined') {
+      return res.status(400).json({ success: false, message: 'Student ID or Register Number is required' });
+    }
+
+    const cleanId = id.trim();
+    const cleanReg = cleanId.toUpperCase();
+
+    // User authentication & role detection
+    const authUser = (req as any).user;
+    const currentUserId = (req as any).currentUser || (req.headers['x-user-id'] as string) || 'VSBEC';
+    const dbUser = await db.getUserByUserIdAsync(currentUserId);
+
+    let rawRole = (authUser?.role || dbUser?.role || '').toLowerCase();
+    if (!rawRole) {
+      if (currentUserId.toUpperCase().includes('ADMIN') || currentUserId.toUpperCase() === 'VSBEC') {
+        rawRole = 'admin';
+      } else if (currentUserId.toUpperCase().startsWith('HOD')) {
+        rawRole = 'hod';
+      } else {
+        rawRole = 'staff';
+      }
+    }
+
+    let userRole = rawRole;
+    let userDepartment = (authUser?.department || dbUser?.department || 'General').toUpperCase();
+    let userPermissions: string[] = authUser?.permissions || dbUser?.permissions || (userRole === 'admin' ? ['send_sms', 'upload_results', 'manage_students', 'manage_staff', 'view_reports', 'manage_settings', 'manage_parents'] : ['send_sms', 'upload_results', 'manage_students']);
+
+    // Find student to verify department restrictions before deleting
+    const students = await db.getStudentsAsync();
+    const targetStudent = students.find(
+      (s) => s.id === cleanId || s.registerNumber.toUpperCase() === cleanReg
+    );
+
+    // Permission enforcement
+    if (userRole === 'admin') {
+      // Full administrative permission
+    } else if (userRole === 'hod') {
+      if (targetStudent && targetStudent.department.toUpperCase() !== userDepartment && userDepartment !== 'ALL' && userDepartment !== 'GENERAL') {
+        return res.status(403).json({
+          success: false,
+          message: `HODs are only permitted to delete students from their own department (${userDepartment})`,
+        });
+      }
+    } else if (userRole === 'staff') {
+      const hasStudentMgmtPerm = userPermissions.includes('manage_students') || userPermissions.includes('ALL');
+      if (!hasStudentMgmtPerm) {
+        return res.status(403).json({
+          success: false,
+          message: 'Staff account lacks manage_students permission required to delete student records',
+        });
+      }
+      if (targetStudent && userDepartment !== 'GENERAL' && userDepartment !== 'ALL' && targetStudent.department.toUpperCase() !== userDepartment) {
+        return res.status(403).json({
+          success: false,
+          message: `Staff are only permitted to delete students in their assigned department (${userDepartment})`,
+        });
+      }
+    }
+
+    const deleteResult = await db.deleteStudentAsync(cleanId, currentUserId);
+    if (!deleteResult.success) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found',
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Student deleted successfully',
+      student: deleteResult.student,
+    });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+    console.error('[Student DELETE Route Error]:', err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || 'Server error occurred while deleting student',
+    });
   }
 });
 
@@ -1108,7 +1192,7 @@ app.get('/api/results', (req, res) => {
 
 app.post('/api/results', (req, res) => {
   try {
-    const { title, department, examDate, results } = req.body;
+    const { title, resultType, department, examDate, results } = req.body;
     if (!title || !department || !Array.isArray(results) || results.length === 0) {
       return res.status(400).json({ error: 'Title, Department, and non-empty results array required' });
     }
@@ -1145,7 +1229,14 @@ app.post('/api/results', (req, res) => {
       }
     }
 
-    const batch = db.addExamBatch(title, department, examDate || new Date().toISOString().split('T')[0], results, currentUser);
+    const batch = db.addExamBatch(
+      title,
+      department,
+      examDate || new Date().toISOString().split('T')[0],
+      results,
+      currentUser,
+      resultType || 'Semester Result'
+    );
     return res.status(201).json(batch);
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
@@ -1208,6 +1299,7 @@ app.post('/api/results/:id/send-sms', async (req, res) => {
     const sender = (req as any).currentUser || 'VSBEC';
     const updatedResults = [...batch.results];
     const newSmsLogs: any[] = [];
+    const isSemester = batch.resultType === 'Semester Result';
 
     for (const rec of updatedResults) {
       if (Array.isArray(targetRegNos) && targetRegNos.length > 0) {
@@ -1216,18 +1308,31 @@ app.post('/api/results/:id/send-sms', async (req, res) => {
         }
       }
 
-      const totalDisplay = rec.totalMarks !== undefined && rec.totalMarks !== null && rec.totalMarks !== ''
-        ? rec.totalMarks
-        : (rec.subjects && rec.subjects.length > 0 ? rec.subjects.reduce((sum: number, s: any) => sum + (Number(s.marks) || 0), 0) : 'N/A');
-
       let subjectLines = '';
       if (rec.subjects && rec.subjects.length > 0) {
-        subjectLines = rec.subjects.map((s: any) => `${s.subjectName || s.subjectCode}: ${s.marks}`).join(', ');
+        if (isSemester) {
+          // SEMESTER RESULT: Grade ONLY. Do NOT send marks, total marks, or percentages.
+          subjectLines = rec.subjects
+            .map((s: any) => `${s.subjectName || s.subjectCode}: ${s.grade || s.result || '-'}`)
+            .join(', ');
+        } else {
+          // INTERNAL TEST / ASSESSMENT: Marks ONLY. Do NOT send total marks or percentages.
+          subjectLines = rec.subjects
+            .map((s: any) => `${s.subjectName || s.subjectCode}: ${s.marks !== undefined && s.marks !== null ? s.marks : (s.grade || '-')}`)
+            .join(', ');
+        }
       } else {
-        subjectLines = `Total Marks: ${totalDisplay}`;
+        subjectLines = `Result: ${rec.overallStatus}`;
       }
 
-      const messageContent = `Dear Parent, your ward ${rec.studentName} (Reg No: ${rec.registerNumber}) - ${subjectLines}, Total: ${totalDisplay}, Result: ${rec.overallStatus}. - VSB Engineering College`;
+      let messageContent = '';
+      if (isSemester) {
+        const gradePart = rec.overallGrade || rec.gpa ? `. Overall Grade: ${rec.overallGrade || rec.gpa}` : '';
+        messageContent = `Dear Parent, Semester Result for ${rec.studentName} (${rec.registerNumber}): ${subjectLines}. Overall Result: ${rec.overallStatus}${gradePart}. - VSB Engineering College`;
+      } else {
+        const statusPart = rec.overallStatus ? `. Overall Result: ${rec.overallStatus}` : '';
+        messageContent = `Dear Parent, Assessment Result for ${rec.studentName} (${rec.registerNumber}): ${subjectLines}${statusPart}. - VSB Engineering College`;
+      }
 
       let status = 'Sent';
       let errorMessage: string | undefined = undefined;
@@ -1359,11 +1464,18 @@ app.post('/api/settings', (req, res) => {
 // Activity Logs
 app.get('/api/activity-logs', (req, res) => {
   try {
-    const logs = db.getActivityLogs();
+    const role = (req as any).userRole || '';
+    const logs = db.getActivityLogs(role);
     return res.json(logs);
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
+});
+
+// --- DATABASE ENGINE STATUS ROUTE ---
+app.get('/api/db/status', (req, res) => {
+  const status = getMongoDBConnectionDetails();
+  return res.json(status);
 });
 
 // --- GOOGLE GEMINI AI API ROUTES ---

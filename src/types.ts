@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'hod' | 'staff';
+export type UserRole = 'SUPER_ADMIN' | 'admin' | 'hod' | 'staff';
 
 export type Permission = 'send_sms' | 'upload_results' | 'manage_students' | 'manage_staff' | 'view_reports' | 'manage_settings' | 'manage_parents';
 
@@ -68,9 +68,12 @@ export interface SmsLog {
   errorMessage?: string;
 }
 
+export type ResultType = 'Semester Result' | 'Internal Test / Assessment';
+
 export interface SubjectMark {
   subjectCode: string;
   subjectName: string;
+  grade?: string;
   marks: number;
   maxMarks: number;
   result: 'PASS' | 'FAIL' | 'ABSENT';
@@ -87,6 +90,9 @@ export interface StudentExamResult {
   subjects: SubjectMark[];
   totalMarks?: number | string;
   gpa?: string;
+  overallGrade?: string;
+  passedSubjectsCount?: number;
+  failedSubjectsCount?: number;
   overallStatus: 'PASS' | 'FAIL' | 'WITHHELD';
   smsSent: boolean;
   smsSentAt?: string;
@@ -97,6 +103,7 @@ export interface StudentExamResult {
 export interface ExamBatch {
   id: string;
   title: string;
+  resultType?: ResultType;
   department: string;
   examDate: string;
   results: StudentExamResult[];
@@ -165,7 +172,7 @@ export interface DashboardStats {
   totalSmsSent: number;
   failedSmsCount: number;
   unmatchedRecordsCount: number;
-  recentActivity: ActivityLog[];
+  recentActivity?: ActivityLog[];
   departmentBreakdown: { department: string; studentCount: number; smsSentCount: number }[];
   monthlySmsTrend: { date: string; sent: number; failed: number }[];
 }

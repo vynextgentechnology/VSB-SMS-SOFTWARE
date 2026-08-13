@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, Student, Staff, Department, SmsTemplate, ExamBatch, SmsLog, DashboardStats, ParentEnrollment } from './types';
-import { api, getCurrentUserId, setCurrentUserId } from './lib/api';
+import { api, getCurrentUserId, setCurrentUserId, getAuthToken, setAuthToken, normalizeUser } from './lib/api';
 
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
@@ -23,6 +23,8 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
+  const [isAuthInitializing, setIsAuthInitializing] = useState<boolean>(true);
+  const [isLoadingDashboard, setIsLoadingDashboard] = useState<boolean>(false);
 
   // Application Data States
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -38,53 +40,64 @@ export default function App() {
   const [preSelectedStudent, setPreSelectedStudent] = useState<Student | null>(null);
 
   useEffect(() => {
-    const savedUserId = getCurrentUserId();
-    if (savedUserId) {
-      api
-        .getMe()
-        .then((res) => {
+    async function initAuth() {
+      setIsAuthInitializing(true);
+      const savedUserId = getCurrentUserId();
+      const savedToken = getAuthToken();
+      if (savedUserId && savedToken) {
+        try {
+          const res = await api.getMe();
           if (res && res.user) {
-            setCurrentUser(res.user);
+            const user = normalizeUser(res.user);
+            setCurrentUser(user);
+            setShowLoginModal(false);
+            await refreshData();
           } else {
             setCurrentUserId('');
+            setAuthToken('');
             setCurrentUser(null);
             setShowLoginModal(true);
           }
-        })
-        .catch(() => {
+        } catch (err) {
+          console.error('Failed to restore auth session:', err);
           setCurrentUserId('');
+          setAuthToken('');
           setCurrentUser(null);
           setShowLoginModal(true);
-        });
-    } else {
-      setShowLoginModal(true);
+        }
+      } else {
+        setCurrentUserId('');
+        setAuthToken('');
+        setCurrentUser(null);
+        setShowLoginModal(true);
+      }
+      setIsAuthInitializing(false);
     }
+
+    initAuth();
   }, []);
 
   // Role guard tab redirection
   useEffect(() => {
     if (!currentUser) return;
-    const role = currentUser.role || 'staff';
+    const role = (currentUser.role || 'staff').toString().trim().toLowerCase();
     const adminTabs = ['dashboard', 'admin_management', 'departments', 'students', 'staff', 'sms_send', 'result_sms', 'sms_reports', 'templates', 'settings'];
     const hodTabs = ['dashboard', 'students', 'staff', 'sms_send', 'result_sms', 'templates'];
     const staffTabs = ['dashboard', 'students', 'sms_send', 'result_sms', 'templates'];
 
-    const allowed = role === 'admin' ? adminTabs : role === 'hod' ? hodTabs : staffTabs;
+    const allowed = (role === 'admin' || role === 'super_admin') ? adminTabs : role === 'hod' ? hodTabs : staffTabs;
     if (!allowed.includes(activeTab)) {
       setActiveTab('dashboard');
     }
   }, [currentUser, activeTab]);
 
-  useEffect(() => {
-    if (currentUser) {
-      refreshData();
-    }
-  }, [currentUser]);
-
   const refreshData = async () => {
     try {
       const [statsData, parentsData, stdsData, staffData, deptsData, tplsData, batchesData, logsData] = await Promise.all([
-        api.getDashboardStats().catch(() => null),
+        api.getDashboardStats().catch((e) => {
+          console.error('getDashboardStats failed:', e);
+          return null;
+        }),
         api.getParents().catch(() => []),
         api.getStudents().catch(() => []),
         api.getStaff().catch(() => []),
@@ -127,10 +140,20 @@ export default function App() {
     await refreshData();
   };
 
-  const handleLoginSuccess = (user: User) => {
-    setCurrentUser(user);
+  const handleLoginSuccess = async (user: User) => {
+    setIsLoadingDashboard(true);
+    const normalized = normalizeUser(user);
+    setCurrentUser(normalized);
     setShowLoginModal(false);
-    refreshData();
+    setActiveTab('dashboard');
+
+    try {
+      await refreshData();
+    } catch (err) {
+      console.error('Error loading dashboard after login:', err);
+    } finally {
+      setIsLoadingDashboard(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -140,7 +163,9 @@ export default function App() {
       // ignore
     }
     setCurrentUserId('');
+    setAuthToken('');
     setCurrentUser(null);
+    setStats(null);
     setShowLoginModal(true);
   };
 
@@ -148,6 +173,19 @@ export default function App() {
     setPreSelectedStudent(student);
     setActiveTab('sms_send');
   };
+
+  if (isAuthInitializing) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] text-slate-100 flex flex-col items-center justify-center p-4 font-sans">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="text-xs font-black uppercase tracking-widest text-slate-300">
+            Loading dashboard...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f0f2f5] text-slate-800 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
@@ -176,111 +214,120 @@ export default function App() {
         {/* Main Content Viewport */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
           
-          {activeTab === 'dashboard' && (
-            <Dashboard
-              stats={stats}
-              user={currentUser}
-              onNavigate={(tab) => {
-                if (tab !== 'sms_send') setPreSelectedStudent(null);
-                setActiveTab(tab);
-              }}
-              onRefresh={refreshData}
-            />
-          )}
+          {isLoadingDashboard ? (
+            <div className="p-12 text-center text-slate-600 font-extrabold uppercase tracking-widest flex flex-col items-center justify-center space-y-3 min-h-[400px]">
+              <div className="w-8 h-8 border-3 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+              <span>Loading dashboard...</span>
+            </div>
+          ) : (
+            <>
+              {activeTab === 'dashboard' && (
+                <Dashboard
+                  stats={stats}
+                  user={currentUser}
+                  onNavigate={(tab) => {
+                    if (tab !== 'sms_send') setPreSelectedStudent(null);
+                    setActiveTab(tab);
+                  }}
+                  onRefresh={refreshData}
+                />
+              )}
 
-          {activeTab === 'admin_management' && (
-            <AdminManagement
-              departments={departments}
-              currentUser={currentUser}
-              onRefresh={refreshData}
-            />
-          )}
+              {activeTab === 'admin_management' && (
+                <AdminManagement
+                  departments={departments}
+                  currentUser={currentUser}
+                  onRefresh={refreshData}
+                />
+              )}
 
-          {activeTab === 'gemini_ai' && (
-            <GeminiAssistant />
-          )}
+              {activeTab === 'gemini_ai' && (
+                <GeminiAssistant />
+              )}
 
-          {activeTab === 'parents' && (
-            <ParentEnrollmentSystem
-              parents={parents}
-              onRefresh={refreshData}
-            />
-          )}
+              {activeTab === 'parents' && (
+                <ParentEnrollmentSystem
+                  parents={parents}
+                  onRefresh={refreshData}
+                />
+              )}
 
-          {activeTab === 'departments' && (
-            <DepartmentManagement
-              departments={departments}
-              students={students}
-              staffList={staffList}
-              onAddDepartment={handleAddDepartment}
-              onUpdateDepartment={handleUpdateDepartment}
-              onDeleteDepartment={handleDeleteDepartment}
-              onSeedDepartments={handleSeedDepartments}
-              userRole={currentUser?.role || 'admin'}
-            />
-          )}
+              {activeTab === 'departments' && (
+                <DepartmentManagement
+                  departments={departments}
+                  students={students}
+                  staffList={staffList}
+                  onAddDepartment={handleAddDepartment}
+                  onUpdateDepartment={handleUpdateDepartment}
+                  onDeleteDepartment={handleDeleteDepartment}
+                  onSeedDepartments={handleSeedDepartments}
+                  userRole={currentUser?.role || 'admin'}
+                />
+              )}
 
-          {activeTab === 'students' && (
-            <StudentManagement
-              students={students}
-              departments={departments}
-              currentUser={currentUser}
-              onRefresh={refreshData}
-              onSendSmsToStudent={handleSendSmsToStudent}
-            />
-          )}
+              {activeTab === 'students' && (
+                <StudentManagement
+                  students={students}
+                  departments={departments}
+                  currentUser={currentUser}
+                  onRefresh={refreshData}
+                  onSendSmsToStudent={handleSendSmsToStudent}
+                />
+              )}
 
-          {activeTab === 'staff' && (
-            <StaffManagement
-              staffList={staffList}
-              departments={departments}
-              currentUser={currentUser}
-              onRefresh={refreshData}
-            />
-          )}
+              {activeTab === 'staff' && (
+                <StaffManagement
+                  staffList={staffList}
+                  departments={departments}
+                  currentUser={currentUser}
+                  onRefresh={refreshData}
+                />
+              )}
 
-          {activeTab === 'sms_send' && (
-            <SmsSendingModule
-              students={students}
-              templates={templates}
-              departments={departments}
-              preSelectedStudent={preSelectedStudent}
-              currentUser={currentUser}
-              onRefresh={refreshData}
-              onNavigateToReports={() => setActiveTab('sms_reports')}
-            />
-          )}
+              {activeTab === 'sms_send' && (
+                <SmsSendingModule
+                  students={students}
+                  templates={templates}
+                  departments={departments}
+                  preSelectedStudent={preSelectedStudent}
+                  currentUser={currentUser}
+                  onRefresh={refreshData}
+                  onNavigateToReports={() => setActiveTab('sms_reports')}
+                />
+              )}
 
-          {activeTab === 'result_sms' && (
-            <ResultSmsSystem
-              batches={examBatches}
-              departments={departments}
-              students={students}
-              parents={parents}
-              currentUser={currentUser}
-              onRefresh={refreshData}
-              onNavigateToReports={() => setActiveTab('sms_reports')}
-            />
-          )}
+              {activeTab === 'result_sms' && (
+                <ResultSmsSystem
+                  batches={examBatches}
+                  departments={departments}
+                  students={students}
+                  parents={parents}
+                  currentUser={currentUser}
+                  onRefresh={refreshData}
+                  onNavigateToReports={() => setActiveTab('sms_reports')}
+                />
+              )}
 
-          {activeTab === 'sms_reports' && (
-            <SmsReportSystem
-              logs={smsLogs}
-              onRefresh={refreshData}
-            />
-          )}
+              {activeTab === 'sms_reports' && (
+                <SmsReportSystem
+                  logs={smsLogs}
+                  onRefresh={refreshData}
+                />
+              )}
 
-          {activeTab === 'templates' && (
-            <TemplateManager
-              templates={templates}
-              onRefresh={refreshData}
-            />
-          )}
+              {activeTab === 'templates' && (
+                <TemplateManager
+                  templates={templates}
+                  onRefresh={refreshData}
+                />
+              )}
 
-          {activeTab === 'settings' && (
-            <SettingsView
-              onRefresh={refreshData}
-            />
+              {activeTab === 'settings' && (
+                <SettingsView
+                  onRefresh={refreshData}
+                />
+              )}
+            </>
           )}
 
         </main>

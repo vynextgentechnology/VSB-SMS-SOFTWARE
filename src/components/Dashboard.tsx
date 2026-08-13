@@ -41,8 +41,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
 }) => {
   if (!stats) {
     return (
-      <div className="p-8 text-center text-slate-500 font-bold uppercase tracking-wider animate-pulse">
-        Loading system metrics...
+      <div className="p-8 text-center text-slate-500 font-bold uppercase tracking-wider animate-pulse flex flex-col items-center justify-center space-y-3 min-h-[300px]">
+        <div className="w-8 h-8 border-3 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+        <span>Loading dashboard...</span>
       </div>
     );
   }
@@ -54,7 +55,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     failedSmsCount,
     totalStaff,
     unmatchedRecordsCount = 0,
-    recentActivity,
     departmentBreakdown,
     monthlySmsTrend,
   } = stats;
@@ -67,7 +67,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         
         {/* Total Parents Enrolled */}
         <div
-          onClick={() => onNavigate('parents')}
+          onClick={() => onNavigate('students')}
           className="bg-white border-l-4 border-indigo-600 p-5 shadow-sm rounded-sm cursor-pointer hover:shadow-md transition-all group border-y border-r border-slate-200/80"
         >
           <div className="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest flex justify-between items-center">
@@ -97,7 +97,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Total Staff & HOD */}
         <div
-          onClick={() => onNavigate('staff')}
+          onClick={() => {
+            if (user?.role === 'admin' || user?.role === 'SUPER_ADMIN' || user?.role === 'hod') {
+              onNavigate('staff');
+            }
+          }}
           className="bg-white border-l-4 border-amber-500 p-5 shadow-sm rounded-sm cursor-pointer hover:shadow-md transition-all group border-y border-r border-slate-200/80"
         >
           <div className="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest flex justify-between items-center">
@@ -112,7 +116,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         {/* SMS Delivered */}
         <div
-          onClick={() => onNavigate('sms_reports')}
+          onClick={() => {
+            if (user?.role === 'admin' || user?.role === 'SUPER_ADMIN') {
+              onNavigate('sms_reports');
+            } else {
+              onNavigate('sms_send');
+            }
+          }}
           className="bg-white border-l-4 border-emerald-500 p-5 shadow-sm rounded-sm cursor-pointer hover:shadow-md transition-all group border-y border-r border-slate-200/80"
         >
           <div className="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest flex justify-between items-center">
@@ -128,7 +138,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Delivery Failures */}
         <div
-          onClick={() => onNavigate('sms_reports')}
+          onClick={() => {
+            if (user?.role === 'admin' || user?.role === 'SUPER_ADMIN') {
+              onNavigate('sms_reports');
+            } else {
+              onNavigate('sms_send');
+            }
+          }}
           className="bg-white border-l-4 border-rose-500 p-5 shadow-sm rounded-sm cursor-pointer hover:shadow-md transition-all group border-y border-r border-slate-200/80"
         >
           <div className="text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest flex justify-between items-center">
@@ -161,7 +177,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* Main Grid: Visual Charts + Action Box */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* Left Column: Analytics & Recent Activity */}
+        {/* Left Column: Analytics */}
         <div className="lg:col-span-8 space-y-8">
           
           {/* SMS Delivery Analytics Chart */}
@@ -212,54 +228,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   No SMS activity logged yet.
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Recent Dispatch Activity Table */}
-          <div className="bg-white border border-slate-200 rounded-sm shadow-sm overflow-hidden flex flex-col">
-            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">
-                Recent Dispatch Audit Logs
-              </h3>
-              <div className="flex space-x-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                <div className="w-2 h-2 rounded-full bg-slate-300"></div>
-              </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead className="text-[10px] font-black text-slate-400 uppercase bg-white border-b border-slate-100">
-                  <tr>
-                    <th className="px-6 py-3 tracking-widest">Action</th>
-                    <th className="px-6 py-3 tracking-widest">Details</th>
-                    <th className="px-6 py-3 tracking-widest">User</th>
-                    <th className="px-6 py-3 tracking-widest text-right">Time</th>
-                  </tr>
-                </thead>
-                <tbody className="text-xs font-medium text-slate-600 divide-y divide-slate-100">
-                  {recentActivity.length > 0 ? (
-                    recentActivity.map((act) => (
-                      <tr key={act.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-3.5 font-bold text-slate-900 uppercase text-[11px]">
-                          {act.type}
-                        </td>
-                        <td className="px-6 py-3.5 text-slate-700">{act.details}</td>
-                        <td className="px-6 py-3.5 font-bold text-blue-600 uppercase">{act.user}</td>
-                        <td className="px-6 py-3.5 text-slate-400 font-mono text-right">
-                          {new Date(act.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-slate-400 font-bold uppercase tracking-wider text-xs">
-                        No system activity recorded yet.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
             </div>
           </div>
 
@@ -325,13 +293,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </h3>
 
             <div className="space-y-3">
-              <button
-                onClick={() => onNavigate('sms_reports')}
-                className="w-full flex items-center justify-between p-3 border border-slate-100 rounded-sm hover:border-blue-500 hover:bg-blue-50/50 transition-colors text-left"
-              >
-                <span className="text-xs font-bold text-slate-800">Download PDF & Excel Reports</span>
-                <span className="text-blue-600 font-bold">→</span>
-              </button>
+              {(user?.role === 'admin' || user?.role === 'SUPER_ADMIN') && (
+                <button
+                  onClick={() => onNavigate('sms_reports')}
+                  className="w-full flex items-center justify-between p-3 border border-slate-100 rounded-sm hover:border-blue-500 hover:bg-blue-50/50 transition-colors text-left"
+                >
+                  <span className="text-xs font-bold text-slate-800">Download PDF & Excel Reports</span>
+                  <span className="text-blue-600 font-bold">→</span>
+                </button>
+              )}
 
               <button
                 onClick={() => onNavigate('templates')}
@@ -341,13 +311,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <span className="text-blue-600 font-bold">→</span>
               </button>
 
-              <button
-                onClick={() => onNavigate('settings')}
-                className="w-full flex items-center justify-between p-3 border border-slate-100 rounded-sm hover:border-blue-500 hover:bg-blue-50/50 transition-colors text-left"
-              >
-                <span className="text-xs font-bold text-slate-800">Gateway API Credentials</span>
-                <span className="text-blue-600 font-bold">→</span>
-              </button>
+              {(user?.role === 'admin' || user?.role === 'SUPER_ADMIN') && (
+                <button
+                  onClick={() => onNavigate('settings')}
+                  className="w-full flex items-center justify-between p-3 border border-slate-100 rounded-sm hover:border-blue-500 hover:bg-blue-50/50 transition-colors text-left"
+                >
+                  <span className="text-xs font-bold text-slate-800">Gateway API Credentials</span>
+                  <span className="text-blue-600 font-bold">→</span>
+                </button>
+              )}
             </div>
 
             <div className="pt-4 border-t border-slate-100 flex items-center justify-between">

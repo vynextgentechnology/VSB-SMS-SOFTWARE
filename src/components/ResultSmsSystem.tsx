@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import * as XLSX from 'xlsx';
-import { ExamBatch, Department, StudentExamResult, SubjectMark, Student, ParentEnrollment, User } from '../types';
+import { ExamBatch, Department, StudentExamResult, SubjectMark, Student, ParentEnrollment, User, ResultType } from '../types';
 import { api, formatErrorMessage } from '../lib/api';
+import { evaluateSubjectGrade } from '../utils/gradeEvaluator';
 import {
   FileCheck2,
   Upload,
@@ -120,6 +121,7 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
 
   // Upload Form States
   const [title, setTitle] = useState('');
+  const [uploadResultType, setUploadResultType] = useState<ResultType>('Semester Result');
   const [department, setDepartment] = useState('CSE');
   const [examDate, setExamDate] = useState(new Date().toISOString().split('T')[0]);
 
@@ -213,6 +215,7 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
         let totalIdx = -1;
         let resultIdx = -1;
         let sNoIdx = -1;
+        let overallGradeIdx = -1;
         const subjectIndices: { idx: number; name: string }[] = [];
 
         headers.forEach((h, idx) => {
@@ -229,6 +232,8 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
             totalIdx = idx;
           } else if (/^(RESULT|RESULT STATUS|STATUS|PASS\/FAIL|OVERALL RESULT)$/.test(upper) || upper.includes('RESULT') || upper.includes('STATUS')) {
             resultIdx = idx;
+          } else if (/^(GPA|CGPA|OVERALL GRADE|GRADE|OVERALL_GRADE|FINAL GRADE)$/.test(upper)) {
+            overallGradeIdx = idx;
           } else if (h.length > 0) {
             subjectIndices.push({ idx, name: h });
           }
@@ -289,38 +294,52 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
           }
 
           const subjectMarks: SubjectMark[] = [];
-          let computedTotal = 0;
-          let hasFail = false;
+          let passedSubjectsCount = 0;
+          let failedSubjectsCount = 0;
 
           subjectIndices.forEach(({ idx, name }) => {
-            const rawVal = row[idx] !== undefined && row[idx] !== null ? String(row[idx]).trim() : '0';
-            const numVal = parseFloat(rawVal) || 0;
-            computedTotal += numVal;
-            const isPass = numVal >= 50;
-            if (!isPass) hasFail = true;
+            const rawVal = row[idx] !== undefined && row[idx] !== null ? String(row[idx]).trim() : '';
+            const evalGrade = evaluateSubjectGrade(rawVal);
+
+            if (evalGrade.isFail) {
+              failedSubjectsCount++;
+            } else {
+              passedSubjectsCount++;
+            }
+
+            const numMark = !isNaN(Number(evalGrade.gradeStr)) && evalGrade.gradeStr !== '' ? Number(evalGrade.gradeStr) : (evalGrade.isFail ? 0 : 100);
 
             subjectMarks.push({
               subjectCode: name.toUpperCase().slice(0, 12),
               subjectName: name,
-              marks: numVal,
+              grade: evalGrade.gradeStr,
+              marks: numMark,
               maxMarks: 100,
-              result: isPass ? 'PASS' : 'FAIL',
+              result: evalGrade.result,
             });
           });
+
+          // Overall PASS/FAIL logic:
+          // If 1 or more subjects have a failure grade: Overall Result = FAIL
+          // If 0 subjects have a failure grade: Overall Result = PASS
+          let overallStatus: 'PASS' | 'FAIL' = 'PASS';
+          if (failedSubjectsCount > 0) {
+            overallStatus = 'FAIL';
+          } else if (resultIdx >= 0 && row[resultIdx] !== undefined && row[resultIdx] !== null && String(row[resultIdx]).trim() !== '') {
+            const resStr = String(row[resultIdx]).trim().toUpperCase();
+            if (/FAIL|ARREAR|U|RA|ABSENT|WITHHELD/i.test(resStr)) {
+              overallStatus = 'FAIL';
+            }
+          }
 
           let totalVal: string | number = '';
           if (totalIdx >= 0 && row[totalIdx] !== undefined && row[totalIdx] !== null && String(row[totalIdx]).trim() !== '') {
             totalVal = String(row[totalIdx]).trim();
-          } else {
-            totalVal = computedTotal;
           }
 
-          let overallStatus: 'PASS' | 'FAIL' = 'PASS';
-          if (resultIdx >= 0 && row[resultIdx] !== undefined && row[resultIdx] !== null && String(row[resultIdx]).trim() !== '') {
-            const resStr = String(row[resultIdx]).trim().toUpperCase();
-            overallStatus = resStr.includes('FAIL') ? 'FAIL' : 'PASS';
-          } else {
-            overallStatus = hasFail ? 'FAIL' : 'PASS';
+          let overallGradeVal: string | undefined = undefined;
+          if (overallGradeIdx >= 0 && row[overallGradeIdx] !== undefined && row[overallGradeIdx] !== null) {
+            overallGradeVal = String(row[overallGradeIdx]).trim();
           }
 
           parsed.push({
@@ -330,7 +349,10 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
             phoneNumber: finalPhone,
             department: department,
             subjects: subjectMarks,
+            passedSubjectsCount,
+            failedSubjectsCount,
             totalMarks: totalVal,
+            overallGrade: overallGradeVal,
             overallStatus,
             smsSent: false,
             matchedParent: isMatched && Boolean(finalPhone),
@@ -359,17 +381,32 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
 
   // --- Download Sample Excel Template ---
   const downloadSampleTemplate = () => {
-    const sampleData = [
-      ['S.NO', 'REGISTER NUMBER', 'STUDENT NAME', 'MATHS', 'PHYSICS', 'CHEMISTRY', 'C PROGRAMMING', 'ENGLISH', 'RESULT'],
-      [1, '921321104001', 'S. Ananya', 85, 90, 78, 88, 92, 'PASS'],
-      [2, '921321104002', 'K. Vignesh', 92, 88, 95, 91, 89, 'PASS'],
-      [3, '921321104003', 'M. Karthik', 42, 65, 55, 38, 50, 'FAIL'],
-    ];
+    let sampleData: any[][];
+
+    if (uploadResultType === 'Semester Result') {
+      sampleData = [
+        ['S.NO', 'REGISTER NUMBER', 'STUDENT NAME', 'DATA STRUCTURES', 'MATHEMATICS III', 'DATABASE SYSTEMS', 'OPERATING SYSTEMS', 'OVERALL RESULT', 'OVERALL GRADE'],
+        [1, '921321104001', 'S. Ananya', 'A+', 'O', 'A', 'A+', 'PASS', 'O'],
+        [2, '921321104002', 'K. Vignesh', 'O', 'A+', 'O', 'A', 'PASS', 'A+'],
+        [3, '921321104003', 'M. Karthik', 'F', 'B+', 'RA', 'U', 'FAIL', 'F'],
+      ];
+    } else {
+      sampleData = [
+        ['S.NO', 'REGISTER NUMBER', 'STUDENT NAME', 'DATA STRUCTURES', 'MATHEMATICS III', 'DATABASE SYSTEMS', 'OPERATING SYSTEMS', 'OVERALL RESULT'],
+        [1, '921321104001', 'S. Ananya', 85, 92, 78, 90, 'PASS'],
+        [2, '921321104002', 'K. Vignesh', 95, 88, 94, 82, 'PASS'],
+        [3, '921321104003', 'M. Karthik', 35, 62, 42, 38, 'FAIL'],
+      ];
+    }
 
     const ws = XLSX.utils.aoa_to_sheet(sampleData);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Result_Format');
-    XLSX.writeFile(wb, 'VSB_College_Result_Upload_Template.xlsx');
+    const sheetName = uploadResultType === 'Semester Result' ? 'Semester_Grade_Results' : 'Assessment_Marks_Results';
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    const fileName = uploadResultType === 'Semester Result'
+      ? 'VSB_Semester_Grade_Results_Template.xlsx'
+      : 'VSB_Internal_Assessment_Marks_Template.xlsx';
+    XLSX.writeFile(wb, fileName);
   };
 
   // --- Create Batch ---
@@ -440,6 +477,7 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
     try {
       const created = await api.uploadExamBatch({
         title,
+        resultType: uploadResultType,
         department,
         examDate,
         results: finalResults,
@@ -818,9 +856,16 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
                         <h4 className={`font-black text-sm uppercase tracking-tight ${isSelected ? 'text-white' : 'text-slate-900'}`}>
                           {batch.title}
                         </h4>
-                        <div className="flex items-center gap-2 text-xs mt-1 font-medium opacity-80">
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs mt-1 font-medium opacity-80">
                           <span className={`px-2 py-0.5 rounded-sm text-[10px] font-black uppercase ${isSelected ? 'bg-amber-400 text-slate-950' : 'bg-slate-900 text-white'}`}>
                             {batch.department}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-sm text-[10px] font-black uppercase ${
+                            (batch.resultType || 'Semester Result') === 'Semester Result'
+                              ? isSelected ? 'bg-purple-900 text-purple-200 border border-purple-700' : 'bg-purple-100 text-purple-800'
+                              : isSelected ? 'bg-cyan-900 text-cyan-200 border border-cyan-700' : 'bg-cyan-100 text-cyan-800'
+                          }`}>
+                            {(batch.resultType || 'Semester Result') === 'Semester Result' ? 'Semester Grade' : 'Internal Marks'}
                           </span>
                           <span>• {batch.examDate}</span>
                         </div>
@@ -1076,30 +1121,36 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
               )}
 
               {/* SMS Delivery Format Preview Box */}
-              <div className="bg-amber-50/60 border border-amber-200/80 rounded-sm p-4 text-xs space-y-1.5">
+              <div className="bg-amber-50/60 border border-amber-200/80 rounded-sm p-4 text-xs space-y-2">
                 <div className="flex items-center justify-between text-amber-900 font-black uppercase tracking-wider text-[11px]">
                   <span className="flex items-center gap-1.5">
                     <Phone className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Fast2SMS Message Template Format</span>
+                    <span>Fast2SMS Gateway Template Format: {(selectedBatch.resultType || 'Semester Result')}</span>
                   </span>
-                  <span className="text-[10px] text-amber-700 font-mono">Gateway: Fast2SMS (DLT / Real SMS)</span>
+                  <span className="text-[10px] text-amber-800 font-mono font-bold bg-amber-100/80 px-2 py-0.5 rounded-sm">
+                    {(selectedBatch.resultType || 'Semester Result') === 'Semester Result'
+                      ? 'Format: Grade Only • NO Marks • NO Totals • NO %'
+                      : 'Format: Subject Marks Only • NO Totals • NO %'}
+                  </span>
                 </div>
+
                 <div className="p-3 bg-white border border-amber-200 rounded-sm text-slate-800 font-mono text-[11px] font-bold shadow-2xs whitespace-pre-line leading-relaxed">
-                  {`Dear [Student Name],
+                  {(selectedBatch.resultType || 'Semester Result') === 'Semester Result' ? (
+                    `Dear Parent, Semester Result for [Student Name] ([Register Number]):
+[Dynamic Subject 1]: [Grade], [Dynamic Subject 2]: [Grade], [Dynamic Subject 3]: [Grade]
 
-Your Semester Results:
+Overall Result: [PASS/FAIL]
+Overall Grade: [Grade/GPA if available]
 
-Reg No: [Reg No]
+- VSB Engineering College`
+                  ) : (
+                    `Dear Parent, Assessment Result for [Student Name] ([Register Number]):
+[Dynamic Subject 1]: [Marks], [Dynamic Subject 2]: [Marks], [Dynamic Subject 3]: [Marks]
 
-Maths: [Mark]
-Physics: [Mark]
-Chemistry: [Mark]
-C Programming: [Mark]
-English: [Mark]
+Overall Result: [PASS/FAIL]
 
-Result: [Pass/Fail]
-
-- VSB Engineering College`}
+- VSB Engineering College`
+                  )}
                 </div>
               </div>
 
@@ -1337,13 +1388,13 @@ Result: [Pass/Fail]
                                   </td>
                                 </tr>
 
-                                {/* Expanded Subject Breakdown Row */}
+                                 {/* Expanded Subject Breakdown Row */}
                                 {isExpanded && res.subjects && res.subjects.length > 0 && (
                                   <tr className="bg-slate-50/80 border-b border-slate-200">
                                     <td colSpan={9} className="p-4">
                                       <div className="bg-white border border-slate-200 p-3 rounded-sm space-y-2">
                                         <div className="text-[11px] font-black uppercase text-slate-800 tracking-wider flex items-center justify-between border-b pb-1">
-                                          <span>Subject Marks Breakdown for {res.studentName} ({res.registerNumber})</span>
+                                          <span>Subject Grade Breakdown for {res.studentName} ({res.registerNumber})</span>
                                           <span className="text-slate-500 font-bold">{res.subjects.length} Subjects Evaluated</span>
                                         </div>
                                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs">
@@ -1353,8 +1404,8 @@ Result: [Pass/Fail]
                                                 <div className="font-bold text-slate-800 truncate max-w-[120px]">{sb.subjectName || sb.subjectCode}</div>
                                                 <div className="text-[10px] text-slate-500 font-semibold">{sb.result}</div>
                                               </div>
-                                              <span className={`font-black text-sm ${sb.result === 'PASS' || sb.marks >= 50 ? 'text-emerald-700' : 'text-rose-600'}`}>
-                                                {sb.marks}
+                                              <span className={`font-black text-sm px-2 py-0.5 rounded ${sb.result === 'PASS' ? 'text-emerald-700 bg-emerald-100/60' : 'text-rose-700 bg-rose-100/60'}`}>
+                                                {sb.grade || sb.marks}
                                               </span>
                                             </div>
                                           ))}
@@ -1454,6 +1505,60 @@ Result: [Pass/Fail]
                   <span>{typeof error === 'string' ? error : formatErrorMessage(error)}</span>
                 </div>
               )}
+
+              {/* Result Type Selection */}
+              <div>
+                <label className="block text-xs font-black text-slate-800 uppercase tracking-wider mb-1.5">
+                  Select Result Type *
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setUploadResultType('Semester Result')}
+                    className={`p-3 border rounded-sm text-left transition-all cursor-pointer ${
+                      uploadResultType === 'Semester Result'
+                        ? 'bg-purple-950 text-white border-purple-500 shadow-sm ring-1 ring-purple-500'
+                        : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-slate-100'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full mb-1">
+                      <span className="font-black text-xs uppercase tracking-wider flex items-center gap-1.5">
+                        <Award className={`w-4 h-4 ${uploadResultType === 'Semester Result' ? 'text-purple-400' : 'text-purple-600'}`} />
+                        Semester Result
+                      </span>
+                      {uploadResultType === 'Semester Result' && (
+                        <span className="text-purple-400 font-bold text-xs">✓ Active</span>
+                      )}
+                    </div>
+                    <p className={`text-[10px] font-medium ${uploadResultType === 'Semester Result' ? 'text-purple-200' : 'text-slate-600'}`}>
+                      Sends <strong>Grade only</strong>. No marks, no total marks, no percentages.
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setUploadResultType('Internal Test / Assessment')}
+                    className={`p-3 border rounded-sm text-left transition-all cursor-pointer ${
+                      uploadResultType === 'Internal Test / Assessment'
+                        ? 'bg-cyan-950 text-white border-cyan-500 shadow-sm ring-1 ring-cyan-500'
+                        : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-slate-100'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full mb-1">
+                      <span className="font-black text-xs uppercase tracking-wider flex items-center gap-1.5">
+                        <BookOpen className={`w-4 h-4 ${uploadResultType === 'Internal Test / Assessment' ? 'text-cyan-400' : 'text-cyan-600'}`} />
+                        Internal Test / Assessment
+                      </span>
+                      {uploadResultType === 'Internal Test / Assessment' && (
+                        <span className="text-cyan-400 font-bold text-xs">✓ Active</span>
+                      )}
+                    </div>
+                    <p className={`text-[10px] font-medium ${uploadResultType === 'Internal Test / Assessment' ? 'text-cyan-200' : 'text-slate-600'}`}>
+                      Sends <strong>Subject Marks only</strong>. No total marks, no percentages.
+                    </p>
+                  </button>
+                </div>
+              </div>
 
               {/* Title & Department Selection */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

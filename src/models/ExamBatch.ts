@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface IExamBatch extends Document {
   id: string;
   title: string;
+  resultType?: string;
   department: string;
   examDate: string;
   results: any[];
@@ -17,6 +18,7 @@ export interface IExamBatch extends Document {
 const ExamBatchSchema: Schema = new Schema({
   id: { type: String, required: true, unique: true },
   title: { type: String, required: true },
+  resultType: { type: String, default: 'Semester Result' },
   department: { type: String, required: true },
   examDate: { type: String, required: true },
   results: { type: Schema.Types.Mixed, default: [] },

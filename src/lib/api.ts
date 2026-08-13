@@ -6,6 +6,7 @@ import {
   Department,
   SmsLog,
   ExamBatch,
+  ResultType,
   SmsTemplate,
   GatewaySettings,
   DashboardStats,
@@ -20,11 +21,15 @@ let currentToken = localStorage.getItem('vy_sms_jwt_token') || '';
 
 export function setCurrentUserId(userId: string) {
   currentUserId = userId;
-  localStorage.setItem('vy_sms_user_id', userId);
+  if (userId) {
+    localStorage.setItem('vy_sms_user_id', userId);
+  } else {
+    localStorage.removeItem('vy_sms_user_id');
+  }
 }
 
 export function getCurrentUserId(): string {
-  return currentUserId;
+  return currentUserId || localStorage.getItem('vy_sms_user_id') || '';
 }
 
 export function setAuthToken(token: string) {
@@ -34,6 +39,36 @@ export function setAuthToken(token: string) {
   } else {
     localStorage.removeItem('vy_sms_jwt_token');
   }
+}
+
+export function getAuthToken(): string {
+  return currentToken || localStorage.getItem('vy_sms_jwt_token') || '';
+}
+
+export function normalizeUser(rawUser: any): User {
+  if (!rawUser) return rawUser;
+  const rawRole = (rawUser.role || 'staff').toString().trim().toLowerCase();
+  let role: UserRole = 'staff';
+  if (rawRole === 'super_admin') {
+    role = 'SUPER_ADMIN';
+  } else if (rawRole === 'admin') {
+    role = 'admin';
+  } else if (rawRole === 'hod') {
+    role = 'hod';
+  } else {
+    role = 'staff';
+  }
+
+  return {
+    id: rawUser.id || rawUser._id || `usr-${rawUser.userId || Date.now()}`,
+    userId: rawUser.userId || rawUser.username || '',
+    name: rawUser.name || rawUser.userId || 'User',
+    role: role,
+    department: rawUser.department || 'General',
+    phoneNumber: rawUser.phoneNumber || '',
+    permissions: Array.isArray(rawUser.permissions) ? rawUser.permissions : [],
+    createdAt: rawUser.createdAt || new Date().toISOString(),
+  };
 }
 
 export function formatErrorMessage(err: any): string {
@@ -55,15 +90,18 @@ export function formatErrorMessage(err: any): string {
 const baseUrl = ((import.meta as any).env?.VITE_API_BASE_URL || (import.meta as any).env?.VITE_API_URL || '').replace(/\/$/, '');
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const userId = getCurrentUserId();
+  const token = getAuthToken();
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'x-user-id': currentUserId,
+    'x-user-id': userId,
     ...(options.headers as Record<string, string>),
   };
 
-  if (currentToken) {
-    headers['Authorization'] = `Bearer ${currentToken}`;
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
   }
 
   const url = endpoint.startsWith('http') ? endpoint : `${baseUrl}${endpoint}`;
@@ -106,7 +144,10 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
 export const api = {
   // Auth
-  getMe: (): Promise<{ user: User }> => request<{ user: User }>('/api/auth/me'),
+  getMe: async (): Promise<{ user: User }> => {
+    const data = await request<{ user: User }>('/api/auth/me');
+    return { ...data, user: normalizeUser(data.user) };
+  },
   logout: (): Promise<{ success: boolean }> => request<{ success: boolean }>('/api/auth/logout', { method: 'POST' }),
   getSetupStatus: (): Promise<{ hasAdmin: boolean }> => request<{ hasAdmin: boolean }>('/api/auth/setup-status'),
   setupAdmin: async (name: string, userId: string, pass: string, department: string = 'General'): Promise<{ success: boolean; token: string; user: User }> => {
@@ -115,26 +156,26 @@ export const api = {
       body: JSON.stringify({ name, userId, password: pass, department }),
     });
     if (data.user) {
-      setCurrentUserId(data.user.userId);
+      setCurrentUserId(data.user.userId || data.user.id);
     }
     if (data.token) {
       setAuthToken(data.token);
     }
-    return data;
+    return { ...data, user: normalizeUser(data.user) };
   },
 
-  login: async (userId: string, pass: string, role: UserRole): Promise<{ success: boolean; token: string; user: User }> => {
+  login: async (userId: string, pass: string, role?: UserRole): Promise<{ success: boolean; token: string; user: User }> => {
     const data = await request<{ success: boolean; token: string; user: User }>('/api/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ userId, password: pass, role }),
+      body: JSON.stringify({ userId, password: pass, ...(role ? { role } : {}) }),
     });
     if (data.user) {
-      setCurrentUserId(data.user.userId);
+      setCurrentUserId(data.user.userId || data.user.id);
     }
     if (data.token) {
       setAuthToken(data.token);
     }
-    return data;
+    return { ...data, user: normalizeUser(data.user) };
   },
 
   // Dashboard Stats
@@ -439,6 +480,7 @@ export const api = {
   getExamBatches: (): Promise<ExamBatch[]> => request<ExamBatch[]>('/api/results'),
   uploadExamBatch: (batch: {
     title: string;
+    resultType?: ResultType;
     department: string;
     examDate?: string;
     results: any[];
@@ -502,6 +544,9 @@ export const api = {
     }),
   toggleApiKey: (id: string): Promise<ApiKey> => request<ApiKey>(`/api/keys/${id}/toggle`, { method: 'PATCH' }),
   deleteApiKey: (id: string): Promise<{ success: boolean }> => request<{ success: boolean }>(`/api/keys/${id}`, { method: 'DELETE' }),
+
+  getDbStatus: (): Promise<{ connected: boolean; configured: boolean; lastError: string | null; inCoolDown: boolean }> =>
+    request<{ connected: boolean; configured: boolean; lastError: string | null; inCoolDown: boolean }>('/api/db/status'),
 
   // Download Complete Codebase
   downloadSourceCodeZip: async (): Promise<void> => {
