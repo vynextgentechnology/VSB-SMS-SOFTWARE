@@ -11,6 +11,7 @@ import { createServer as createViteServer } from 'vite';
 import { db } from './src/server/db.js';
 import { getMongoDBConnectionDetails } from './src/server/mongo.js';
 import { sendSMS, getSmsApiKeyPoolStatus, rotateToNextKey } from './src/server/smsService.js';
+import { evaluateSubjectGrade } from './src/utils/gradeEvaluator.js';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -1181,16 +1182,16 @@ app.delete('/api/sms/reports', (req, res) => {
 });
 
 // Exam Results
-app.get('/api/results', (req, res) => {
+app.get('/api/results', async (req, res) => {
   try {
-    const batches = db.getExamBatches();
+    const batches = await db.getExamBatchesAsync();
     return res.json(batches);
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
 });
 
-app.post('/api/results', (req, res) => {
+app.post('/api/results', async (req, res) => {
   try {
     const { title, resultType, department, examDate, results } = req.body;
     if (!title || !department || !Array.isArray(results) || results.length === 0) {
@@ -1229,7 +1230,7 @@ app.post('/api/results', (req, res) => {
       }
     }
 
-    const batch = db.addExamBatch(
+    const batch = await db.addExamBatchAsync(
       title,
       department,
       examDate || new Date().toISOString().split('T')[0],
@@ -1246,8 +1247,9 @@ app.post('/api/results', (req, res) => {
 app.delete('/api/results/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const batches = db.getExamBatches();
-    const batch = batches.find((b) => b.id === id);
+    const cleanId = (id || '').trim();
+    const batches = await db.getExamBatchesAsync();
+    const batch = batches.find((b) => b.id.trim().toLowerCase() === cleanId.toLowerCase());
 
     if (!batch) {
       return res.status(404).json({ error: 'Exam batch not found' });
@@ -1274,7 +1276,7 @@ app.delete('/api/results/:id', async (req, res) => {
       }
     }
 
-    const success = await db.deleteExamBatch(id, currentUserId);
+    const success = await db.deleteExamBatch(batch.id, currentUserId);
     if (!success) {
       return res.status(400).json({ error: 'Failed to delete exam batch.' });
     }
@@ -1288,9 +1290,10 @@ app.delete('/api/results/:id', async (req, res) => {
 app.post('/api/results/:id/send-sms', async (req, res) => {
   try {
     const { id } = req.params;
+    const cleanId = (id || '').trim();
     const { targetRegNos } = req.body || {};
-    const batches = db.getExamBatches();
-    const batch = batches.find((b) => b.id === id);
+    const batches = await db.getExamBatchesAsync();
+    const batch = batches.find((b) => b.id.trim().toLowerCase() === cleanId.toLowerCase());
 
     if (!batch) {
       return res.status(404).json({ error: 'Exam Result Batch not found' });
@@ -1308,28 +1311,67 @@ app.post('/api/results/:id/send-sms', async (req, res) => {
         }
       }
 
-      let subjectLines = '';
-      if (rec.subjects && rec.subjects.length > 0) {
-        if (isSemester) {
-          // SEMESTER RESULT: Grade ONLY. Do NOT send marks, total marks, or percentages.
-          subjectLines = rec.subjects
-            .map((s: any) => `${s.subjectName || s.subjectCode}: ${s.grade || s.result || '-'}`)
-            .join(', ');
+      // Live Parent Mobile Number lookup from Student Enrollment using Register Number
+      let recipientPhone = rec.phoneNumber || '';
+      let isParentMatched = rec.matchedParent !== false;
+
+      if (rec.registerNumber) {
+        const regUpper = rec.registerNumber.toString().trim().toUpperCase();
+        const parents = db.getParentEnrollments();
+        const parentMatch = parents.find((p) => p.registerNumber.trim().toUpperCase() === regUpper);
+        if (parentMatch && parentMatch.parentPhoneNumber) {
+          recipientPhone = parentMatch.parentPhoneNumber;
+          isParentMatched = true;
         } else {
-          // INTERNAL TEST / ASSESSMENT: Marks ONLY. Do NOT send total marks or percentages.
-          subjectLines = rec.subjects
-            .map((s: any) => `${s.subjectName || s.subjectCode}: ${s.marks !== undefined && s.marks !== null ? s.marks : (s.grade || '-')}`)
-            .join(', ');
+          const students = db.getStudents();
+          const studentMatch = students.find((s) => s.registerNumber.trim().toUpperCase() === regUpper);
+          if (studentMatch && studentMatch.phoneNumber) {
+            recipientPhone = studentMatch.phoneNumber;
+            isParentMatched = true;
+          }
         }
-      } else {
-        subjectLines = `Result: ${rec.overallStatus}`;
+      }
+
+      if (recipientPhone) {
+        rec.phoneNumber = recipientPhone;
       }
 
       let messageContent = '';
       if (isSemester) {
-        const gradePart = rec.overallGrade || rec.gpa ? `. Overall Grade: ${rec.overallGrade || rec.gpa}` : '';
-        messageContent = `Dear Parent, Semester Result for ${rec.studentName} (${rec.registerNumber}): ${subjectLines}. Overall Result: ${rec.overallStatus}${gradePart}. - VSB Engineering College`;
+        let subjectLines = '';
+        let arrearsCount = 0;
+
+        if (Array.isArray(rec.subjects) && rec.subjects.length > 0) {
+          const lines: string[] = [];
+          for (const s of rec.subjects) {
+            const subjectName = s.subjectName || s.subjectCode || 'SUBJECT';
+            const rawGrade = s.grade !== undefined && s.grade !== null && s.grade !== '' ? String(s.grade).trim() : (s.result || '-');
+            const evalGrade = evaluateSubjectGrade(rawGrade);
+            if (evalGrade.isFail) {
+              arrearsCount++;
+            }
+            lines.push(`${subjectName}: ${evalGrade.gradeStr}`);
+          }
+          subjectLines = lines.join('\n');
+        } else {
+          subjectLines = `RESULT: ${rec.overallStatus || '-'}`;
+          if (rec.overallStatus === 'FAIL') arrearsCount = 1;
+        }
+
+        if (typeof rec.failedSubjectsCount === 'number' && rec.failedSubjectsCount > arrearsCount) {
+          arrearsCount = rec.failedSubjectsCount;
+        }
+
+        messageContent = `DEAR PARENT,\n\nName: ${rec.studentName}\n\nRegister Number: ${rec.registerNumber}\n\n${subjectLines}\n\nTotal Number of Arrears: ${arrearsCount}`;
       } else {
+        let subjectLines = '';
+        if (Array.isArray(rec.subjects) && rec.subjects.length > 0) {
+          subjectLines = rec.subjects
+            .map((s: any) => `${s.subjectName || s.subjectCode}: ${s.marks !== undefined && s.marks !== null ? s.marks : (s.grade || '-')}`)
+            .join(', ');
+        } else {
+          subjectLines = `Result: ${rec.overallStatus}`;
+        }
         const statusPart = rec.overallStatus ? `. Overall Result: ${rec.overallStatus}` : '';
         messageContent = `Dear Parent, Assessment Result for ${rec.studentName} (${rec.registerNumber}): ${subjectLines}${statusPart}. - VSB Engineering College`;
       }
@@ -1337,18 +1379,18 @@ app.post('/api/results/:id/send-sms', async (req, res) => {
       let status = 'Sent';
       let errorMessage: string | undefined = undefined;
 
-      const cleanPhone = rec.phoneNumber ? rec.phoneNumber.replace(/\D/g, '') : '';
+      const cleanPhone = recipientPhone ? recipientPhone.replace(/\D/g, '') : '';
 
       // Send SMS ONLY if Parent enrolled & Register Number matched
-      if (rec.matchedParent !== false && cleanPhone && cleanPhone.length >= 10) {
-        const smsRes = await sendSMS(rec.phoneNumber, messageContent);
+      if (isParentMatched && cleanPhone && cleanPhone.length >= 10) {
+        const smsRes = await sendSMS(recipientPhone, messageContent);
         if (!smsRes.success) {
           status = 'Failed';
           errorMessage = typeof smsRes.error === 'string' ? smsRes.error : JSON.stringify(smsRes.error);
         }
       } else {
         status = 'Failed';
-        errorMessage = rec.matchedParent === false
+        errorMessage = !isParentMatched
           ? 'Parent Mobile Not Found in Student Enrollment database'
           : 'Invalid or missing parent mobile number';
       }
@@ -1374,7 +1416,7 @@ app.post('/api/results/:id/send-sms', async (req, res) => {
     }
 
     db.addSmsLogs(newSmsLogs);
-    db.updateExamBatchResults(id, updatedResults);
+    await db.updateExamBatchResultsAsync(batch.id, updatedResults);
 
     const sentCount = newSmsLogs.filter((l) => l.status === 'Sent').length;
     const failedCount = newSmsLogs.filter((l) => l.status === 'Failed').length;

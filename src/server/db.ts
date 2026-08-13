@@ -79,7 +79,7 @@ const defaultTemplates: SmsTemplate[] = [
     id: 'tpl-1',
     title: 'Exam Result Notification',
     type: 'Exam Result',
-    templateText: 'Dear Parent, Semester Result for {name} ({regNo}): {subjects}. Overall Result: {status}. - VSB Engineering College',
+    templateText: 'DEAR PARENT,\n\nName: {name}\n\nRegister Number: {regNo}\n\n{subjects}\n\nTotal Number of Arrears: {arrearsCount}',
     createdAt: new Date().toISOString(),
   },
   {
@@ -1343,6 +1343,44 @@ class Database {
     return this.data.examBatches;
   }
 
+  public async getExamBatchesAsync(): Promise<ExamBatch[]> {
+    try {
+      await connectToMongoDB();
+      if (isMongoDBConnected() && ExamBatchModel) {
+        const docs = await (ExamBatchModel as any).find({}).lean();
+        if (docs && docs.length > 0) {
+          const mongoBatches: ExamBatch[] = docs.map((d: any) => ({
+            id: d.id || d._id.toString(),
+            title: d.title,
+            resultType: (d.resultType as ResultType) || 'Semester Result',
+            department: d.department,
+            examDate: d.examDate,
+            results: d.results || [],
+            uploadedAt: d.uploadedAt || new Date().toISOString(),
+            uploadedBy: d.uploadedBy || 'VSBEC',
+            totalStudents: d.totalStudents || (d.results ? d.results.length : 0),
+            smsSentCount: d.smsSentCount || 0,
+            matchedCount: d.matchedCount || 0,
+            unmatchedCount: d.unmatchedCount || 0,
+          }));
+
+          for (const mBatch of mongoBatches) {
+            const idx = this.data.examBatches.findIndex((b) => b.id === mBatch.id);
+            if (idx !== -1) {
+              this.data.examBatches[idx] = { ...this.data.examBatches[idx], ...mBatch };
+            } else {
+              this.data.examBatches.push(mBatch);
+            }
+          }
+          this.save();
+        }
+      }
+    } catch (err) {
+      console.error('[MongoDB getExamBatchesAsync Error]:', err);
+    }
+    return this.getExamBatches();
+  }
+
   public addExamBatch(
     title: string,
     department: string,
@@ -1420,6 +1458,26 @@ class Database {
     return batch;
   }
 
+  public async addExamBatchAsync(
+    title: string,
+    department: string,
+    examDate: string,
+    rawResults: ExamBatch['results'],
+    user: string,
+    resultType?: ResultType
+  ): Promise<ExamBatch> {
+    const batch = this.addExamBatch(title, department, examDate, rawResults, user, resultType);
+    try {
+      await connectToMongoDB();
+      if (isMongoDBConnected() && ExamBatchModel) {
+        await (ExamBatchModel as any).create(batch);
+      }
+    } catch (err) {
+      console.error('[MongoDB addExamBatchAsync Error]:', err);
+    }
+    return batch;
+  }
+
   public updateExamBatchResults(batchId: string, results: ExamBatch['results']) {
     const batch = this.data.examBatches.find((b) => b.id === batchId);
     if (batch) {
@@ -1428,6 +1486,32 @@ class Database {
       batch.matchedCount = results.filter((r) => r.matchedParent !== false).length;
       batch.unmatchedCount = results.filter((r) => r.matchedParent === false).length;
       this.save();
+    }
+  }
+
+  public async updateExamBatchResultsAsync(batchId: string, results: ExamBatch['results']) {
+    this.updateExamBatchResults(batchId, results);
+    try {
+      await connectToMongoDB();
+      if (isMongoDBConnected() && ExamBatchModel) {
+        const batch = this.data.examBatches.find((b) => b.id === batchId);
+        if (batch) {
+          await (ExamBatchModel as any).updateOne(
+            { id: batchId },
+            {
+              $set: {
+                results: batch.results,
+                smsSentCount: batch.smsSentCount,
+                matchedCount: batch.matchedCount,
+                unmatchedCount: batch.unmatchedCount,
+              },
+            },
+            { upsert: true }
+          );
+        }
+      }
+    } catch (err) {
+      console.error('[MongoDB updateExamBatchResultsAsync Error]:', err);
     }
   }
 
@@ -1463,10 +1547,10 @@ class Database {
 
     // If MongoDB Atlas is connected, permanently delete from MongoDB
     try {
-      if (isMongoDBConnected()) {
-        await ExamBatchModel.deleteOne({ id });
+      if (isMongoDBConnected() && ExamBatchModel) {
+        await (ExamBatchModel as any).deleteOne({ id });
         if (SmsLogModel) {
-          await SmsLogModel.deleteMany({
+          await (SmsLogModel as any).deleteMany({
             messageType: 'Exam Result',
             messageContent: { $regex: batch.title, $options: 'i' },
           });

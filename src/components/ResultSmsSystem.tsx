@@ -540,14 +540,59 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
     try {
       const printWin = window.open('', '_blank');
       if (printWin) {
+        const isSemester = (selectedBatch.resultType || 'Semester Result') === 'Semester Result';
+        const allSubjects = Array.from(
+          new Set(
+            selectedBatch.results.flatMap((r) =>
+              (r.subjects || []).map((s) => (s.subjectName || s.subjectCode || 'Subject').trim())
+            )
+          )
+        );
+
+        const subjectHeadersHtml = isSemester
+          ? allSubjects.map((sName) => `<th style="text-align: center;">${sName}</th>`).join('') + `<th style="text-align: center;">Total Arrears</th>`
+          : `<th>Total Marks</th>`;
+
         const studentRows = selectedBatch.results
           .map((r, i) => {
-            const totalDisplay =
-              r.totalMarks !== undefined && r.totalMarks !== null && r.totalMarks !== ''
-                ? r.totalMarks
-                : r.subjects
-                ? r.subjects.reduce((sum, s) => sum + s.marks, 0)
-                : 'N/A';
+            let middleCells = '';
+            if (isSemester) {
+              let arrearsCount = 0;
+              if (typeof r.failedSubjectsCount === 'number') {
+                arrearsCount = r.failedSubjectsCount;
+              } else if (r.subjects && r.subjects.length > 0) {
+                arrearsCount = r.subjects.filter((s) => evaluateSubjectGrade(s.grade || s.result).isFail).length;
+              }
+
+              const subjectCells = allSubjects
+                .map((sName) => {
+                  const sub = (r.subjects || []).find(
+                    (s) => (s.subjectName || s.subjectCode || '').trim() === sName
+                  );
+                  const rawGrade = sub
+                    ? sub.grade !== undefined && sub.grade !== null && sub.grade !== ''
+                      ? sub.grade
+                      : sub.result || '-'
+                    : '-';
+                  const evalGrade = evaluateSubjectGrade(rawGrade);
+                  return `<td style="border: 1px solid #cbd5e1; padding: 6px; text-align: center; font-weight: bold; color: ${
+                    evalGrade.isFail ? '#b91c1c' : '#047857'
+                  };">${evalGrade.gradeStr}</td>`;
+                })
+                .join('');
+
+              middleCells = `${subjectCells}<td style="border: 1px solid #cbd5e1; padding: 6px; text-align: center; font-weight: bold; color: ${
+                arrearsCount > 0 ? '#b91c1c' : '#047857'
+              };">${arrearsCount}</td>`;
+            } else {
+              const totalDisplay =
+                r.totalMarks !== undefined && r.totalMarks !== null && r.totalMarks !== ''
+                  ? r.totalMarks
+                  : r.subjects
+                  ? r.subjects.reduce((sum, s) => sum + s.marks, 0)
+                  : 'N/A';
+              middleCells = `<td style="border: 1px solid #cbd5e1; padding: 6px; text-align: center; font-weight: bold;">${totalDisplay}</td>`;
+            }
 
             return `
               <tr>
@@ -555,7 +600,7 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
                 <td style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold;">${r.registerNumber}</td>
                 <td style="border: 1px solid #cbd5e1; padding: 6px;">${r.studentName}</td>
                 <td style="border: 1px solid #cbd5e1; padding: 6px;">${r.phoneNumber || 'N/A'}</td>
-                <td style="border: 1px solid #cbd5e1; padding: 6px; text-align: center; font-weight: bold;">${totalDisplay}</td>
+                ${middleCells}
                 <td style="border: 1px solid #cbd5e1; padding: 6px; text-align: center; font-weight: bold; color: ${r.overallStatus === 'PASS' ? '#047857' : '#b91c1c'};">${r.overallStatus}</td>
                 <td style="border: 1px solid #cbd5e1; padding: 6px; text-align: center;">${r.smsStatus || (r.smsSent ? 'Sent' : 'Pending')}</td>
               </tr>
@@ -598,7 +643,7 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
                     <th>Register Number</th>
                     <th>Student Name</th>
                     <th>Parent Phone</th>
-                    <th>Total Marks</th>
+                    ${subjectHeadersHtml}
                     <th>Result Status</th>
                     <th>SMS Delivery</th>
                   </tr>
@@ -1136,13 +1181,19 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
 
                 <div className="p-3 bg-white border border-amber-200 rounded-sm text-slate-800 font-mono text-[11px] font-bold shadow-2xs whitespace-pre-line leading-relaxed">
                   {(selectedBatch.resultType || 'Semester Result') === 'Semester Result' ? (
-                    `Dear Parent, Semester Result for [Student Name] ([Register Number]):
-[Dynamic Subject 1]: [Grade], [Dynamic Subject 2]: [Grade], [Dynamic Subject 3]: [Grade]
+                    `DEAR PARENT,
 
-Overall Result: [PASS/FAIL]
-Overall Grade: [Grade/GPA if available]
+Name: [STUDENT NAME]
 
-- VSB Engineering College`
+Register Number: [REGISTER NUMBER]
+
+[DYNAMIC SUBJECT 1]: [GRADE]
+[DYNAMIC SUBJECT 2]: [GRADE]
+[DYNAMIC SUBJECT 3]: [GRADE]
+...
+[DYNAMIC SUBJECT N]: [GRADE]
+
+Total Number of Arrears: [COUNT]`
                   ) : (
                     `Dear Parent, Assessment Result for [Student Name] ([Register Number]):
 [Dynamic Subject 1]: [Marks], [Dynamic Subject 2]: [Marks], [Dynamic Subject 3]: [Marks]
@@ -1824,19 +1875,50 @@ Overall Result: [PASS/FAIL]
                       <th className="p-2 border border-slate-800">Register Number</th>
                       <th className="p-2 border border-slate-800">Student Name</th>
                       <th className="p-2 border border-slate-800">Parent Phone</th>
-                      <th className="p-2 border border-slate-800 text-center">Total Marks</th>
+                      {(selectedBatch.resultType || 'Semester Result') === 'Semester Result' ? (
+                        <>
+                          {Array.from(
+                            new Set(
+                              selectedBatch.results.flatMap((r) =>
+                                (r.subjects || []).map((s) => (s.subjectName || s.subjectCode || 'Subject').trim())
+                              )
+                            )
+                          ).map((sName, sIdx) => (
+                            <th key={sIdx} className="p-2 border border-slate-800 text-center">{sName}</th>
+                          ))}
+                          <th className="p-2 border border-slate-800 text-center">Total Arrears</th>
+                        </>
+                      ) : (
+                        <th className="p-2 border border-slate-800 text-center">Total Marks</th>
+                      )}
                       <th className="p-2 border border-slate-800 text-center">Result</th>
                       <th className="p-2 border border-slate-800 text-center">SMS Delivery</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200">
                     {selectedBatch.results.map((r, i) => {
-                      const totalDisplay =
+                      const isSem = (selectedBatch.resultType || 'Semester Result') === 'Semester Result';
+                      const allSubjs = Array.from(
+                        new Set(
+                          selectedBatch.results.flatMap((sb) =>
+                            (sb.subjects || []).map((s) => (s.subjectName || s.subjectCode || 'Subject').trim())
+                          )
+                        )
+                      );
+
+                      let totalDisplay =
                         r.totalMarks !== undefined && r.totalMarks !== null && r.totalMarks !== ''
                           ? r.totalMarks
                           : r.subjects
                           ? r.subjects.reduce((sum, s) => sum + s.marks, 0)
                           : 'N/A';
+
+                      let arrearsCount = 0;
+                      if (typeof r.failedSubjectsCount === 'number') {
+                        arrearsCount = r.failedSubjectsCount;
+                      } else if (r.subjects && r.subjects.length > 0) {
+                        arrearsCount = r.subjects.filter((s) => evaluateSubjectGrade(s.grade || s.result).isFail).length;
+                      }
 
                       return (
                         <tr key={i} className="hover:bg-slate-50">
@@ -1844,7 +1926,40 @@ Overall Result: [PASS/FAIL]
                           <td className="p-2 border border-slate-200 font-mono font-black text-slate-900">{r.registerNumber}</td>
                           <td className="p-2 border border-slate-200 font-black text-slate-900">{r.studentName}</td>
                           <td className="p-2 border border-slate-200 font-mono font-bold">{r.phoneNumber || 'N/A'}</td>
-                          <td className="p-2 border border-slate-200 text-center font-black">{totalDisplay}</td>
+                          {isSem ? (
+                            <>
+                              {allSubjs.map((sName, sIdx) => {
+                                const sub = (r.subjects || []).find(
+                                  (s) => (s.subjectName || s.subjectCode || '').trim() === sName
+                                );
+                                const rawGrade = sub
+                                  ? sub.grade !== undefined && sub.grade !== null && sub.grade !== ''
+                                    ? sub.grade
+                                    : sub.result || '-'
+                                  : '-';
+                                const evalGrade = evaluateSubjectGrade(rawGrade);
+                                return (
+                                  <td
+                                    key={sIdx}
+                                    className={`p-2 border border-slate-200 text-center font-black ${
+                                      evalGrade.isFail ? 'text-rose-700' : 'text-emerald-700'
+                                    }`}
+                                  >
+                                    {evalGrade.gradeStr}
+                                  </td>
+                                );
+                              })}
+                              <td
+                                className={`p-2 border border-slate-200 text-center font-black ${
+                                  arrearsCount > 0 ? 'text-rose-700' : 'text-emerald-700'
+                                }`}
+                              >
+                                {arrearsCount}
+                              </td>
+                            </>
+                          ) : (
+                            <td className="p-2 border border-slate-200 text-center font-black">{totalDisplay}</td>
+                          )}
                           <td className="p-2 border border-slate-200 text-center font-black">
                             <span className={r.overallStatus === 'PASS' ? 'text-emerald-700' : 'text-rose-700'}>
                               {r.overallStatus}
