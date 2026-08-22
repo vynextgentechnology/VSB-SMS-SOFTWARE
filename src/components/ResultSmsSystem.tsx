@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
 import { ExamBatch, Department, StudentExamResult, SubjectMark, Student, ParentEnrollment, User, ResultType } from '../types';
 import { api, formatErrorMessage } from '../lib/api';
 import { evaluateSubjectGrade } from '../utils/gradeEvaluator';
@@ -55,22 +56,48 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
 
   // View & Modal States
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [selectedBatch, setSelectedBatch] = useState<ExamBatch | null>(batches[0] || null);
+  const [selectedBatch, setSelectedBatch] = useState<ExamBatch | null>(() => {
+    try {
+      const savedId = typeof window !== 'undefined' ? localStorage.getItem('vsbec_active_exam_batch_id') : null;
+      if (savedId && batches && batches.length > 0) {
+        const found = batches.find((b) => b.id === savedId);
+        if (found) return found;
+      }
+    } catch (e) {}
+    return batches[0] || null;
+  });
   const [batchToDelete, setBatchToDelete] = useState<ExamBatch | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState<'excel' | 'paste'>('excel');
 
-  // Keep selectedBatch in sync with updated batches list
+  // Keep selectedBatch in sync with updated batches list and restore active batch
   useEffect(() => {
+    if (!batches || batches.length === 0) {
+      setSelectedBatch(null);
+      try { localStorage.removeItem('vsbec_active_exam_batch_id'); } catch (e) {}
+      return;
+    }
+    const savedId = typeof window !== 'undefined' ? localStorage.getItem('vsbec_active_exam_batch_id') : null;
     if (selectedBatch) {
       const updated = batches.find((b) => b.id === selectedBatch.id);
       if (updated) {
         setSelectedBatch(updated);
-      } else {
-        setSelectedBatch(batches[0] || null);
+        try { localStorage.setItem('vsbec_active_exam_batch_id', updated.id); } catch (e) {}
+        return;
       }
-    } else if (batches.length > 0) {
-      setSelectedBatch(batches[0]);
+    }
+    if (savedId) {
+      const found = batches.find((b) => b.id === savedId);
+      if (found) {
+        setSelectedBatch(found);
+        return;
+      } else {
+        try { localStorage.removeItem('vsbec_active_exam_batch_id'); } catch (e) {}
+      }
+    }
+    setSelectedBatch(batches[0] || null);
+    if (batches[0]) {
+      try { localStorage.setItem('vsbec_active_exam_batch_id', batches[0].id); } catch (e) {}
     }
   }, [batches]);
 
@@ -94,13 +121,21 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
     try {
       const res = await api.deleteExamBatch(batchToDelete.id);
       if (res.success) {
-        setSuccessMsg('Exam batch deleted successfully.');
+        setSuccessMsg('Exam batch deleted permanently from database.');
         const remaining = batches.filter((b) => b.id !== batchToDelete.id);
         if (selectedBatch?.id === batchToDelete.id) {
-          setSelectedBatch(remaining.length > 0 ? remaining[0] : null);
+          const nextBatch = remaining.length > 0 ? remaining[0] : null;
+          setSelectedBatch(nextBatch);
+          try {
+            if (nextBatch) {
+              localStorage.setItem('vsbec_active_exam_batch_id', nextBatch.id);
+            } else {
+              localStorage.removeItem('vsbec_active_exam_batch_id');
+            }
+          } catch (e) {}
         }
         setBatchToDelete(null);
-        onRefresh();
+        await onRefresh();
         setTimeout(() => setSuccessMsg(null), 5000);
       } else {
         setError(res.message || 'Failed to delete exam batch.');
@@ -678,6 +713,408 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
     setShowPrintModal(true);
   };
 
+  // --- Download SMS Report (Excel) with 8 mandatory columns ---
+  const downloadExcelReport = (batch: ExamBatch) => {
+    const isSemester = (batch.resultType || 'Semester Result') === 'Semester Result';
+
+    const formatSmsDate = (sentAt: string | Date | undefined): string => {
+      if (!sentAt) return batch.examDate || new Date().toISOString().split('T')[0];
+      try {
+        const d = new Date(sentAt);
+        if (isNaN(d.getTime())) return String(sentAt);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      } catch {
+        return String(sentAt);
+      }
+    };
+
+    const formatSmsTime = (sentAt: string | Date | undefined): string => {
+      if (!sentAt) return '10:00 AM';
+      try {
+        const d = new Date(sentAt);
+        if (isNaN(d.getTime())) return '-';
+        let hours = d.getHours();
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        const strHours = String(hours).padStart(2, '0');
+        return `${strHours}:${minutes} ${ampm}`;
+      } catch {
+        return '-';
+      }
+    };
+
+    const excelRows = batch.results.map((r, i) => {
+      let smsData = '';
+      if (isSemester) {
+        let subjectLines = '';
+        if (Array.isArray(r.subjects) && r.subjects.length > 0) {
+          subjectLines = r.subjects
+            .map((s) => {
+              const grade = s.grade !== undefined && s.grade !== null && s.grade !== '' ? s.grade : s.result || '-';
+              return `${s.subjectName || s.subjectCode}: ${grade}`;
+            })
+            .join('\n\n');
+        } else {
+          subjectLines = `Result: ${r.overallStatus}`;
+        }
+
+        let arrearsCount = 0;
+        if (typeof r.failedSubjectsCount === 'number') {
+          arrearsCount = r.failedSubjectsCount;
+        } else if (Array.isArray(r.subjects)) {
+          arrearsCount = r.subjects.filter((s) => evaluateSubjectGrade(s.grade || s.result).isFail).length;
+        }
+
+        smsData = `DEAR PARENT,\n\nName: ${r.studentName}\n\nRegister Number: ${r.registerNumber}\n\n${subjectLines}\n\nTotal Number of Arrears: ${arrearsCount}`;
+      } else {
+        let subjectLines = '';
+        if (Array.isArray(r.subjects) && r.subjects.length > 0) {
+          subjectLines = r.subjects
+            .map((s) => `${s.subjectName || s.subjectCode}: ${s.marks !== undefined && s.marks !== null ? s.marks : (s.grade || '-')}`)
+            .join(', ');
+        } else {
+          subjectLines = `Result: ${r.overallStatus}`;
+        }
+        const statusPart = r.overallStatus ? `. Overall Result: ${r.overallStatus}` : '';
+        smsData = `Dear Parent, Assessment Result for ${r.studentName} (${r.registerNumber}): ${subjectLines}${statusPart}. - VSB Engineering College`;
+      }
+
+      return {
+        'Serial No': i + 1,
+        'Register Number': r.registerNumber || '-',
+        'Student Name': r.studentName || '-',
+        'Parent Mobile Number': r.phoneNumber || '-',
+        'SMS Data': smsData,
+        'SMS Date': formatSmsDate(r.smsSentAt),
+        'SMS Time': formatSmsTime(r.smsSentAt),
+        'SMS Status': r.smsStatus || (r.smsSent ? 'Sent' : 'Pending'),
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(excelRows);
+    worksheet['!cols'] = [
+      { wch: 12 }, // Serial No
+      { wch: 18 }, // Register Number
+      { wch: 26 }, // Student Name
+      { wch: 22 }, // Parent Mobile Number
+      { wch: 75 }, // SMS Data
+      { wch: 15 }, // SMS Date
+      { wch: 15 }, // SMS Time
+      { wch: 15 }, // SMS Status
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'SMS Delivery Report');
+    const fileName = `${batch.title.replace(/\s+/g, '_')}_SMS_Report.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+
+  // --- Download SMS Report (PDF) with Exact Multi-line Message Cards ---
+  const downloadPdfReport = (batch: ExamBatch) => {
+    try {
+      const isSemester = (batch.resultType || 'Semester Result') === 'Semester Result';
+
+      const formatSmsDate = (sentAt: string | Date | undefined): string => {
+        if (!sentAt) return batch.examDate || new Date().toISOString().split('T')[0];
+        try {
+          const d = new Date(sentAt);
+          if (isNaN(d.getTime())) return String(sentAt);
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${y}-${m}-${day}`;
+        } catch {
+          return String(sentAt);
+        }
+      };
+
+      const formatSmsTime = (sentAt: string | Date | undefined): string => {
+        if (!sentAt) return '10:00 AM';
+        try {
+          const d = new Date(sentAt);
+          if (isNaN(d.getTime())) return '-';
+          let hours = d.getHours();
+          const minutes = String(d.getMinutes()).padStart(2, '0');
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          hours = hours % 12;
+          hours = hours ? hours : 12;
+          const strHours = String(hours).padStart(2, '0');
+          return `${strHours}:${minutes} ${ampm}`;
+        } catch {
+          return '-';
+        }
+      };
+
+      const doc = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const margin = 14;
+      const contentWidth = pageWidth - margin * 2;
+      const bottomLimit = pageHeight - 20;
+
+      const drawHeader = () => {
+        doc.setFillColor(15, 23, 42);
+        doc.rect(0, 0, pageWidth, 24, 'F');
+
+        doc.setFillColor(37, 99, 235);
+        doc.rect(0, 0, pageWidth, 2, 'F');
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(13);
+        doc.text('VSB ENGINEERING COLLEGE', margin, 10);
+
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(203, 213, 225);
+        doc.text(`EXAM RESULT SMS DISPATCH AUDIT REPORT • ${batch.title.toUpperCase()}`, margin, 16);
+
+        doc.setFontSize(7.5);
+        doc.setTextColor(148, 163, 184);
+        doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth - margin, 16, { align: 'right' });
+      };
+
+      let currentY = 30;
+      drawHeader();
+
+      // Summary Banner
+      doc.setFillColor(241, 245, 249);
+      doc.setDrawColor(203, 213, 225);
+      doc.roundedRect(margin, currentY, contentWidth, 18, 1.5, 1.5, 'FD');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(15, 23, 42);
+      doc.text(`EXAM BATCH: ${batch.title} • ${batch.results.length} STUDENT RECORDS`, margin + 4, currentY + 6);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(71, 85, 105);
+      doc.text(`Department: ${batch.department} | Type: ${batch.resultType || 'Semester Result'} | Exam Date: ${batch.examDate}`, margin + 4, currentY + 11);
+      doc.text(`SMS Sent Count: ${batch.smsSentCount ?? 0} | Uploaded by: ${batch.uploadedBy}`, margin + 4, currentY + 15);
+
+      currentY += 23;
+
+      batch.results.forEach((r, i) => {
+        const serialNo = i + 1;
+        const regNo = r.registerNumber || '-';
+        const studentName = r.studentName || '-';
+        const parentMobile = r.phoneNumber || '-';
+        const smsDate = formatSmsDate(r.smsSentAt);
+        const smsTime = formatSmsTime(r.smsSentAt);
+        const smsStatus = r.smsStatus || (r.smsSent ? 'Sent' : 'Pending');
+
+        let rawMessage = '';
+        if (isSemester) {
+          let subjectLines = '';
+          if (Array.isArray(r.subjects) && r.subjects.length > 0) {
+            subjectLines = r.subjects
+              .map((s) => {
+                const grade = s.grade !== undefined && s.grade !== null && s.grade !== '' ? s.grade : s.result || '-';
+                return `${s.subjectName || s.subjectCode}: ${grade}`;
+              })
+              .join('\n\n');
+          } else {
+            subjectLines = `Result: ${r.overallStatus}`;
+          }
+
+          let arrearsCount = 0;
+          if (typeof r.failedSubjectsCount === 'number') {
+            arrearsCount = r.failedSubjectsCount;
+          } else if (Array.isArray(r.subjects)) {
+            arrearsCount = r.subjects.filter((s) => evaluateSubjectGrade(s.grade || s.result).isFail).length;
+          }
+
+          rawMessage = `DEAR PARENT,\n\nName: ${r.studentName}\n\nRegister Number: ${r.registerNumber}\n\n${subjectLines}\n\nTotal Number of Arrears: ${arrearsCount}`;
+        } else {
+          let subjectLines = '';
+          if (Array.isArray(r.subjects) && r.subjects.length > 0) {
+            subjectLines = r.subjects
+              .map((s) => `${s.subjectName || s.subjectCode}: ${s.marks !== undefined && s.marks !== null ? s.marks : (s.grade || '-')}`)
+              .join(', ');
+          } else {
+            subjectLines = `Result: ${r.overallStatus}`;
+          }
+          const statusPart = r.overallStatus ? `. Overall Result: ${r.overallStatus}` : '';
+          rawMessage = `Dear Parent, Assessment Result for ${r.studentName} (${r.registerNumber}): ${subjectLines}${statusPart}. - VSB Engineering College`;
+        }
+
+        const msgWidth = contentWidth - 10;
+        const rawLines = rawMessage.split(/\r?\n/);
+        const wrappedLines: string[] = [];
+        rawLines.forEach((line) => {
+          if (line.trim() === '') {
+            wrappedLines.push('');
+          } else {
+            const split = doc.splitTextToSize(line, msgWidth);
+            wrappedLines.push(...split);
+          }
+        });
+
+        const lineHeight = 3.6;
+        const msgBoxHeight = Math.max(12, wrappedLines.length * lineHeight + 5);
+        const metadataHeight = 24;
+        const cardHeaderHeight = 6.5;
+        const cardTotalHeight = cardHeaderHeight + metadataHeight + 6 + msgBoxHeight + 5;
+
+        if (currentY + cardTotalHeight > bottomLimit) {
+          doc.addPage();
+          drawHeader();
+          currentY = 30;
+        }
+
+        const cardStartY = currentY;
+
+        doc.setFillColor(248, 250, 252);
+        doc.setDrawColor(203, 213, 225);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(margin, cardStartY, contentWidth, cardTotalHeight, 1.5, 1.5, 'FD');
+
+        doc.setFillColor(15, 23, 42);
+        doc.roundedRect(margin, cardStartY, contentWidth, cardHeaderHeight, 1.5, 1.5, 'F');
+        doc.rect(margin, cardStartY + cardHeaderHeight - 1.5, contentWidth, 1.5, 'F');
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.text(`SMS REPORT — SERIAL NO: ${serialNo}`, margin + 4, cardStartY + 4.5);
+
+        const isSent = smsStatus === 'Sent' || smsStatus === 'Delivered';
+        const isFailed = smsStatus === 'Failed';
+        doc.setFontSize(7.5);
+        if (isSent) {
+          doc.setTextColor(52, 211, 153);
+        } else if (isFailed) {
+          doc.setTextColor(248, 113, 113);
+        } else {
+          doc.setTextColor(251, 191, 36);
+        }
+        doc.text(`STATUS: ${smsStatus.toUpperCase()}`, pageWidth - margin - 4, cardStartY + 4.5, { align: 'right' });
+
+        let metaY = cardStartY + cardHeaderHeight + 4.5;
+        doc.setFontSize(7.5);
+        const col1X = margin + 4;
+        const col2X = margin + (contentWidth / 2) + 2;
+
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(71, 85, 105);
+        doc.text('Serial No:', col1X, metaY);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(15, 23, 42);
+        doc.text(String(serialNo), col1X + 32, metaY);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(71, 85, 105);
+        doc.text('Register Number:', col1X, metaY + 4.5);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(29, 78, 216);
+        doc.text(regNo, col1X + 32, metaY + 4.5);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(71, 85, 105);
+        doc.text('Student Name:', col1X, metaY + 9);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(15, 23, 42);
+        doc.text(studentName, col1X + 32, metaY + 9);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(71, 85, 105);
+        doc.text('Parent Mobile Number:', col1X, metaY + 13.5);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(15, 23, 42);
+        doc.text(parentMobile, col1X + 32, metaY + 13.5);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(71, 85, 105);
+        doc.text('SMS Date:', col2X, metaY);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(15, 23, 42);
+        doc.text(smsDate, col2X + 24, metaY);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(71, 85, 105);
+        doc.text('SMS Time:', col2X, metaY + 4.5);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(15, 23, 42);
+        doc.text(smsTime, col2X + 24, metaY + 4.5);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(71, 85, 105);
+        doc.text('SMS Status:', col2X, metaY + 9);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(
+          isSent ? 4 : isFailed ? 185 : 180,
+          isSent ? 120 : isFailed ? 28 : 83,
+          isSent ? 87 : isFailed ? 28 : 9
+        );
+        doc.text(smsStatus, col2X + 24, metaY + 9);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(71, 85, 105);
+        doc.text('Department:', col2X, metaY + 13.5);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(15, 23, 42);
+        doc.text(batch.department || 'General', col2X + 24, metaY + 13.5);
+
+        const dividerY = metaY + 17;
+        doc.setDrawColor(226, 232, 240);
+        doc.line(margin + 4, dividerY, margin + contentWidth - 4, dividerY);
+
+        const msgLabelY = dividerY + 4.5;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        doc.setTextColor(15, 23, 42);
+        doc.text('SMS DATA (COMPLETE ACTUAL MESSAGE SENT):', margin + 4, msgLabelY);
+
+        const msgBoxY = msgLabelY + 2;
+        doc.setFillColor(255, 255, 255);
+        doc.setDrawColor(203, 213, 225);
+        doc.roundedRect(margin + 4, msgBoxY, contentWidth - 8, msgBoxHeight, 1, 1, 'FD');
+
+        doc.setFont('courier', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(15, 23, 42);
+
+        let textY = msgBoxY + 3.8;
+        wrappedLines.forEach((l) => {
+          doc.text(l, margin + 7, textY);
+          textY += lineHeight;
+        });
+
+        currentY = cardStartY + cardTotalHeight + 4.5;
+      });
+
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setDrawColor(226, 232, 240);
+        doc.line(margin, 287, pageWidth - margin, 287);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(148, 163, 184);
+        doc.text('VSB ENGINEERING COLLEGE • OFFICIAL SMS AUDIT REPORT', margin, 292);
+        doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, 292, { align: 'right' });
+      }
+
+      const dateStamp = new Date().toISOString().split('T')[0];
+      doc.save(`${batch.title.replace(/\s+/g, '_')}_SMS_Report_${dateStamp}.pdf`);
+    } catch (err: any) {
+      console.error('PDF Generation Error:', err);
+      alert(`Failed to generate PDF: ${err.message || 'Unknown error'}`);
+    }
+  };
+
   // --- Download CSV Report ---
   const downloadCsvReport = (batch: ExamBatch) => {
     const headers = [
@@ -889,7 +1326,10 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
                 return (
                   <div
                     key={batch.id}
-                    onClick={() => setSelectedBatch(batch)}
+                    onClick={() => {
+                      setSelectedBatch(batch);
+                      try { localStorage.setItem('vsbec_active_exam_batch_id', batch.id); } catch (e) {}
+                    }}
                     className={`p-4 rounded-sm border cursor-pointer transition-all space-y-3 ${
                       isSelected
                         ? 'bg-slate-900 text-white border-amber-500/80 shadow-md'
@@ -999,9 +1439,29 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
 
                 <div className="flex flex-wrap items-center gap-2 shrink-0">
                   <button
+                    id="export-excel-report-btn"
+                    onClick={() => downloadExcelReport(selectedBatch)}
+                    className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs uppercase tracking-wider rounded-sm shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+                    title="Download SMS delivery report in Excel (.xlsx) format with 8 standardized columns"
+                  >
+                    <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-200" />
+                    <span>Download SMS Report (Excel)</span>
+                  </button>
+
+                  <button
+                    id="export-pdf-report-btn"
+                    onClick={() => downloadPdfReport(selectedBatch)}
+                    className="px-3.5 py-2 bg-[#0f172a] hover:bg-slate-800 text-white font-black text-xs uppercase tracking-wider rounded-sm shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+                    title="Download SMS delivery report in PDF format with exact multi-line message preservation"
+                  >
+                    <Download className="w-3.5 h-3.5 text-blue-400" />
+                    <span>Download SMS Report (PDF)</span>
+                  </button>
+
+                  <button
                     id="print-report-btn"
                     onClick={handlePrintReport}
-                    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs uppercase tracking-wider rounded-sm border border-slate-300 flex items-center gap-1.5 transition-all"
+                    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs uppercase tracking-wider rounded-sm border border-slate-300 flex items-center gap-1.5 transition-all cursor-pointer"
                     title="Print generated report"
                   >
                     <Printer className="w-3.5 h-3.5 text-slate-700" />
@@ -1011,11 +1471,11 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
                   <button
                     id="export-csv-report-btn"
                     onClick={() => downloadCsvReport(selectedBatch)}
-                    className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs uppercase tracking-wider rounded-sm border border-slate-300 flex items-center gap-1.5 transition-all"
+                    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs uppercase tracking-wider rounded-sm border border-slate-300 flex items-center gap-1.5 transition-all cursor-pointer"
                     title="Download complete SMS delivery report in CSV format"
                   >
                     <Download className="w-3.5 h-3.5 text-slate-700" />
-                    <span>Download Report (CSV)</span>
+                    <span>Report (CSV)</span>
                   </button>
 
                   {selectedRegNos.length > 0 ? (

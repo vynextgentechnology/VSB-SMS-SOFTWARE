@@ -1,6 +1,45 @@
 {
   "users": [
     {
+      "id": "usr-1786778079790-2smp9",
+      "userId": "HOD_CSE_9689",
+      "name": "Dr. Senthil Kumar (HOD CSE)",
+      "role": "hod",
+      "department": "CSE",
+      "phoneNumber": "9876543210",
+      "email": "",
+      "rawPassword": "Password123",
+      "passwordHash": "$2b$10$NYloqCoJM7eiCzRenqYYke16Zk1l8d6pgHXPfHRNLpIFbuNAImQgm",
+      "permissions": [
+        "send_sms",
+        "upload_results",
+        "manage_students",
+        "manage_staff",
+        "view_reports",
+        "manage_parents"
+      ],
+      "createdAt": "2026-08-15T07:14:39.791Z"
+    },
+    {
+      "id": "usr-super-admin-01",
+      "userId": "VYNEXTGEN",
+      "name": "Super Administrator",
+      "role": "SUPER_ADMIN",
+      "department": "ALL",
+      "phoneNumber": "",
+      "passwordHash": "$2b$10$tZxD/kN1jJR.T/U5b.SSsOylGGP7YGlnrukn54aQAxVvzohdfE0cq",
+      "permissions": [
+        "send_sms",
+        "upload_results",
+        "manage_students",
+        "manage_staff",
+        "view_reports",
+        "manage_settings",
+        "manage_parents"
+      ],
+      "createdAt": "2026-08-15T07:02:49.735Z"
+    },
+    {
       "id": "usr-admin-1",
       "userId": "VSBEC",
       "name": "System Administrator (VY NEXTGEN)",
@@ -14,7 +53,11 @@
         "view_reports",
         "manage_settings"
       ],
-      "createdAt": "2026-08-07T02:24:06.397Z"
+      "createdAt": "2026-08-07T02:24:06.397Z",
+      "department": "ADMIN",
+      "phoneNumber": "",
+      "email": "",
+      "passwordHash": ""
     },
     {
       "id": "stf-1786097390445-rblya",
@@ -33,14 +76,6 @@
   ],
   "parentEnrollments": [],
   "students": [
-    {
-      "registerNumber": "921321104001",
-      "name": "Anish Kumar",
-      "phoneNumber": "+918754020556",
-      "department": "CSE",
-      "id": "std-1786097995510-f9rja",
-      "createdAt": "2026-08-07T10:19:55.510Z"
-    },
     {
       "registerNumber": "922524148117",
       "name": "VALIULLAH J",
@@ -571,7 +606,7 @@
       "id": "dept-cse",
       "code": "CSE",
       "name": "Computer Science & Engineering",
-      "headOfDepartment": "Dr. ANBUMANI",
+      "headOfDepartment": "Dr. Senthil Kumar (HOD CSE)",
       "createdAt": "2026-08-07T02:24:06.396Z"
     },
     {
@@ -893,6 +928,86 @@
     "defaultSenderName": "VSBEC VY NEXTGEN"
   },
   "activityLogs": [
+    {
+      "id": "act-1786778080098-hkbtu",
+      "action": "User Login",
+      "details": "Logged in as Dr. Senthil Kumar (HOD CSE) (HOD)",
+      "user": "HOD_CSE_9689",
+      "type": "auth",
+      "timestamp": "2026-08-15T07:14:40.098Z"
+    },
+    {
+      "id": "act-1786778079796-96fb4",
+      "action": "User Account Updated",
+      "details": "Updated details for HOD Dr. Senthil Kumar (HOD CSE) (HOD_CSE_9689)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-15T07:14:39.796Z"
+    },
+    {
+      "id": "act-1786778079791-zg3p6",
+      "action": "User Account Created",
+      "details": "Created HOD account for Original HOD Name (HOD_CSE_9689)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-15T07:14:39.791Z"
+    },
+    {
+      "id": "act-1786778079681-o7ulv",
+      "action": "User Account Updated",
+      "details": "Updated details for ADMIN System Administrator (VY NEXTGEN) (VSBEC)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-15T07:14:39.681Z"
+    },
+    {
+      "id": "act-1786778075050-f3j02",
+      "action": "User Account Updated",
+      "details": "Updated details for ADMIN Dr. Test HOD 5046 (VSBEC)",
+      "user": "VSBEC",
+      "type": "auth",
+      "timestamp": "2026-08-15T07:14:35.050Z"
+    },
+    {
+      "id": "act-1786777753292-bk2wh",
+      "action": "Student Deleted",
+      "details": "Deleted student TESTSTUDENT (921321104999)",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-08-15T07:09:13.292Z"
+    },
+    {
+      "id": "act-1786777753284-ol7h8",
+      "action": "Student Added",
+      "details": "Added student TESTSTUDENT (921321104999) - Dept: CSE",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-08-15T07:09:13.284Z"
+    },
+    {
+      "id": "act-1786777749729-90l5c",
+      "action": "Student Deleted",
+      "details": "Deleted student ANISHKUMAR (921321104001)",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-08-15T07:09:09.729Z"
+    },
+    {
+      "id": "act-1786777749715-xylfe",
+      "action": "Student Added",
+      "details": "Added student ANISHKUMAR (921321104001) - Dept: CSE",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-08-15T07:09:09.715Z"
+    },
+    {
+      "id": "act-1786777412245-8md9l",
+      "action": "Student Deleted",
+      "details": "Deleted student Anish Kumar (921321104001)",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-08-15T07:03:32.245Z"
+    },
     {
       "id": "act-1786548738003-sc6fa",
       "action": "Student Deleted",
@@ -1407,6 +1522,15 @@
     }
   ],
   "loginLogs": [
+    {
+      "id": "login-1786778080098-ytq4k",
+      "userId": "HOD_CSE_9689",
+      "name": "Dr. Senthil Kumar (HOD CSE)",
+      "role": "hod",
+      "department": "CSE",
+      "action": "login",
+      "timestamp": "2026-08-15T07:14:40.098Z"
+    },
     {
       "id": "login-1786548246324-9i2vd",
       "userId": "VSBEC",

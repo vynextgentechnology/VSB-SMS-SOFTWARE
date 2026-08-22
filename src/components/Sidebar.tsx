@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Sparkles,
   ClipboardList,
+  Calendar,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -68,6 +69,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: UserCheck,
       badge: staffCount > 0 ? staffCount : null,
       roles: ['super_admin', 'admin', 'hod'],
+    },
+    {
+      id: 'attendance',
+      label: 'Attendance & SMS',
+      icon: Calendar,
+      badge: 'Live',
+      badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+      roles: ['super_admin', 'admin', 'hod', 'staff'],
     },
     {
       id: 'sms_send',

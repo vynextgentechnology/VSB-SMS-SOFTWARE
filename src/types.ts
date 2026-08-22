@@ -1,6 +1,6 @@
 export type UserRole = 'SUPER_ADMIN' | 'admin' | 'hod' | 'staff';
 
-export type Permission = 'send_sms' | 'upload_results' | 'manage_students' | 'manage_staff' | 'view_reports' | 'manage_settings' | 'manage_parents';
+export type Permission = 'send_sms' | 'upload_results' | 'manage_students' | 'manage_staff' | 'view_reports' | 'manage_settings' | 'manage_parents' | 'manage_attendance';
 
 export interface User {
   id: string;
@@ -27,6 +27,8 @@ export interface Student {
   name: string;
   registerNumber: string;
   department: string;
+  year?: string;
+  section?: string;
   phoneNumber: string;
   createdAt: string;
 }
@@ -110,9 +112,13 @@ export interface ExamBatch {
   uploadedAt: string;
   uploadedBy: string;
   totalStudents: number;
+  passedCount?: number;
+  failedCount?: number;
+  passRate?: number;
   smsSentCount: number;
   matchedCount?: number;
   unmatchedCount?: number;
+  detectedSubjects?: string[];
 }
 
 export interface SmsTemplate {
@@ -189,4 +195,42 @@ export interface ApiKey {
   lastUsedAt?: string;
   description: string;
 }
+
+export type AttendanceStatus = 'PRESENT' | 'ABSENT';
+
+export interface AttendanceRecord {
+  studentId?: string;
+  registerNumber: string;
+  studentName: string;
+  department: string;
+  status: AttendanceStatus;
+  parentMobile?: string;
+  parentName?: string;
+  parentMatched: boolean;
+  smsSent: boolean;
+  smsSentAt?: string;
+  smsStatus?: 'Sent' | 'Failed' | 'Pending';
+  smsErrorMessage?: string;
+}
+
+export interface AttendanceSession {
+  id: string;
+  title?: string;
+  department: string;
+  date: string; // Format: YYYY-MM-DD
+  academicGroup: string; // e.g. Class, Section, or Subject name
+  section?: string;
+  sessionType?: string; // 'Full Day' | 'FN' | 'AN' | 'Lecture' | 'Lab' | 'Assessment'
+  records: AttendanceRecord[];
+  totalStudents: number;
+  presentCount: number;
+  absentCount: number;
+  smsSentCount: number;
+  takenBy: string;
+  takenByName: string;
+  takenByRole: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
 

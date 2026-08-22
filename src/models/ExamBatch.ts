@@ -10,9 +10,13 @@ export interface IExamBatch extends Document {
   uploadedAt: Date;
   uploadedBy: string;
   totalStudents: number;
+  passedCount?: number;
+  failedCount?: number;
+  passRate?: number;
   smsSentCount: number;
   matchedCount: number;
   unmatchedCount: number;
+  detectedSubjects?: string[];
 }
 
 const ExamBatchSchema: Schema = new Schema({
@@ -25,9 +29,13 @@ const ExamBatchSchema: Schema = new Schema({
   uploadedAt: { type: Date, default: Date.now },
   uploadedBy: { type: String, default: 'VSBEC' },
   totalStudents: { type: Number, default: 0 },
+  passedCount: { type: Number, default: 0 },
+  failedCount: { type: Number, default: 0 },
+  passRate: { type: Number, default: 0 },
   smsSentCount: { type: Number, default: 0 },
   matchedCount: { type: Number, default: 0 },
   unmatchedCount: { type: Number, default: 0 },
+  detectedSubjects: { type: [String], default: [] },
 });
 
 export const ExamBatchModel =

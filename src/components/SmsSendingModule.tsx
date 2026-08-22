@@ -357,8 +357,8 @@ export const SmsSendingModule: React.FC<SmsSendingModuleProps> = ({
           marks: parsedExcelRecords[0].marks,
         }
       : targetRecipients[0] || {
-          name: 'Anish Kumar',
-          registerNumber: '921321104001',
+          name: 'Student Name',
+          registerNumber: 'REG123456',
           department: 'CSE',
           phoneNumber: '+919876543210',
           marks: '92%',

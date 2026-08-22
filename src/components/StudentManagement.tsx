@@ -124,10 +124,11 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
     setError(null);
     setLoading(true);
     try {
-      await api.deleteStudent(id);
-      setSuccessMsg(`Student deleted successfully.`);
+      const deleteIdentifier = registerNumber || id;
+      await api.deleteStudent(deleteIdentifier);
+      setSuccessMsg(`Student ${name} (${registerNumber}) permanently deleted from database.`);
       setDeletingStudent(null);
-      onRefresh();
+      await onRefresh();
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
       console.error('[Delete Student Error]:', err);

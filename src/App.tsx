@@ -13,6 +13,7 @@ import { ParentEnrollmentSystem } from './components/ParentEnrollmentSystem';
 import { DepartmentManagement } from './components/DepartmentManagement';
 import { StudentManagement } from './components/StudentManagement';
 import { StaffManagement } from './components/StaffManagement';
+import { AttendanceManagement } from './components/AttendanceManagement';
 import { SmsSendingModule } from './components/SmsSendingModule';
 import { ResultSmsSystem } from './components/ResultSmsSystem';
 import { SmsReportSystem } from './components/SmsReportSystem';
@@ -81,9 +82,9 @@ export default function App() {
   useEffect(() => {
     if (!currentUser) return;
     const role = (currentUser.role || 'staff').toString().trim().toLowerCase();
-    const adminTabs = ['dashboard', 'admin_management', 'departments', 'students', 'staff', 'sms_send', 'result_sms', 'sms_reports', 'templates', 'settings'];
-    const hodTabs = ['dashboard', 'students', 'staff', 'sms_send', 'result_sms', 'templates'];
-    const staffTabs = ['dashboard', 'students', 'sms_send', 'result_sms', 'templates'];
+    const adminTabs = ['dashboard', 'admin_management', 'departments', 'students', 'staff', 'attendance', 'sms_send', 'result_sms', 'sms_reports', 'templates', 'settings'];
+    const hodTabs = ['dashboard', 'students', 'staff', 'attendance', 'sms_send', 'result_sms', 'templates'];
+    const staffTabs = ['dashboard', 'students', 'attendance', 'sms_send', 'result_sms', 'templates'];
 
     const allowed = (role === 'admin' || role === 'super_admin') ? adminTabs : role === 'hod' ? hodTabs : staffTabs;
     if (!allowed.includes(activeTab)) {
@@ -284,6 +285,16 @@ export default function App() {
                 />
               )}
 
+              {activeTab === 'attendance' && (
+                <AttendanceManagement
+                  currentUser={currentUser}
+                  departments={departments}
+                  templates={templates}
+                  onRefresh={refreshData}
+                  onNavigateToReports={() => setActiveTab('sms_reports')}
+                />
+              )}
+
               {activeTab === 'sms_send' && (
                 <SmsSendingModule
                   students={students}
@@ -311,6 +322,8 @@ export default function App() {
               {activeTab === 'sms_reports' && (
                 <SmsReportSystem
                   logs={smsLogs}
+                  batches={examBatches}
+                  departments={departments}
                   onRefresh={refreshData}
                 />
               )}

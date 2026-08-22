@@ -14,6 +14,9 @@ import {
   UserRole,
   LoginLog,
   ApiKey,
+  AttendanceSession,
+  AttendanceRecord,
+  AttendanceStatus,
 } from '../types.js';
 
 let currentUserId = localStorage.getItem('vy_sms_user_id') || '';
@@ -475,9 +478,31 @@ export const api = {
 
   getSmsReports: (): Promise<SmsLog[]> => request<SmsLog[]>('/api/sms/reports'),
   clearSmsReports: (): Promise<{ success: boolean }> => request('/api/sms/reports', { method: 'DELETE' }),
+  getSmsExcelReportUrl: (params?: {
+    batch?: string;
+    department?: string;
+    date?: string;
+    type?: string;
+    status?: string;
+    search?: string;
+    regNo?: string;
+    student?: string;
+  }): string => {
+    const query = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([k, v]) => {
+        if (v && v !== 'ALL') query.append(k, v);
+      });
+    }
+    const qStr = query.toString();
+    return `${baseUrl}/api/reports/sms-excel${qStr ? `?${qStr}` : ''}`;
+  },
 
   // Exam Results
   getExamBatches: (): Promise<ExamBatch[]> => request<ExamBatch[]>('/api/results'),
+  getExamBatchById: (batchId: string): Promise<ExamBatch> => request<ExamBatch>(`/api/results/${batchId}`),
+  getExamBatchReport: (batchId: string): Promise<any> => request<any>(`/api/results/${batchId}/report`),
+  getExamBatchStudents: (batchId: string): Promise<any[]> => request<any[]>(`/api/results/${batchId}/students`),
   uploadExamBatch: (batch: {
     title: string;
     resultType?: ResultType;
@@ -489,6 +514,11 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(batch),
     }),
+  updateExamBatch: (batchId: string, updates: Partial<ExamBatch>): Promise<ExamBatch> =>
+    request<ExamBatch>(`/api/results/${batchId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    }),
   sendResultSms: (batchId: string, targetRegNos?: string[]): Promise<{ success: boolean; totalCount: number; sentCount: number; failedCount: number; batch: ExamBatch }> =>
     request(`/api/results/${batchId}/send-sms`, {
       method: 'POST',
@@ -497,6 +527,132 @@ export const api = {
   deleteExamBatch: (batchId: string): Promise<{ success: boolean; message?: string }> =>
     request<{ success: boolean; message?: string }>(`/api/results/${batchId}`, {
       method: 'DELETE',
+    }),
+
+  // Attendance & Absent SMS Methods
+  getEnrolledStudentsForAttendance: (department?: string): Promise<Array<{
+    id: string;
+    registerNumber: string;
+    name: string;
+    department: string;
+    year?: string;
+    section?: string;
+    parentName?: string;
+    parentMobile: string;
+    parentMatched: boolean;
+  }>> => {
+    const q = department && department !== 'ALL' ? `?department=${encodeURIComponent(department)}` : '';
+    return request(`/api/attendance/enrolled-students${q}`);
+  },
+
+  getAttendanceSessions: (department?: string, date?: string): Promise<AttendanceSession[]> => {
+    const params = new URLSearchParams();
+    if (department && department !== 'ALL') params.append('department', department);
+    if (date) params.append('date', date);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return request<AttendanceSession[]>(`/api/attendance${qs}`);
+  },
+
+  getAttendanceSessionById: (id: string): Promise<AttendanceSession> =>
+    request<AttendanceSession>(`/api/attendance/${id}`),
+
+  uploadAttendanceExcel: async (file: File): Promise<{
+    success: boolean;
+    totalRows: number;
+    presentCount: number;
+    absentCount: number;
+    parentMatchedCount: number;
+    parentMissingCount: number;
+    records: AttendanceRecord[];
+  }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const headers: Record<string, string> = {
+      'x-user-id': currentUserId,
+    };
+    if (currentToken) {
+      headers['Authorization'] = `Bearer ${currentToken}`;
+    }
+
+    const url = `${baseUrl}/api/attendance/upload-excel`;
+
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+    } catch (netErr: any) {
+      console.error('Attendance Excel Upload Fetch Error:', netErr);
+      throw new Error(`API Connection Error: ${netErr.message || 'Unable to connect to server during Excel upload'}`);
+    }
+
+    const text = await res.text();
+    let data: any = {};
+    if (text && text.trim()) {
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        throw new Error(`Server returned non-JSON response (${res.status} ${res.statusText}): ${text.slice(0, 200)}`);
+      }
+    }
+
+    if (!res.ok) {
+      throw new Error(data.error || data.message || `Upload failed with status ${res.status}`);
+    }
+    return data;
+  },
+
+  saveAttendanceSession: (sessionData: {
+    department: string;
+    date: string;
+    academicGroup: string;
+    section?: string;
+    sessionType?: string;
+    title?: string;
+    records: Array<{
+      studentId?: string;
+      registerNumber: string;
+      studentName?: string;
+      status: AttendanceStatus;
+      department?: string;
+    }>;
+  }): Promise<AttendanceSession> =>
+    request<AttendanceSession>('/api/attendance', {
+      method: 'POST',
+      body: JSON.stringify(sessionData),
+    }),
+
+  updateAttendanceSession: (id: string, records: AttendanceRecord[]): Promise<AttendanceSession> =>
+    request<AttendanceSession>(`/api/attendance/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ records }),
+    }),
+
+  deleteAttendanceSession: (id: string): Promise<{ success: boolean; message?: string }> =>
+    request<{ success: boolean; message?: string }>(`/api/attendance/${id}`, {
+      method: 'DELETE',
+    }),
+
+  sendAbsentParentSms: (
+    sessionId: string,
+    targetRegNos?: string[],
+    customTemplate?: string,
+    forceResend?: boolean
+  ): Promise<{
+    success: boolean;
+    totalAbsent: number;
+    sentCount: number;
+    failedCount: number;
+    skippedCount: number;
+    session: AttendanceSession;
+    logs: SmsLog[];
+  }> =>
+    request(`/api/attendance/${sessionId}/send-absent-sms`, {
+      method: 'POST',
+      body: JSON.stringify({ targetRegNos, customTemplate, forceResend }),
     }),
 
   // Templates

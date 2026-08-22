@@ -236,6 +236,30 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* Right Column: CTA Banner & Utilities */}
         <div className="lg:col-span-4 space-y-6">
           
+          {/* Navy Dark Card for Attendance & Absent SMS */}
+          <div className="bg-[#0f172a] p-6 text-white flex flex-col justify-between rounded-sm shadow-xl space-y-4">
+            <div className="flex justify-between items-start">
+              <div className="text-xs font-black text-emerald-400 uppercase tracking-widest">
+                Attendance & Absent SMS
+              </div>
+              <div className="w-8 h-8 bg-emerald-500/20 text-emerald-300 rounded flex items-center justify-center font-bold text-xs">
+                LIVE
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300 font-medium">
+              Record daily manual or Excel attendance & auto-dispatch Absent Parent SMS alerts via Fast2SMS gateway.
+            </p>
+
+            <button
+              onClick={() => onNavigate('attendance')}
+              className="w-full bg-emerald-600 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500 transition-colors rounded-sm shadow-md flex items-center justify-center space-x-2"
+            >
+              <span>Take Attendance & Send SMS</span>
+              <span>→</span>
+            </button>
+          </div>
+
           {/* Navy Dark Card for Exam Result Upload */}
           <div className="bg-[#0f172a] p-6 text-white flex flex-col justify-between h-52 rounded-sm shadow-xl">
             <div className="flex justify-between items-start">
