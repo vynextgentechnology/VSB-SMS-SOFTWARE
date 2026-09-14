@@ -92,6 +92,22 @@ export function formatErrorMessage(err: any): string {
 
 const baseUrl = ((import.meta as any).env?.VITE_API_BASE_URL || (import.meta as any).env?.VITE_API_URL || '').replace(/\/$/, '');
 
+async function fetchWithRetry(url: string, init: RequestInit, maxRetries = 2): Promise<Response> {
+  let attempt = 0;
+  while (true) {
+    try {
+      return await fetch(url, init);
+    } catch (err: any) {
+      attempt++;
+      if (attempt > maxRetries) {
+        throw new Error(err?.message || 'Failed to connect to the server. Please check your network or server connection.');
+      }
+      // Exponential backoff delay
+      await new Promise((resolve) => setTimeout(resolve, attempt * 250));
+    }
+  }
+}
+
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const userId = getCurrentUserId();
   const token = getAuthToken();
@@ -111,10 +127,9 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
   let res: Response;
   try {
-    res = await fetch(url, { ...options, headers });
+    res = await fetchWithRetry(url, { ...options, headers });
   } catch (netErr: any) {
-    console.error('Fetch error:', netErr);
-    throw new Error(`Network connection error: ${netErr.message || 'Unable to connect to server'}`);
+    throw new Error(`Connection error: ${netErr.message || 'Unable to connect to server'}`);
   }
 
   const contentType = res.headers.get('content-type') || '';
@@ -125,9 +140,8 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     try {
       data = JSON.parse(text);
     } catch (e) {
-      console.error(`Non-JSON response from ${endpoint} (${res.status} ${res.statusText}):`, text.slice(0, 300));
       if (contentType.includes('text/html') || text.includes('<!DOCTYPE html>') || text.includes('<html')) {
-        throw new Error(`Received HTML response instead of JSON from ${endpoint} (HTTP ${res.status}). Ensure backend API route is registered and Vercel route is not rewriting /api/* to index.html.`);
+        throw new Error(`Received HTML response instead of JSON from ${endpoint} (HTTP ${res.status}).`);
       }
       if (!res.ok) {
         throw new Error(`Server error (${res.status} ${res.statusText}) for ${endpoint}.`);
@@ -137,7 +151,6 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   }
 
   if (!res.ok) {
-    console.error('API Error response data:', data);
     const errorMsg = formatErrorMessage(data) || `HTTP Error ${res.status}: ${res.statusText || 'Request failed'}`;
     throw new Error(errorMsg);
   }
@@ -272,13 +285,12 @@ export const api = {
 
     let res: Response;
     try {
-      res = await fetch(url, {
+      res = await fetchWithRetry(url, {
         method: 'POST',
         headers,
         body: formData,
       });
     } catch (netErr: any) {
-      console.error('Excel Upload Fetch Error:', netErr);
       throw new Error(`API Connection Error: ${netErr.message || 'Unable to connect to server during Excel upload'}`);
     }
 
@@ -392,14 +404,12 @@ export const api = {
 
     let res: Response;
     try {
-      res = await fetch(`${baseUrl}/api/sms/parse-excel`, {
+      res = await fetchWithRetry(`${baseUrl}/api/sms/parse-excel`, {
         method: 'POST',
         headers,
         body: formData,
       });
     } catch (netErr: any) {
-      console.log(netErr);
-      if (netErr?.message) console.log(netErr.message);
       throw new Error(`Network error: ${netErr?.message || 'Failed to upload Excel file'}`);
     }
 
@@ -412,9 +422,7 @@ export const api = {
     }
 
     if (!res.ok) {
-      console.log('Parse Excel Error Data:', data);
       const errMsg = formatErrorMessage(data) || 'Failed to parse Excel file';
-      console.log(errMsg);
       throw new Error(errMsg);
     }
     return data;
@@ -448,14 +456,12 @@ export const api = {
 
     let res: Response;
     try {
-      res = await fetch(`${baseUrl}/api/sms/upload-excel-send`, {
+      res = await fetchWithRetry(`${baseUrl}/api/sms/upload-excel-send`, {
         method: 'POST',
         headers,
         body: formData,
       });
     } catch (netErr: any) {
-      console.log(netErr);
-      if (netErr?.message) console.log(netErr.message);
       throw new Error(`Network error: ${netErr?.message || 'Failed to send SMS from Excel file'}`);
     }
 
@@ -468,9 +474,7 @@ export const api = {
     }
 
     if (!res.ok) {
-      console.log('Send SMS Excel Error Data:', data);
       const errMsg = formatErrorMessage(data) || 'Failed to send SMS from Excel file';
-      console.log(errMsg);
       throw new Error(errMsg);
     }
     return data;
@@ -579,13 +583,12 @@ export const api = {
 
     let res: Response;
     try {
-      res = await fetch(url, {
+      res = await fetchWithRetry(url, {
         method: 'POST',
         headers,
         body: formData,
       });
     } catch (netErr: any) {
-      console.error('Attendance Excel Upload Fetch Error:', netErr);
       throw new Error(`API Connection Error: ${netErr.message || 'Unable to connect to server during Excel upload'}`);
     }
 
@@ -708,10 +711,10 @@ export const api = {
   downloadSourceCodeZip: async (): Promise<void> => {
     let res: Response;
     try {
-      res = await fetch(`${baseUrl}/api/download/source-code`);
+      res = await fetchWithRetry(`${baseUrl}/api/download/source-code`, {
+        method: 'GET',
+      });
     } catch (netErr: any) {
-      console.log(netErr);
-      if (netErr?.message) console.log(netErr.message);
       throw new Error(`Network error: ${netErr?.message || 'Failed to download source code archive'}`);
     }
 
@@ -724,7 +727,6 @@ export const api = {
         data = { message: text || 'Failed to download source code archive' };
       }
       const errMsg = formatErrorMessage(data) || 'Failed to download source code archive';
-      console.log(errMsg);
       throw new Error(errMsg);
     }
 

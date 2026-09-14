@@ -35,7 +35,7 @@ interface SmsSendingModuleProps {
   onNavigateToReports: () => void;
 }
 
-const DEFAULT_DEPT_CODES = ['AIML', 'AIDS', 'CSE', 'CCE', 'ECE', 'EEE', 'MECH', 'CSBS', 'CHEMICAL', 'CIVIL', 'ALL'];
+const DEFAULT_DEPT_CODES = ['CSE(AIML)', 'AIDS', 'CSE', 'CCE', 'ECE', 'EEE', 'MECH', 'CSBS', 'CHEMICAL', 'CIVIL', 'ALL'];
 
 export const SmsSendingModule: React.FC<SmsSendingModuleProps> = ({
   students,

@@ -637,8 +637,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
                     onChange={(e) => setNewKeyDept(e.target.value)}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-sm text-xs font-bold text-slate-900"
                   >
-                    <option value="ALL font-bold">ALL Departments</option>
-                    <option value="AIML">AIML</option>
+                    <option value="ALL">ALL Departments</option>
+                    <option value="CSE(AIML)">CSE(AIML)</option>
                     <option value="AIDS">AIDS</option>
                     <option value="CSE">CSE</option>
                     <option value="ECE">ECE</option>

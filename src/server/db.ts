@@ -26,7 +26,7 @@ import {
   AttendanceRecord,
   AttendanceStatus,
 } from '../types.js';
-import { evaluateSubjectGrade } from '../utils/gradeEvaluator.js';
+import { evaluateSubjectGrade, evaluateInternalMark } from '../utils/gradeEvaluator.js';
 import { INITIAL_API_KEYS } from '../config/apiKeys.js';
 import { isMongoDBConnected, connectToMongoDB } from './mongo.js';
 import { ExamBatchModel } from '../models/ExamBatch.js';
@@ -58,7 +58,7 @@ interface DatabaseSchema {
 }
 
 const defaultDepartments: Department[] = [
-  { id: 'dept-aiml', code: 'AIML', name: 'Artificial Intelligence & Machine Learning', headOfDepartment: 'Dr. A. Ramesh', createdAt: new Date().toISOString() },
+  { id: 'dept-aiml', code: 'CSE(AIML)', name: 'Computer Science & Engineering (AI & ML)', headOfDepartment: 'Dr. A. Ramesh', createdAt: new Date().toISOString() },
   { id: 'dept-aids', code: 'AIDS', name: 'Artificial Intelligence & Data Science', headOfDepartment: 'Dr. S. Karthik', createdAt: new Date().toISOString() },
   { id: 'dept-cse', code: 'CSE', name: 'Computer Science & Engineering', headOfDepartment: 'Dr. R. Sharma', createdAt: new Date().toISOString() },
   { id: 'dept-cce', code: 'CCE', name: 'Computer & Communication Engineering', headOfDepartment: 'Dr. V. Lakshmi', createdAt: new Date().toISOString() },
@@ -2553,9 +2553,26 @@ class Database {
         matchedParent = true;
       }
 
-      // Preserve exact subject grades (like B+, A+, O, etc.)
+      const isInternal = resultType === 'Internal Test / Assessment';
+
+      // Process subjects: Internal Marks use mark >= 60 rule; Semester uses Grade evaluator
       const subjects = Array.isArray(rec.subjects)
         ? rec.subjects.map((sub) => {
+            if (isInternal) {
+              const rawMark = sub.marks !== undefined && sub.marks !== null
+                ? sub.marks
+                : (sub.grade !== undefined && sub.grade !== null ? sub.grade : 0);
+              const evalMark = evaluateInternalMark(rawMark);
+              return {
+                subjectCode: sub.subjectCode || 'SUB',
+                subjectName: sub.subjectName || sub.subjectCode || 'Subject',
+                grade: evalMark.gradeStr,
+                marks: evalMark.mark,
+                maxMarks: sub.maxMarks || 100,
+                result: evalMark.result, // strictly 'PASS' (>=60) or 'FAIL' (<60)
+              };
+            }
+
             const rawGrade = sub.grade !== undefined && sub.grade !== null && sub.grade !== '' ? String(sub.grade).trim() : (sub.result || '-');
             const evalGrade = evaluateSubjectGrade(rawGrade);
             return {
@@ -2572,22 +2589,25 @@ class Database {
       let failedSubjectsCount = 0;
       let passedSubjectsCount = 0;
       subjects.forEach((s) => {
-        if (s.result === 'FAIL' || evaluateSubjectGrade(s.grade).isFail) {
+        if (s.result === 'FAIL') {
           failedSubjectsCount++;
         } else {
           passedSubjectsCount++;
         }
       });
 
-      if (typeof rec.failedSubjectsCount === 'number' && rec.failedSubjectsCount > failedSubjectsCount) {
-        failedSubjectsCount = rec.failedSubjectsCount;
-      }
-
       let overallStatus: 'PASS' | 'FAIL' = 'PASS';
-      if (failedSubjectsCount > 0) {
-        overallStatus = 'FAIL';
-      } else if (rec.overallStatus === 'FAIL') {
-        overallStatus = 'FAIL';
+      if (isInternal) {
+        // Internal Mark module: automatically calculate PASS/FAIL from entered marks (no manual override)
+        // If all subjects >= 60 => PASS; if any subject < 60 => FAIL
+        overallStatus = failedSubjectsCount > 0 ? 'FAIL' : 'PASS';
+      } else {
+        if (typeof rec.failedSubjectsCount === 'number' && rec.failedSubjectsCount > failedSubjectsCount) {
+          failedSubjectsCount = rec.failedSubjectsCount;
+        }
+        if (failedSubjectsCount > 0 || rec.overallStatus === 'FAIL') {
+          overallStatus = 'FAIL';
+        }
       }
 
       return {

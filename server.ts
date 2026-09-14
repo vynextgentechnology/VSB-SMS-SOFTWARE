@@ -11,7 +11,7 @@ import { createServer as createViteServer } from 'vite';
 import { db } from './src/server/db.js';
 import { getMongoDBConnectionDetails } from './src/server/mongo.js';
 import { sendSMS, getSmsApiKeyPoolStatus, rotateToNextKey } from './src/server/smsService.js';
-import { evaluateSubjectGrade } from './src/utils/gradeEvaluator.js';
+import { evaluateSubjectGrade, evaluateInternalMark } from './src/utils/gradeEvaluator.js';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -1585,10 +1585,15 @@ app.post('/api/results/:id/send-sms', async (req, res) => {
       return res.status(404).json({ error: 'Exam Result Batch not found' });
     }
 
+    if (Array.isArray(targetRegNos)) {
+      if (targetRegNos.length === 0) {
+        return res.status(400).json({ error: 'No students selected. Please select at least one student to send SMS.' });
+      }
+    }
+
     const sender = (req as any).currentUser || 'VSBEC';
     const updatedResults = [...batch.results];
     const newSmsLogs: any[] = [];
-    const isSemester = batch.resultType === 'Semester Result';
 
     for (const rec of updatedResults) {
       if (Array.isArray(targetRegNos) && targetRegNos.length > 0) {
@@ -1623,7 +1628,10 @@ app.post('/api/results/:id/send-sms', async (req, res) => {
       }
 
       let messageContent = '';
-      if (isSemester) {
+      const hasNumericMarks = Array.isArray(rec.subjects) && rec.subjects.some((s: any) => typeof s.marks === 'number' && s.marks > 0);
+      const isLetterGradesOnly = batch.resultType === 'Semester Result' && !hasNumericMarks && !rec.totalMarks;
+
+      if (isLetterGradesOnly) {
         let subjectLines = '';
         let arrearsCount = 0;
 
@@ -1650,16 +1658,51 @@ app.post('/api/results/:id/send-sms', async (req, res) => {
 
         messageContent = `DEAR PARENT,\n\nName: ${rec.studentName}\n\nRegister Number: ${rec.registerNumber}\n\n${subjectLines}\n\nTotal Number of Arrears: ${arrearsCount}`;
       } else {
-        let subjectLines = '';
+        // Mark Statement / Internal Assessment format:
+        // Dear Parent,
+        //
+        // Semester 4 Internal Assessment Result
+        //
+        // Student Name: MOHANA PRIYA G
+        // Register Number: 922524148063
+        //
+        // Total Marks: 494 / 600
+        // Percentage: 82.33%
+        //
+        // Thank you.
+        let totalScored = 0;
+        let totalMax = 0;
+
         if (Array.isArray(rec.subjects) && rec.subjects.length > 0) {
-          subjectLines = rec.subjects
-            .map((s: any) => `${s.subjectName || s.subjectCode}: ${s.marks !== undefined && s.marks !== null ? s.marks : (s.grade || '-')}`)
-            .join(', ');
+          rec.subjects.forEach((s: any) => {
+            const rawMark = s.marks !== undefined && s.marks !== null && s.marks !== '' ? s.marks : s.grade;
+            const evalMark = evaluateInternalMark(rawMark);
+            totalScored += evalMark.mark;
+            totalMax += (s.maxMarks || 100);
+          });
+        } else if (rec.totalMarks !== undefined && rec.totalMarks !== null && rec.totalMarks !== '') {
+          const str = String(rec.totalMarks).trim();
+          if (str.includes('/')) {
+            const parts = str.split('/');
+            totalScored = parseFloat(parts[0]) || 0;
+            totalMax = parseFloat(parts[1]) || 100;
+          } else {
+            totalScored = parseFloat(str) || 0;
+            totalMax = 600;
+          }
         } else {
-          subjectLines = `Result: ${rec.overallStatus}`;
+          totalScored = 0;
+          totalMax = 100;
         }
-        const statusPart = rec.overallStatus ? `. Overall Result: ${rec.overallStatus}` : '';
-        messageContent = `Dear Parent, Assessment Result for ${rec.studentName} (${rec.registerNumber}): ${subjectLines}${statusPart}. - VSB Engineering College`;
+
+        if (totalMax === 0) totalMax = 100;
+        const percentage = ((totalScored / totalMax) * 100).toFixed(2);
+
+        const examHeader = batch.title
+          ? (/result/i.test(batch.title) ? batch.title : `${batch.title} Result`)
+          : 'Semester 4 Internal Assessment Result';
+
+        messageContent = `Dear Parent,\n\n${examHeader}\n\nStudent Name: ${rec.studentName}\nRegister Number: ${rec.registerNumber}\n\nTotal Marks: ${totalScored} / ${totalMax}\nPercentage: ${percentage}%\n\nThank you.`;
       }
 
       let status = 'Sent';

@@ -27,7 +27,7 @@ interface StudentManagementProps {
   onSendSmsToStudent?: (student: Student) => void;
 }
 
-const DEFAULT_DEPT_CODES = ['AIML', 'AIDS', 'CSE', 'CCE', 'ECE', 'EEE', 'MECH', 'CSBS', 'CHEMICAL', 'CIVIL'];
+const DEFAULT_DEPT_CODES = ['CSE(AIML)', 'AIDS', 'CSE', 'CCE', 'ECE', 'EEE', 'MECH', 'CSBS', 'CHEMICAL', 'CIVIL'];
 
 export const StudentManagement: React.FC<StudentManagementProps> = ({
   students,

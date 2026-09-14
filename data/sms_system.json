@@ -64,7 +64,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "phoneNumber": "8754020556",
       "rawPassword": "VSBVali1278",
       "permissions": [
@@ -78,497 +78,497 @@
   "students": [
     {
       "registerNumber": "922524148117",
-      "name": "VALIULLAH J",
-      "phoneNumber": "7092483276",
-      "department": "AIML",
+      "name": "VALIULLAH",
+      "phoneNumber": "+917092483276",
+      "department": "CSE(CSE(AIML))",
       "id": "std-1786070186130-kvzti",
       "createdAt": "2026-08-07T02:36:26.130Z"
     },
     {
       "name": "MOHANA PRIYA G",
       "registerNumber": "922524148063",
-      "department": "AIML",
-      "phoneNumber": "7871254655",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+917871254655",
       "id": "std-1786532199893-8eu7o",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
-      "name": "MUHAMMAD NASAR ALI T.A",
+      "name": "MUHAMMAD NASAR",
       "registerNumber": "922524148064",
-      "department": "AIML",
-      "phoneNumber": "9994687503",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919994687503",
       "id": "std-1786532199893-toyiz",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "MUKILA K",
       "registerNumber": "922524148065",
-      "department": "AIML",
-      "phoneNumber": "6374855308",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+916374855308",
       "id": "std-1786532199893-7krch",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "MUKILAN K",
       "registerNumber": "922524148066",
-      "department": "AIML",
-      "phoneNumber": "9751872112",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919751872112",
       "id": "std-1786532199893-2806b",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
-      "name": "MURALI KARTHICK A",
+      "name": "MURALIKARTHICK A",
       "registerNumber": "922524148067",
-      "department": "AIML",
-      "phoneNumber": "7620817193",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+917620817193",
       "id": "std-1786532199893-l5dog",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
-      "name": "NAGULAN.K",
+      "name": "NAGULAN K",
       "registerNumber": "922524148068",
-      "department": "AIML",
-      "phoneNumber": "9787413247",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919787413247",
       "id": "std-1786532199893-8nhp1",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "NANDHITHA PT",
       "registerNumber": "922524148069",
-      "department": "AIML",
-      "phoneNumber": "9942135141",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919942135141",
       "id": "std-1786532199893-kl9m6",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
-      "name": "NARENDHRA PRASHATH S",
+      "name": "NARENDHRA PRAS",
       "registerNumber": "922524148070",
-      "department": "AIML",
-      "phoneNumber": "9688875559",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919688875559",
       "id": "std-1786532199893-weqii",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
-      "name": "NARMADHA A",
+      "name": "NARMADHA   A",
       "registerNumber": "922524148071",
-      "department": "AIML",
-      "phoneNumber": "9942423165",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919942423165",
       "id": "std-1786532199893-14q3d",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "NAVEEN S",
       "registerNumber": "922524148072",
-      "department": "AIML",
-      "phoneNumber": "7548827109",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+917548827109",
       "id": "std-1786532199893-hd3ha",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "NETHRA K",
       "registerNumber": "922524148073",
-      "department": "AIML",
-      "phoneNumber": "9443407312",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919443407312",
       "id": "std-1786532199893-n9uk2",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "POOJA SRI M",
       "registerNumber": "922524148074",
-      "department": "AIML",
-      "phoneNumber": "9150922072",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919150922072",
       "id": "std-1786532199893-uo50y",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
-      "name": "PRASHANT.R",
+      "name": "PRASANTH R",
       "registerNumber": "922524148075",
-      "department": "AIML",
-      "phoneNumber": "8883312075",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+918883312075",
       "id": "std-1786532199893-l33sz",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "PRAVIN T",
       "registerNumber": "922524148076",
-      "department": "AIML",
-      "phoneNumber": "9965419555",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919965419555",
       "id": "std-1786532199893-owg2y",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "PRITHIV T",
       "registerNumber": "922524148078",
-      "department": "AIML",
-      "phoneNumber": "9442681683",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919442681683",
       "id": "std-1786532199893-954mz",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "PRIYADHARSHAN B",
       "registerNumber": "922524148079",
-      "department": "AIML",
-      "phoneNumber": "9842690379",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919842690379",
       "id": "std-1786532199893-nhep8",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "PRIYADHARSHINI R",
       "registerNumber": "922524148080",
-      "department": "AIML",
-      "phoneNumber": "9715717487",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919715717487",
       "id": "std-1786532199893-w9aiw",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "RAKSHANA S",
       "registerNumber": "922524148081",
-      "department": "AIML",
-      "phoneNumber": "9080407060",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919080407060",
       "id": "std-1786532199893-jkoel",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "RANJANI V",
       "registerNumber": "922524148082",
-      "department": "AIML",
-      "phoneNumber": "9080747978",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919080747978",
       "id": "std-1786532199893-g8l2x",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "RATHIKA S",
       "registerNumber": "922524148084",
-      "department": "AIML",
-      "phoneNumber": "9894021963",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919894021963",
       "id": "std-1786532199893-23ysf",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
-      "name": "RATHINA KIRUTHIKA S",
+      "name": "RATHINA KIRUTHIK",
       "registerNumber": "922524148085",
-      "department": "AIML",
-      "phoneNumber": "8608323481",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+918608323481",
       "id": "std-1786532199893-utq41",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "RISHI ADITHYA V. V",
       "registerNumber": "922524148086",
-      "department": "AIML",
-      "phoneNumber": "9443621362",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919443621362",
       "id": "std-1786532199893-rl05i",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "RISHIDEV S",
       "registerNumber": "922524148087",
-      "department": "AIML",
-      "phoneNumber": "8489075401",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+918489075401",
       "id": "std-1786532199893-vomdh",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "RITHAN S",
       "registerNumber": "922524148088",
-      "department": "AIML",
-      "phoneNumber": "9976496022",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919976496022",
       "id": "std-1786532199893-0wq5g",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "RITHIKA S",
       "registerNumber": "922524148089",
-      "department": "AIML",
-      "phoneNumber": "9842849200",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919842849200",
       "id": "std-1786532199893-jbhjh",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
-      "name": "RITHIKAA J",
+      "name": "RITHIKASRI P",
       "registerNumber": "922524148090",
-      "department": "AIML",
-      "phoneNumber": "9894026438",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919894026438",
       "id": "std-1786532199893-s81af",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
-      "name": "RITHIKASRI P",
+      "name": "RITHIKAA J",
       "registerNumber": "922524148091",
-      "department": "AIML",
-      "phoneNumber": "9786022876",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919786022876",
       "id": "std-1786532199893-fpr3m",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "RITIKA V",
       "registerNumber": "922524148092",
-      "department": "AIML",
-      "phoneNumber": "9566730099",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919566730099",
       "id": "std-1786532199893-h9p0x",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "ROHAN C R",
       "registerNumber": "922524148093",
-      "department": "AIML",
-      "phoneNumber": "9388453507",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919388453507",
       "id": "std-1786532199893-bbgqn",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "SABARISH S",
       "registerNumber": "922524148094",
-      "department": "AIML",
-      "phoneNumber": "9843824012",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919843824012",
       "id": "std-1786532199893-9rge0",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "SADHANAA R",
       "registerNumber": "922524148095",
-      "department": "AIML",
-      "phoneNumber": "8754038877",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+918754038877",
       "id": "std-1786532199893-z84nu",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "SAMIKSHA N",
       "registerNumber": "922524148096",
-      "department": "AIML",
-      "phoneNumber": "9791204222",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919791204222",
       "id": "std-1786532199893-peaf1",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "SANDHIYA P",
       "registerNumber": "922524148097",
-      "department": "AIML",
-      "phoneNumber": "9486115261",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919486115261",
       "id": "std-1786532199893-2p941",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "SANTHOSH.S",
       "registerNumber": "922524148098",
-      "department": "AIML",
-      "phoneNumber": "9994452882",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919994452882",
       "id": "std-1786532199893-q7ylf",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
-      "name": "SAKTHIPRIYA L",
+      "name": "SATHIYA PRIYA L",
       "registerNumber": "922524148099",
-      "department": "AIML",
-      "phoneNumber": "9442681060",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919442681060",
       "id": "std-1786532199893-xx8vl",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
-      "name": "SELVA GANAPATHY V P",
+      "name": "SELVA GANAPATHY",
       "registerNumber": "922524148100",
-      "department": "AIML",
-      "phoneNumber": "8015049743",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+918015049743",
       "id": "std-1786532199893-1hp85",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
-      "name": "SELVA JEYAKRISHNAN D",
+      "name": "SELVA JEYAKRISHN",
       "registerNumber": "922524148101",
-      "department": "AIML",
-      "phoneNumber": "9385926257",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919385926257",
       "id": "std-1786532199893-64omj",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
-      "name": "SHANTHOSH KANNA R U",
+      "name": "SHANTHOSH KANN",
       "registerNumber": "922524148102",
-      "department": "AIML",
-      "phoneNumber": "9788230275",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919788230275",
       "id": "std-1786532199893-i1bi9",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
-      "name": "SHIVNESH KUMAR M",
+      "name": "SHIVNESH KUMAR",
       "registerNumber": "922524148103",
-      "department": "AIML",
-      "phoneNumber": "9500500336",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919500500336",
       "id": "std-1786532199893-u8lt5",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "SHRI PRAJITH S",
       "registerNumber": "922524148104",
-      "department": "AIML",
-      "phoneNumber": "8300005191",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+918300005191",
       "id": "std-1786532199893-k2n52",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
       "name": "SIVASATHYA K",
       "registerNumber": "922524148105",
-      "department": "AIML",
-      "phoneNumber": "9942723685",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919942723685",
       "id": "std-1786532199893-ib8o0",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
-      "name": "SRIVARSHAN M",
+      "name": "SRI VISHNU V",
       "registerNumber": "922524148106",
-      "department": "AIML",
-      "phoneNumber": "9443593907",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919443593907",
       "id": "std-1786532199893-o3fov",
       "createdAt": "2026-08-12T10:56:39.893Z"
     },
     {
-      "name": "SRIVISHNU V",
+      "name": "SRIVARSHAN. M",
       "registerNumber": "922524148107",
-      "department": "AIML",
-      "phoneNumber": "9865417776",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919865417776",
       "id": "std-1786532199894-c18fy",
       "createdAt": "2026-08-12T10:56:39.894Z"
     },
     {
       "name": "SUBASH P",
       "registerNumber": "922524148108",
-      "department": "AIML",
-      "phoneNumber": "9844813944",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919844813944",
       "id": "std-1786532199894-owxs5",
       "createdAt": "2026-08-12T10:56:39.894Z"
     },
     {
       "name": "SUDHAN D",
       "registerNumber": "922524148109",
-      "department": "AIML",
-      "phoneNumber": "9751413152",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919751413152",
       "id": "std-1786532199894-kywlk",
       "createdAt": "2026-08-12T10:56:39.894Z"
     },
     {
       "name": "SUJEETH S",
       "registerNumber": "922524148110",
-      "department": "AIML",
-      "phoneNumber": "9942413211",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919942413211",
       "id": "std-1786532199894-qt6z6",
       "createdAt": "2026-08-12T10:56:39.894Z"
     },
     {
       "name": "SUJITH P S",
       "registerNumber": "922524148111",
-      "department": "AIML",
-      "phoneNumber": "9095773507",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919095773507",
       "id": "std-1786532199894-bb9ht",
       "createdAt": "2026-08-12T10:56:39.894Z"
     },
     {
       "name": "SUPIKSHA C",
       "registerNumber": "922524148112",
-      "department": "AIML",
-      "phoneNumber": "9362999888",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919362999888",
       "id": "std-1786532199894-ebrzm",
       "createdAt": "2026-08-12T10:56:39.894Z"
     },
     {
       "name": "TAMILARASAN M",
       "registerNumber": "922524148113",
-      "department": "AIML",
-      "phoneNumber": "9952895003",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919952895003",
       "id": "std-1786532199894-nxxif",
       "createdAt": "2026-08-12T10:56:39.894Z"
     },
     {
-      "name": "THARUNIKA P",
+      "name": "THANGALAKSHMI A",
       "registerNumber": "922524148114",
-      "department": "AIML",
-      "phoneNumber": "9995999752",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919995999752",
       "id": "std-1786532199894-7np2s",
       "createdAt": "2026-08-12T10:56:39.894Z"
     },
     {
-      "name": "THAGALAKSHMI A",
+      "name": "THARUNIKA P",
       "registerNumber": "922524148115",
-      "department": "AIML",
-      "phoneNumber": "9087498767",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919087498767",
       "id": "std-1786532199894-z49zb",
       "createdAt": "2026-08-12T10:56:39.894Z"
     },
     {
       "name": "VAISNAVA S",
       "registerNumber": "922524148116",
-      "department": "AIML",
-      "phoneNumber": "9865125123",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919865125123",
       "id": "std-1786532199894-446gr",
       "createdAt": "2026-08-12T10:56:39.894Z"
     },
     {
       "name": "VARUN SANKAR M",
       "registerNumber": "922524148118",
-      "department": "AIML",
-      "phoneNumber": "9629324665",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919629324665",
       "id": "std-1786532199894-3yivx",
       "createdAt": "2026-08-12T10:56:39.894Z"
     },
     {
       "name": "VELMURUGAN B",
       "registerNumber": "922524148119",
-      "department": "AIML",
-      "phoneNumber": "6281286751",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+916281286751",
       "id": "std-1786532199894-an0kb",
       "createdAt": "2026-08-12T10:56:39.894Z"
     },
     {
-      "name": "VENGADESWARAN T",
+      "name": "VENGADESWARAN",
       "registerNumber": "922524148120",
-      "department": "AIML",
-      "phoneNumber": "9750627465",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919750627465",
       "id": "std-1786532199894-myyid",
       "createdAt": "2026-08-12T10:56:39.894Z"
     },
     {
-      "name": "VIJAYRAM J",
+      "name": "VIJAYRAM.J",
       "registerNumber": "922524148121",
-      "department": "AIML",
-      "phoneNumber": "9500737480",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919500737480",
       "id": "std-1786532199894-keg5n",
       "createdAt": "2026-08-12T10:56:39.894Z"
     },
     {
       "name": "VISHNU B",
       "registerNumber": "922524148122",
-      "department": "AIML",
-      "phoneNumber": "8760439110",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+918760439110",
       "id": "std-1786532199894-l9ohc",
       "createdAt": "2026-08-12T10:56:39.894Z"
     },
     {
       "name": "YASWANTH V",
       "registerNumber": "922524148123",
-      "department": "AIML",
-      "phoneNumber": "9346045673",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919346045673",
       "id": "std-1786532199894-3j421",
       "createdAt": "2026-08-12T10:56:39.894Z"
     },
     {
       "name": "YESWANTH S M",
       "registerNumber": "922524148124",
-      "department": "AIML",
-      "phoneNumber": "9629802883",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919629802883",
       "id": "std-1786532199894-dyqdu",
       "createdAt": "2026-08-12T10:56:39.894Z"
     },
     {
       "name": "YOGALAKSHMI S",
       "registerNumber": "922524148125",
-      "department": "AIML",
-      "phoneNumber": "9629802883",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919629802883",
       "id": "std-1786532199894-3p93u",
       "createdAt": "2026-08-12T10:56:39.894Z"
     },
     {
-      "name": "YUVAN SHANKAR RAJA R",
+      "name": "YUVAN SHANKAR R",
       "registerNumber": "922524148126",
-      "department": "AIML",
-      "phoneNumber": "9751322018",
+      "department": "CSE(CSE(AIML))",
+      "phoneNumber": "+919751322018",
       "id": "std-1786532199894-107rf",
       "createdAt": "2026-08-12T10:56:39.894Z"
     }
@@ -577,7 +577,7 @@
     {
       "name": "VALIULLAH",
       "staffId": "Vali1278",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "phoneNumber": "8754020556",
       "permissions": [
         "send_sms",
@@ -590,7 +590,7 @@
   "departments": [
     {
       "id": "dept-aiml",
-      "code": "AIML",
+      "code": "CSE(CSE(AIML))",
       "name": "Artificial Intelligence & Machine Learning",
       "headOfDepartment": "Dr. A. Ramesh",
       "createdAt": "2026-08-07T02:24:06.396Z"
@@ -677,7 +677,7 @@
       "recipientName": "Valiullah",
       "registerNumber": "922524148117",
       "phoneNumber": "+918754020556",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "messageType": "Exam Result",
       "messageContent": "VSB: Dear Parent, Valiullah (Reg No: 922524148117) scored 483 marks. Result: PASS. - VY NEXTGEN TECHNOLOGY",
       "channel": "Fast2SMS Gateway",
@@ -690,7 +690,7 @@
       "recipientName": "Anish Kumar",
       "registerNumber": "921321104001",
       "phoneNumber": "+918754020556",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "messageType": "General Notification",
       "messageContent": "Notice: Dear Student Anish Kumar (921321104001), {messageText}. Issued on {date} by VY NEXTGEN TECHNOLOGY.",
       "channel": "SMS",
@@ -703,7 +703,7 @@
       "recipientName": "Anish Kumar",
       "registerNumber": "921321104001",
       "phoneNumber": "+918754020556",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "messageType": "Exam Result",
       "messageContent": "Dear Parent/Student, Result for 921321104001 (Anish Kumar) - AIML: Total Marks: {marks}. Result: {status}. - VY NEXTGEN TECHNOLOGY",
       "channel": "SMS",
@@ -716,7 +716,7 @@
       "recipientName": "Anish Kumar",
       "registerNumber": "921321104001",
       "phoneNumber": "+918754020556",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "messageType": "Exam Result",
       "messageContent": "VSB: Dear Parent, Anish Kumar (Reg No: 921321104001) scored 341 marks. Result: PASS. - VY NEXTGEN TECHNOLOGY",
       "channel": "Fast2SMS Gateway",
@@ -727,6 +727,4062 @@
     }
   ],
   "examBatches": [
+    {
+      "id": "exm-1788336920211-fzmo1",
+      "title": "VSB Internal Internal Marks  IT1 CSE(CSE(AIML)) B",
+      "resultType": "Internal Test / Assessment",
+      "department": "CSE(CSE(AIML))",
+      "examDate": "2026-09-02",
+      "results": [
+        {
+          "sNo": "1",
+          "registerNumber": "922524148063",
+          "studentName": "MOHANA PRIYA G",
+          "phoneNumber": "+917871254655",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "70",
+              "marks": 70,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "78",
+              "marks": 78,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "2",
+          "registerNumber": "922524148064",
+          "studentName": "MUHAMMAD NASAR",
+          "phoneNumber": "+919994687503",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "54",
+              "marks": 54,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 5,
+          "failedSubjectsCount": 1,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "3",
+          "registerNumber": "922524148065",
+          "studentName": "MUKILA K",
+          "phoneNumber": "+916374855308",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "84",
+              "marks": 84,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "76",
+              "marks": 76,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "78",
+              "marks": 78,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "4",
+          "registerNumber": "922524148066",
+          "studentName": "MUKILAN K",
+          "phoneNumber": "+919751872112",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "54",
+              "marks": 54,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 5,
+          "failedSubjectsCount": 1,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "5",
+          "registerNumber": "922524148067",
+          "studentName": "MURALIKARTHICK A",
+          "phoneNumber": "+917620817193",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "6",
+          "registerNumber": "922524148068",
+          "studentName": "NAGULAN K",
+          "phoneNumber": "+919787413247",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "70",
+              "marks": 70,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "7",
+          "registerNumber": "922524148069",
+          "studentName": "NANDHITHA PT",
+          "phoneNumber": "+919942135141",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "70",
+              "marks": 70,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "80",
+              "marks": 80,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "8",
+          "registerNumber": "922524148070",
+          "studentName": "NARENDHRA PRAS",
+          "phoneNumber": "+919688875559",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "22",
+              "marks": 22,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "48",
+              "marks": 48,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "46",
+              "marks": 46,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "44",
+              "marks": 44,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "38",
+              "marks": 38,
+              "maxMarks": 100,
+              "result": "FAIL"
+            }
+          ],
+          "passedSubjectsCount": 1,
+          "failedSubjectsCount": 5,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "9",
+          "registerNumber": "922524148071",
+          "studentName": "NARMADHA   A",
+          "phoneNumber": "+919942423165",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "78",
+              "marks": 78,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "94",
+              "marks": 94,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "10",
+          "registerNumber": "922524148072",
+          "studentName": "NAVEEN S",
+          "phoneNumber": "+917548827109",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "82",
+              "marks": 82,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "11",
+          "registerNumber": "922524148073",
+          "studentName": "NETHRA K",
+          "phoneNumber": "+919443407312",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "82",
+              "marks": 82,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "82",
+              "marks": 82,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "12",
+          "registerNumber": "922524148074",
+          "studentName": "POOJA SRI M",
+          "phoneNumber": "+919150922072",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "70",
+              "marks": 70,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "84",
+              "marks": 84,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "78",
+              "marks": 78,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "13",
+          "registerNumber": "922524148075",
+          "studentName": "PRASANTH R",
+          "phoneNumber": "+918883312075",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "48",
+              "marks": 48,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "46",
+              "marks": 46,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "48",
+              "marks": 48,
+              "maxMarks": 100,
+              "result": "FAIL"
+            }
+          ],
+          "passedSubjectsCount": 3,
+          "failedSubjectsCount": 3,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "14",
+          "registerNumber": "922524148076",
+          "studentName": "PRAVIN T",
+          "phoneNumber": "+919965419555",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "15",
+          "registerNumber": "922524148078",
+          "studentName": "PRITHIV T",
+          "phoneNumber": "+919442681683",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "54",
+              "marks": 54,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "70",
+              "marks": 70,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 5,
+          "failedSubjectsCount": 1,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "16",
+          "registerNumber": "922524148079",
+          "studentName": "PRIYADHARSHAN B",
+          "phoneNumber": "+919842690379",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "76",
+              "marks": 76,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "17",
+          "registerNumber": "922524148080",
+          "studentName": "PRIYADHARSHINI R",
+          "phoneNumber": "+919715717487",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "76",
+              "marks": 76,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "76",
+              "marks": 76,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "70",
+              "marks": 70,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "18",
+          "registerNumber": "922524148081",
+          "studentName": "RAKSHANA S",
+          "phoneNumber": "+919080407060",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "80",
+              "marks": 80,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "76",
+              "marks": 76,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "19",
+          "registerNumber": "922524148082",
+          "studentName": "RANJANI V",
+          "phoneNumber": "+919080747978",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "78",
+              "marks": 78,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "76",
+              "marks": 76,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "90",
+              "marks": 90,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "78",
+              "marks": 78,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "20",
+          "registerNumber": "922524148084",
+          "studentName": "RATHIKA S",
+          "phoneNumber": "+919894021963",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "76",
+              "marks": 76,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "82",
+              "marks": 82,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "70",
+              "marks": 70,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "21",
+          "registerNumber": "922524148085",
+          "studentName": "RATHINA KIRUTHIK",
+          "phoneNumber": "+918608323481",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "76",
+              "marks": 76,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "22",
+          "registerNumber": "922524148086",
+          "studentName": "RISHI ADITHYA V. V",
+          "phoneNumber": "+919443621362",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "78",
+              "marks": 78,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "56",
+              "marks": 56,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 5,
+          "failedSubjectsCount": 1,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "23",
+          "registerNumber": "922524148087",
+          "studentName": "RISHIDEV S",
+          "phoneNumber": "+918489075401",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "56",
+              "marks": 56,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 5,
+          "failedSubjectsCount": 1,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "24",
+          "registerNumber": "922524148088",
+          "studentName": "RITHAN S",
+          "phoneNumber": "+919976496022",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "76",
+              "marks": 76,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "0",
+              "marks": 0,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 5,
+          "failedSubjectsCount": 1,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "25",
+          "registerNumber": "922524148089",
+          "studentName": "RITHIKA S",
+          "phoneNumber": "+919842849200",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "70",
+              "marks": 70,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "70",
+              "marks": 70,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "26",
+          "registerNumber": "922524148090",
+          "studentName": "RITHIKASRI P",
+          "phoneNumber": "+919894026438",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "70",
+              "marks": 70,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "80",
+              "marks": 80,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "27",
+          "registerNumber": "922524148091",
+          "studentName": "RITHIKAA J",
+          "phoneNumber": "+919786022876",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "28",
+          "registerNumber": "922524148092",
+          "studentName": "RITIKA V",
+          "phoneNumber": "+919566730099",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "29",
+          "registerNumber": "922524148093",
+          "studentName": "ROHAN C R",
+          "phoneNumber": "+919388453507",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "30",
+          "registerNumber": "922524148094",
+          "studentName": "SABARISH S",
+          "phoneNumber": "+919843824012",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "70",
+              "marks": 70,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "31",
+          "registerNumber": "922524148095",
+          "studentName": "SADHANAA R",
+          "phoneNumber": "+918754038877",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "54",
+              "marks": 54,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 5,
+          "failedSubjectsCount": 1,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "32",
+          "registerNumber": "922524148096",
+          "studentName": "SAMIKSHA N",
+          "phoneNumber": "+919791204222",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "70",
+              "marks": 70,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "70",
+              "marks": 70,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "82",
+              "marks": 82,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "82",
+              "marks": 82,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "33",
+          "registerNumber": "922524148097",
+          "studentName": "SANDHIYA P",
+          "phoneNumber": "+919486115261",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "70",
+              "marks": 70,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "78",
+              "marks": 78,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "76",
+              "marks": 76,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "34",
+          "registerNumber": "922524148098",
+          "studentName": "SANTHOSH.S",
+          "phoneNumber": "+919994452882",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "35",
+          "registerNumber": "922524148099",
+          "studentName": "SATHIYA PRIYA L",
+          "phoneNumber": "+919442681060",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "76",
+              "marks": 76,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "36",
+          "registerNumber": "922524148100",
+          "studentName": "SELVA GANAPATHY",
+          "phoneNumber": "+918015049743",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "42",
+              "marks": 42,
+              "maxMarks": 100,
+              "result": "FAIL"
+            }
+          ],
+          "passedSubjectsCount": 5,
+          "failedSubjectsCount": 1,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "37",
+          "registerNumber": "922524148101",
+          "studentName": "SELVA JEYAKRISHN",
+          "phoneNumber": "+919385926257",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "46",
+              "marks": 46,
+              "maxMarks": 100,
+              "result": "FAIL"
+            }
+          ],
+          "passedSubjectsCount": 5,
+          "failedSubjectsCount": 1,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "38",
+          "registerNumber": "922524148102",
+          "studentName": "SHANTHOSH KANN",
+          "phoneNumber": "+919788230275",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "52",
+              "marks": 52,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "44",
+              "marks": 44,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "36",
+              "marks": 36,
+              "maxMarks": 100,
+              "result": "FAIL"
+            }
+          ],
+          "passedSubjectsCount": 3,
+          "failedSubjectsCount": 3,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "39",
+          "registerNumber": "922524148103",
+          "studentName": "SHIVNESH KUMAR",
+          "phoneNumber": "+919500500336",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "54",
+              "marks": 54,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "78",
+              "marks": 78,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "70",
+              "marks": 70,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "44",
+              "marks": 44,
+              "maxMarks": 100,
+              "result": "FAIL"
+            }
+          ],
+          "passedSubjectsCount": 4,
+          "failedSubjectsCount": 2,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "40",
+          "registerNumber": "922524148104",
+          "studentName": "SHRI PRAJITH S",
+          "phoneNumber": "+918300005191",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "86",
+              "marks": 86,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "78",
+              "marks": 78,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "0",
+              "marks": 0,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 5,
+          "failedSubjectsCount": 1,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "41",
+          "registerNumber": "922524148105",
+          "studentName": "SIVASATHYA K",
+          "phoneNumber": "+919942723685",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "70",
+              "marks": 70,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "42",
+          "registerNumber": "922524148106",
+          "studentName": "SRI VISHNU V",
+          "phoneNumber": "+919443593907",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "0",
+              "marks": 0,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "24",
+              "marks": 24,
+              "maxMarks": 100,
+              "result": "FAIL"
+            }
+          ],
+          "passedSubjectsCount": 4,
+          "failedSubjectsCount": 2,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "43",
+          "registerNumber": "922524148107",
+          "studentName": "SRIVARSHAN. M",
+          "phoneNumber": "+919865417776",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "80",
+              "marks": 80,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "80",
+              "marks": 80,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "44",
+          "registerNumber": "922524148108",
+          "studentName": "SUBASH P",
+          "phoneNumber": "+919844813944",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "45",
+          "registerNumber": "922524148109",
+          "studentName": "SUDHAN D",
+          "phoneNumber": "+919751413152",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "76",
+              "marks": 76,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "44",
+              "marks": 44,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 5,
+          "failedSubjectsCount": 1,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "46",
+          "registerNumber": "922524148110",
+          "studentName": "SUJEETH S",
+          "phoneNumber": "+919942413211",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "56",
+              "marks": 56,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "42",
+              "marks": 42,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "42",
+              "marks": 42,
+              "maxMarks": 100,
+              "result": "FAIL"
+            }
+          ],
+          "passedSubjectsCount": 3,
+          "failedSubjectsCount": 3,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "47",
+          "registerNumber": "922524148111",
+          "studentName": "SUJITH P S",
+          "phoneNumber": "+919095773507",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "70",
+              "marks": 70,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "48",
+          "registerNumber": "922524148112",
+          "studentName": "SUPIKSHA C",
+          "phoneNumber": "+919362999888",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "84",
+              "marks": 84,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "80",
+              "marks": 80,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "80",
+              "marks": 80,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "0",
+              "marks": 0,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "78",
+              "marks": 78,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "76",
+              "marks": 76,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 5,
+          "failedSubjectsCount": 1,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "49",
+          "registerNumber": "922524148113",
+          "studentName": "TAMILARASAN M",
+          "phoneNumber": "+919952895003",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "38",
+              "marks": 38,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 5,
+          "failedSubjectsCount": 1,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "50",
+          "registerNumber": "922524148114",
+          "studentName": "THANGALAKSHMI A",
+          "phoneNumber": "+919995999752",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "94",
+              "marks": 94,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "76",
+              "marks": 76,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "82",
+              "marks": 82,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "78",
+              "marks": 78,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "86",
+              "marks": 86,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "78",
+              "marks": 78,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "51",
+          "registerNumber": "922524148115",
+          "studentName": "THARUNIKA P",
+          "phoneNumber": "+919087498767",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "80",
+              "marks": 80,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "78",
+              "marks": 78,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "70",
+              "marks": 70,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "52",
+          "registerNumber": "922524148116",
+          "studentName": "VAISNAVA S",
+          "phoneNumber": "+919865125123",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "53",
+          "registerNumber": "922524148117",
+          "studentName": "VALIULLAH",
+          "phoneNumber": "+917092483276",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "22",
+              "marks": 22,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "68",
+              "marks": 68,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "24",
+              "marks": 24,
+              "maxMarks": 100,
+              "result": "FAIL"
+            }
+          ],
+          "passedSubjectsCount": 4,
+          "failedSubjectsCount": 2,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "54",
+          "registerNumber": "922524148118",
+          "studentName": "VARUN SANKAR M",
+          "phoneNumber": "+919629324665",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "46",
+              "marks": 46,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "46",
+              "marks": 46,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "80",
+              "marks": 80,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "48",
+              "marks": 48,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "44",
+              "marks": 44,
+              "maxMarks": 100,
+              "result": "FAIL"
+            }
+          ],
+          "passedSubjectsCount": 2,
+          "failedSubjectsCount": 4,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "55",
+          "registerNumber": "922524148119",
+          "studentName": "VELMURUGAN B",
+          "phoneNumber": "+916281286751",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "54",
+              "marks": 54,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 5,
+          "failedSubjectsCount": 1,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "56",
+          "registerNumber": "922524148120",
+          "studentName": "VENGADESWARAN",
+          "phoneNumber": "+919750627465",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "52",
+              "marks": 52,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "56",
+              "marks": 56,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "84",
+              "marks": 84,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "44",
+              "marks": 44,
+              "maxMarks": 100,
+              "result": "FAIL"
+            }
+          ],
+          "passedSubjectsCount": 3,
+          "failedSubjectsCount": 3,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "57",
+          "registerNumber": "922524148121",
+          "studentName": "VIJAYRAM.J",
+          "phoneNumber": "+919500737480",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "0",
+              "marks": 0,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "0",
+              "marks": 0,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "0",
+              "marks": 0,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "0",
+              "marks": 0,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "0",
+              "marks": 0,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "0",
+              "marks": 0,
+              "maxMarks": 100,
+              "result": "FAIL"
+            }
+          ],
+          "passedSubjectsCount": 0,
+          "failedSubjectsCount": 6,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "58",
+          "registerNumber": "922524148122",
+          "studentName": "VISHNU B",
+          "phoneNumber": "+918760439110",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "40",
+              "marks": 40,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "48",
+              "marks": 48,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "44",
+              "marks": 44,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "46",
+              "marks": 46,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 2,
+          "failedSubjectsCount": 4,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "59",
+          "registerNumber": "922524148123",
+          "studentName": "YASWANTH V",
+          "phoneNumber": "+919346045673",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "64",
+              "marks": 64,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "54",
+              "marks": 54,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "62",
+              "marks": 62,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "52",
+              "marks": 52,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "48",
+              "marks": 48,
+              "maxMarks": 100,
+              "result": "FAIL"
+            }
+          ],
+          "passedSubjectsCount": 3,
+          "failedSubjectsCount": 3,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "60",
+          "registerNumber": "922524148124",
+          "studentName": "YESWANTH S M",
+          "phoneNumber": "+919629802883",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "36",
+              "marks": 36,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "50",
+              "marks": 50,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "54",
+              "marks": 54,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "48",
+              "marks": 48,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "46",
+              "marks": 46,
+              "maxMarks": 100,
+              "result": "FAIL"
+            }
+          ],
+          "passedSubjectsCount": 1,
+          "failedSubjectsCount": 5,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "61",
+          "registerNumber": "922524148125",
+          "studentName": "YOGALAKSHMI S",
+          "phoneNumber": "+919629802883",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "76",
+              "marks": 76,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "88",
+              "marks": 88,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "74",
+              "marks": 74,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 6,
+          "failedSubjectsCount": 0,
+          "totalMarks": "",
+          "overallStatus": "PASS",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        },
+        {
+          "sNo": "62",
+          "registerNumber": "922524148126",
+          "studentName": "YUVAN SHANKAR R",
+          "phoneNumber": "+919751322018",
+          "department": "CSE(CSE(AIML))",
+          "subjects": [
+            {
+              "subjectCode": "NLP",
+              "subjectName": "NLP",
+              "grade": "72",
+              "marks": 72,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "DL",
+              "subjectName": "DL",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "CNS",
+              "subjectName": "CNS",
+              "grade": "52",
+              "marks": 52,
+              "maxMarks": 100,
+              "result": "FAIL"
+            },
+            {
+              "subjectCode": "DC",
+              "subjectName": "DC",
+              "grade": "82",
+              "marks": 82,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "BDA",
+              "subjectName": "BDA",
+              "grade": "66",
+              "marks": 66,
+              "maxMarks": 100,
+              "result": "PASS"
+            },
+            {
+              "subjectCode": "STA",
+              "subjectName": "STA",
+              "grade": "60",
+              "marks": 60,
+              "maxMarks": 100,
+              "result": "PASS"
+            }
+          ],
+          "passedSubjectsCount": 5,
+          "failedSubjectsCount": 1,
+          "totalMarks": "",
+          "overallStatus": "FAIL",
+          "smsSent": false,
+          "matchedParent": true,
+          "parentName": "",
+          "smsStatus": "Pending"
+        }
+      ],
+      "uploadedAt": "2026-09-02T08:15:20.211Z",
+      "uploadedBy": "Vali1278",
+      "totalStudents": 62,
+      "passedCount": 34,
+      "failedCount": 28,
+      "passRate": 55,
+      "smsSentCount": 0,
+      "matchedCount": 62,
+      "unmatchedCount": 0,
+      "detectedSubjects": [
+        "NLP",
+        "DL",
+        "CNS",
+        "DC",
+        "BDA",
+        "STA"
+      ]
+    },
     {
       "id": "exm-1786097995510-ad8b6",
       "title": "Semester 5 Results",
@@ -791,7 +4847,7 @@
     {
       "id": "exm-1786097757284-2ggs9",
       "title": "INTERNAL",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "examDate": "2026-08-07",
       "results": [
         {
@@ -799,7 +4855,7 @@
           "registerNumber": "922524148117",
           "studentName": "Valiullah",
           "phoneNumber": "+918754020556",
-          "department": "AIML",
+          "department": "CSE(CSE(AIML))",
           "subjects": [
             {
               "subjectCode": "MATHEMATICS",
@@ -859,7 +4915,7 @@
     {
       "id": "exm-1786070186131-uphzj",
       "title": "Semester 5 End Exam",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "examDate": "2026-08-06",
       "results": [
         {
@@ -867,7 +4923,7 @@
           "registerNumber": "921321104001",
           "studentName": "Anish Kumar",
           "phoneNumber": "+918754020556",
-          "department": "AIML",
+          "department": "CSE(CSE(AIML))",
           "subjects": [
             {
               "subjectCode": "MATHS",
@@ -890,6 +4946,7 @@
       "smsSentCount": 1
     }
   ],
+  "attendanceSessions": [],
   "smsTemplates": [
     {
       "id": "tpl-1",
@@ -928,6 +4985,510 @@
     "defaultSenderName": "VSBEC VY NEXTGEN"
   },
   "activityLogs": [
+    {
+      "id": "act-1788336920211-3903w",
+      "action": "Uploaded Exam Results",
+      "details": "Uploaded result set \"VSB Internal Internal Marks  IT1 CSE(CSE(AIML)) B\" (CSE(AIML)) - 62 students, 55% pass rate (62 parents matched)",
+      "user": "Vali1278",
+      "type": "result",
+      "timestamp": "2026-09-02T08:15:20.211Z"
+    },
+    {
+      "id": "act-1788336920208-1ckuj",
+      "action": "Student Updated",
+      "details": "Updated details for YUVAN SHANKAR R (922524148126)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.208Z"
+    },
+    {
+      "id": "act-1788336920208-dm1qz",
+      "action": "Student Updated",
+      "details": "Updated details for YOGALAKSHMI S (922524148125)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.208Z"
+    },
+    {
+      "id": "act-1788336920207-yvevl",
+      "action": "Student Updated",
+      "details": "Updated details for YESWANTH S M (922524148124)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.207Z"
+    },
+    {
+      "id": "act-1788336920206-saac1",
+      "action": "Student Updated",
+      "details": "Updated details for YASWANTH V (922524148123)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.206Z"
+    },
+    {
+      "id": "act-1788336920206-opo7u",
+      "action": "Student Updated",
+      "details": "Updated details for VISHNU B (922524148122)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.206Z"
+    },
+    {
+      "id": "act-1788336920205-jti7l",
+      "action": "Student Updated",
+      "details": "Updated details for VIJAYRAM.J (922524148121)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.205Z"
+    },
+    {
+      "id": "act-1788336920204-zgtrw",
+      "action": "Student Updated",
+      "details": "Updated details for VENGADESWARAN (922524148120)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.204Z"
+    },
+    {
+      "id": "act-1788336920204-06cm2",
+      "action": "Student Updated",
+      "details": "Updated details for VELMURUGAN B (922524148119)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.204Z"
+    },
+    {
+      "id": "act-1788336920203-l4e0j",
+      "action": "Student Updated",
+      "details": "Updated details for VARUN SANKAR M (922524148118)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.203Z"
+    },
+    {
+      "id": "act-1788336920203-hrwwu",
+      "action": "Student Updated",
+      "details": "Updated details for VALIULLAH (922524148117)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.203Z"
+    },
+    {
+      "id": "act-1788336920202-p5uhl",
+      "action": "Student Updated",
+      "details": "Updated details for VAISNAVA S (922524148116)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.202Z"
+    },
+    {
+      "id": "act-1788336920201-k9udm",
+      "action": "Student Updated",
+      "details": "Updated details for THARUNIKA P (922524148115)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.201Z"
+    },
+    {
+      "id": "act-1788336920201-o5vh6",
+      "action": "Student Updated",
+      "details": "Updated details for THANGALAKSHMI A (922524148114)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.201Z"
+    },
+    {
+      "id": "act-1788336920200-v6rsz",
+      "action": "Student Updated",
+      "details": "Updated details for TAMILARASAN M (922524148113)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.200Z"
+    },
+    {
+      "id": "act-1788336920199-6dvq3",
+      "action": "Student Updated",
+      "details": "Updated details for SUPIKSHA C (922524148112)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.199Z"
+    },
+    {
+      "id": "act-1788336920199-z8o2r",
+      "action": "Student Updated",
+      "details": "Updated details for SUJITH P S (922524148111)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.199Z"
+    },
+    {
+      "id": "act-1788336920198-pc5qd",
+      "action": "Student Updated",
+      "details": "Updated details for SUJEETH S (922524148110)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.198Z"
+    },
+    {
+      "id": "act-1788336920197-s4bxl",
+      "action": "Student Updated",
+      "details": "Updated details for SUDHAN D (922524148109)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.197Z"
+    },
+    {
+      "id": "act-1788336920197-a7278",
+      "action": "Student Updated",
+      "details": "Updated details for SUBASH P (922524148108)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.197Z"
+    },
+    {
+      "id": "act-1788336920196-po8ge",
+      "action": "Student Updated",
+      "details": "Updated details for SRIVARSHAN. M (922524148107)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.196Z"
+    },
+    {
+      "id": "act-1788336920196-kf0qx",
+      "action": "Student Updated",
+      "details": "Updated details for SRI VISHNU V (922524148106)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.196Z"
+    },
+    {
+      "id": "act-1788336920195-8ppuu",
+      "action": "Student Updated",
+      "details": "Updated details for SIVASATHYA K (922524148105)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.195Z"
+    },
+    {
+      "id": "act-1788336920194-1tdnv",
+      "action": "Student Updated",
+      "details": "Updated details for SHRI PRAJITH S (922524148104)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.194Z"
+    },
+    {
+      "id": "act-1788336920193-dkjcp",
+      "action": "Student Updated",
+      "details": "Updated details for SHIVNESH KUMAR (922524148103)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.193Z"
+    },
+    {
+      "id": "act-1788336920193-yxfg6",
+      "action": "Student Updated",
+      "details": "Updated details for SHANTHOSH KANN (922524148102)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.193Z"
+    },
+    {
+      "id": "act-1788336920192-llv6g",
+      "action": "Student Updated",
+      "details": "Updated details for SELVA JEYAKRISHN (922524148101)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.192Z"
+    },
+    {
+      "id": "act-1788336920192-qbtcj",
+      "action": "Student Updated",
+      "details": "Updated details for SELVA GANAPATHY (922524148100)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.192Z"
+    },
+    {
+      "id": "act-1788336920191-2nohq",
+      "action": "Student Updated",
+      "details": "Updated details for SATHIYA PRIYA L (922524148099)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.191Z"
+    },
+    {
+      "id": "act-1788336920190-unrso",
+      "action": "Student Updated",
+      "details": "Updated details for SANTHOSH.S (922524148098)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.190Z"
+    },
+    {
+      "id": "act-1788336920189-kiseq",
+      "action": "Student Updated",
+      "details": "Updated details for SANDHIYA P (922524148097)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.189Z"
+    },
+    {
+      "id": "act-1788336920189-6j16s",
+      "action": "Student Updated",
+      "details": "Updated details for SAMIKSHA N (922524148096)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.189Z"
+    },
+    {
+      "id": "act-1788336920188-mg3nn",
+      "action": "Student Updated",
+      "details": "Updated details for SADHANAA R (922524148095)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.188Z"
+    },
+    {
+      "id": "act-1788336920187-im1zk",
+      "action": "Student Updated",
+      "details": "Updated details for SABARISH S (922524148094)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.187Z"
+    },
+    {
+      "id": "act-1788336920187-7v7ea",
+      "action": "Student Updated",
+      "details": "Updated details for ROHAN C R (922524148093)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.187Z"
+    },
+    {
+      "id": "act-1788336920186-1lsat",
+      "action": "Student Updated",
+      "details": "Updated details for RITIKA V (922524148092)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.186Z"
+    },
+    {
+      "id": "act-1788336920185-kujul",
+      "action": "Student Updated",
+      "details": "Updated details for RITHIKAA J (922524148091)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.185Z"
+    },
+    {
+      "id": "act-1788336920184-cto9t",
+      "action": "Student Updated",
+      "details": "Updated details for RITHIKASRI P (922524148090)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.184Z"
+    },
+    {
+      "id": "act-1788336920184-adppp",
+      "action": "Student Updated",
+      "details": "Updated details for RITHIKA S (922524148089)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.184Z"
+    },
+    {
+      "id": "act-1788336920170-r0ke3",
+      "action": "Student Updated",
+      "details": "Updated details for RITHAN S (922524148088)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.170Z"
+    },
+    {
+      "id": "act-1788336920169-n7e5y",
+      "action": "Student Updated",
+      "details": "Updated details for RISHIDEV S (922524148087)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.169Z"
+    },
+    {
+      "id": "act-1788336920141-7hgwj",
+      "action": "Student Updated",
+      "details": "Updated details for RISHI ADITHYA V. V (922524148086)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.141Z"
+    },
+    {
+      "id": "act-1788336920140-mt4i1",
+      "action": "Student Updated",
+      "details": "Updated details for RATHINA KIRUTHIK (922524148085)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.140Z"
+    },
+    {
+      "id": "act-1788336920140-nyp6n",
+      "action": "Student Updated",
+      "details": "Updated details for RATHIKA S (922524148084)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.140Z"
+    },
+    {
+      "id": "act-1788336920139-var2l",
+      "action": "Student Updated",
+      "details": "Updated details for RANJANI V (922524148082)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.139Z"
+    },
+    {
+      "id": "act-1788336920138-d14w9",
+      "action": "Student Updated",
+      "details": "Updated details for RAKSHANA S (922524148081)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.138Z"
+    },
+    {
+      "id": "act-1788336920138-f0duz",
+      "action": "Student Updated",
+      "details": "Updated details for PRIYADHARSHINI R (922524148080)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.138Z"
+    },
+    {
+      "id": "act-1788336920137-l0h69",
+      "action": "Student Updated",
+      "details": "Updated details for PRIYADHARSHAN B (922524148079)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.137Z"
+    },
+    {
+      "id": "act-1788336920136-j5xru",
+      "action": "Student Updated",
+      "details": "Updated details for PRITHIV T (922524148078)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.136Z"
+    },
+    {
+      "id": "act-1788336920135-dvl8d",
+      "action": "Student Updated",
+      "details": "Updated details for PRAVIN T (922524148076)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.135Z"
+    },
+    {
+      "id": "act-1788336920135-93ep2",
+      "action": "Student Updated",
+      "details": "Updated details for PRASANTH R (922524148075)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.135Z"
+    },
+    {
+      "id": "act-1788336920134-q349t",
+      "action": "Student Updated",
+      "details": "Updated details for POOJA SRI M (922524148074)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.134Z"
+    },
+    {
+      "id": "act-1788336920133-krg1h",
+      "action": "Student Updated",
+      "details": "Updated details for NETHRA K (922524148073)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.133Z"
+    },
+    {
+      "id": "act-1788336920132-gaqxd",
+      "action": "Student Updated",
+      "details": "Updated details for NAVEEN S (922524148072)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.132Z"
+    },
+    {
+      "id": "act-1788336920132-9b49r",
+      "action": "Student Updated",
+      "details": "Updated details for NARMADHA   A (922524148071)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.132Z"
+    },
+    {
+      "id": "act-1788336920131-mkney",
+      "action": "Student Updated",
+      "details": "Updated details for NARENDHRA PRAS (922524148070)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.131Z"
+    },
+    {
+      "id": "act-1788336920129-mduq3",
+      "action": "Student Updated",
+      "details": "Updated details for NANDHITHA PT (922524148069)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.129Z"
+    },
+    {
+      "id": "act-1788336920129-a8en6",
+      "action": "Student Updated",
+      "details": "Updated details for NAGULAN K (922524148068)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.129Z"
+    },
+    {
+      "id": "act-1788336920128-40bf0",
+      "action": "Student Updated",
+      "details": "Updated details for MURALIKARTHICK A (922524148067)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.128Z"
+    },
+    {
+      "id": "act-1788336920127-11ek5",
+      "action": "Student Updated",
+      "details": "Updated details for MUKILAN K (922524148066)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.127Z"
+    },
+    {
+      "id": "act-1788336920126-ax8rb",
+      "action": "Student Updated",
+      "details": "Updated details for MUKILA K (922524148065)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.126Z"
+    },
+    {
+      "id": "act-1788336920125-69z1i",
+      "action": "Student Updated",
+      "details": "Updated details for MUHAMMAD NASAR (922524148064)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.125Z"
+    },
+    {
+      "id": "act-1788336920124-44dke",
+      "action": "Student Updated",
+      "details": "Updated details for MOHANA PRIYA G (922524148063)",
+      "user": "Vali1278",
+      "type": "student",
+      "timestamp": "2026-09-02T08:15:20.124Z"
+    },
     {
       "id": "act-1786778080098-hkbtu",
       "action": "User Login",
@@ -1223,302 +5784,6 @@
       "user": "Vali1278",
       "type": "auth",
       "timestamp": "2026-08-12T10:06:47.428Z"
-    },
-    {
-      "id": "act-1786529207188-4it3r",
-      "action": "User Logout",
-      "details": "Logged out (Vali1278)",
-      "user": "Vali1278",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:06:47.188Z"
-    },
-    {
-      "id": "act-1786529206913-8zyr9",
-      "action": "User Logout",
-      "details": "Logged out (Vali1278)",
-      "user": "Vali1278",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:06:46.913Z"
-    },
-    {
-      "id": "act-1786529206014-ha7dr",
-      "action": "User Logout",
-      "details": "Logged out (Vali1278)",
-      "user": "Vali1278",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:06:46.014Z"
-    },
-    {
-      "id": "act-1786529205727-g06g5",
-      "action": "User Logout",
-      "details": "Logged out (Vali1278)",
-      "user": "Vali1278",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:06:45.727Z"
-    },
-    {
-      "id": "act-1786529200050-sl2t8",
-      "action": "User Logout",
-      "details": "Logged out (Vali1278)",
-      "user": "Vali1278",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:06:40.050Z"
-    },
-    {
-      "id": "act-1786529195753-sx2b0",
-      "action": "User Logout",
-      "details": "Logged out (Vali1278)",
-      "user": "Vali1278",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:06:35.753Z"
-    },
-    {
-      "id": "act-1786529195407-4ypje",
-      "action": "User Logout",
-      "details": "Logged out (Vali1278)",
-      "user": "Vali1278",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:06:35.407Z"
-    },
-    {
-      "id": "act-1786526130545-wz18n",
-      "action": "User Login",
-      "details": "Logged in as VALIULLAH (STAFF)",
-      "user": "Vali1278",
-      "type": "auth",
-      "timestamp": "2026-08-12T09:15:30.545Z"
-    },
-    {
-      "id": "act-1786526126898-61a10",
-      "action": "User Logout",
-      "details": "Logged out (VSBEC)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-12T09:15:26.898Z"
-    },
-    {
-      "id": "act-1786526098274-6eh0y",
-      "action": "User Login",
-      "details": "Logged in as System Administrator (VY NEXTGEN) (ADMIN)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-12T09:14:58.274Z"
-    },
-    {
-      "id": "act-1786526079938-2vo03",
-      "action": "User Logout",
-      "details": "Logged out (Vali1278)",
-      "user": "Vali1278",
-      "type": "auth",
-      "timestamp": "2026-08-12T09:14:39.938Z"
-    },
-    {
-      "id": "act-1786097998173-2mzfy",
-      "action": "Result SMS Dispatched via Fast2SMS",
-      "details": "Sent exam result SMS for batch \"Semester 5 Results\" (1 sent, 0 failed)",
-      "user": "VSBEC",
-      "type": "result",
-      "timestamp": "2026-08-07T10:19:58.173Z"
-    },
-    {
-      "id": "act-1786097995510-2qtqq",
-      "action": "Uploaded Exam Results",
-      "details": "Uploaded result set \"Semester 5 Results\" (CSE) with 1 student records",
-      "user": "VSBEC",
-      "type": "result",
-      "timestamp": "2026-08-07T10:19:55.510Z"
-    },
-    {
-      "id": "act-1786097995510-7vyu5",
-      "action": "Student Added",
-      "details": "Added student Anish Kumar (921321104001) - Dept: CSE",
-      "user": "VSBEC",
-      "type": "student",
-      "timestamp": "2026-08-07T10:19:55.510Z"
-    },
-    {
-      "id": "act-1786097819311-30vcp",
-      "action": "Template Updated",
-      "details": "Updated template \"Exam Result Notification\"",
-      "user": "Vali1278",
-      "type": "sms",
-      "timestamp": "2026-08-07T10:16:59.311Z"
-    },
-    {
-      "id": "act-1786097773874-yj15g",
-      "action": "Result SMS Dispatched via Fast2SMS",
-      "details": "Sent exam result SMS for batch \"INTERNAL\" (1 sent, 0 failed)",
-      "user": "Vali1278",
-      "type": "result",
-      "timestamp": "2026-08-07T10:16:13.874Z"
-    },
-    {
-      "id": "act-1786097757284-nnmyt",
-      "action": "Uploaded Exam Results",
-      "details": "Uploaded result set \"INTERNAL\" (AIML) with 1 student records",
-      "user": "Vali1278",
-      "type": "result",
-      "timestamp": "2026-08-07T10:15:57.284Z"
-    },
-    {
-      "id": "act-1786097757283-hivq4",
-      "action": "Student Updated",
-      "details": "Updated details for Valiullah (922524148117)",
-      "user": "Vali1278",
-      "type": "student",
-      "timestamp": "2026-08-07T10:15:57.283Z"
-    },
-    {
-      "id": "act-1786097564313-o3qsx",
-      "action": "Student Updated",
-      "details": "Updated details for valiullah (922524148117)",
-      "user": "Vali1278",
-      "type": "student",
-      "timestamp": "2026-08-07T10:12:44.313Z"
-    },
-    {
-      "id": "act-1786097536174-elfs3",
-      "action": "Staff Updated",
-      "details": "Updated staff VALIULLAH",
-      "user": "Vali1278",
-      "type": "staff",
-      "timestamp": "2026-08-07T10:12:16.174Z"
-    },
-    {
-      "id": "act-1786097518207-fml89",
-      "action": "Staff Updated",
-      "details": "Updated staff VALIULLAH",
-      "user": "Vali1278",
-      "type": "staff",
-      "timestamp": "2026-08-07T10:11:58.207Z"
-    },
-    {
-      "id": "act-1786097469268-a4oat",
-      "action": "User Login",
-      "details": "Logged in successfully as VALIULLAH",
-      "user": "Vali1278",
-      "type": "auth",
-      "timestamp": "2026-08-07T10:11:09.268Z"
-    },
-    {
-      "id": "act-1786097446408-n8x1o",
-      "action": "Staff Updated",
-      "details": "Updated staff VALIULLAH",
-      "user": "VSBEC",
-      "type": "staff",
-      "timestamp": "2026-08-07T10:10:46.408Z"
-    },
-    {
-      "id": "act-1786097436069-5buym",
-      "action": "User Login",
-      "details": "Logged in successfully as System Administrator (VY NEXTGEN)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-07T10:10:36.069Z"
-    },
-    {
-      "id": "act-1786097390445-7ks8f",
-      "action": "Staff Account Created",
-      "details": "Created staff account for VALIULLAH (Vali1278)",
-      "user": "VSBEC",
-      "type": "staff",
-      "timestamp": "2026-08-07T10:09:50.445Z"
-    },
-    {
-      "id": "act-1786097334704-lhszg",
-      "action": "SMS Dispatched via Fast2SMS",
-      "details": "Sent 1 SMS successfully (0 failed)",
-      "user": "VSBEC",
-      "type": "sms",
-      "timestamp": "2026-08-07T10:08:54.704Z"
-    },
-    {
-      "id": "act-1786097295389-kpvr1",
-      "action": "User Login",
-      "details": "Logged in successfully as System Administrator (VY NEXTGEN)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-07T10:08:15.389Z"
-    },
-    {
-      "id": "act-1786094553921-4k1j3",
-      "action": "SMS Dispatched via Fast2SMS",
-      "details": "Sent 1 SMS successfully (0 failed)",
-      "user": "VSBEC",
-      "type": "sms",
-      "timestamp": "2026-08-07T09:22:33.921Z"
-    },
-    {
-      "id": "act-1786093587268-9qb5g",
-      "action": "User Login",
-      "details": "Logged in successfully as System Administrator (VY NEXTGEN)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-07T09:06:27.268Z"
-    },
-    {
-      "id": "act-1786093492580-4fr61",
-      "action": "User Login",
-      "details": "Logged in successfully as System Administrator (VY NEXTGEN)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-07T09:04:52.580Z"
-    },
-    {
-      "id": "act-1786070188938-udh0k",
-      "action": "Result SMS Dispatched via Fast2SMS",
-      "details": "Sent exam result SMS for batch \"Semester 5 End Exam\" (1 sent, 0 failed)",
-      "user": "VSBEC",
-      "type": "result",
-      "timestamp": "2026-08-07T02:36:28.938Z"
-    },
-    {
-      "id": "act-1786070186131-galy8",
-      "action": "Uploaded Exam Results",
-      "details": "Uploaded result set \"Semester 5 End Exam\" (AIML) with 1 student records",
-      "user": "VSBEC",
-      "type": "result",
-      "timestamp": "2026-08-07T02:36:26.131Z"
-    },
-    {
-      "id": "act-1786070186130-91ujj",
-      "action": "Student Added",
-      "details": "Added student Anish Kumar (921321104001) - Dept: AIML",
-      "user": "VSBEC",
-      "type": "student",
-      "timestamp": "2026-08-07T02:36:26.130Z"
-    },
-    {
-      "id": "act-1786069682189-17ogn",
-      "action": "User Login",
-      "details": "Logged in successfully as System Administrator (VY NEXTGEN)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-07T02:28:02.189Z"
-    },
-    {
-      "id": "act-1786069529582-oy2nv",
-      "action": "Department Updated",
-      "details": "Updated department MECH",
-      "user": "VSBEC",
-      "type": "settings",
-      "timestamp": "2026-08-07T02:25:29.582Z"
-    },
-    {
-      "id": "act-1786069490860-9nlh6",
-      "action": "User Login",
-      "details": "Logged in successfully as System Administrator (VY NEXTGEN)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-07T02:24:50.860Z"
-    },
-    {
-      "id": "act-1786069446397-3yppx",
-      "action": "System Initialized",
-      "details": "Default Admin VSBEC configured",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-07T02:24:06.397Z"
     }
   ],
   "loginLogs": [
@@ -1581,7 +5846,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "action": "logout",
       "timestamp": "2026-08-12T10:58:38.705Z"
     },
@@ -1590,7 +5855,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "action": "login",
       "timestamp": "2026-08-12T10:57:23.058Z"
     },
@@ -1617,7 +5882,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "action": "login",
       "timestamp": "2026-08-12T10:14:56.216Z"
     },
@@ -1680,7 +5945,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "action": "logout",
       "timestamp": "2026-08-12T10:09:14.553Z"
     },
@@ -1689,7 +5954,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "action": "login",
       "timestamp": "2026-08-12T10:07:14.522Z"
     },
@@ -1698,7 +5963,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "action": "logout",
       "timestamp": "2026-08-12T10:06:48.346Z"
     },
@@ -1707,7 +5972,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "action": "logout",
       "timestamp": "2026-08-12T10:06:47.428Z"
     },
@@ -1716,7 +5981,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "action": "logout",
       "timestamp": "2026-08-12T10:06:47.188Z"
     },
@@ -1725,7 +5990,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "action": "logout",
       "timestamp": "2026-08-12T10:06:46.913Z"
     },
@@ -1734,7 +5999,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "action": "logout",
       "timestamp": "2026-08-12T10:06:46.014Z"
     },
@@ -1743,7 +6008,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "action": "logout",
       "timestamp": "2026-08-12T10:06:45.727Z"
     },
@@ -1752,7 +6017,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "action": "logout",
       "timestamp": "2026-08-12T10:06:40.049Z"
     },
@@ -1761,7 +6026,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "action": "logout",
       "timestamp": "2026-08-12T10:06:35.752Z"
     },
@@ -1770,7 +6035,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "action": "logout",
       "timestamp": "2026-08-12T10:06:35.407Z"
     },
@@ -1779,7 +6044,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "action": "login",
       "timestamp": "2026-08-12T09:15:30.546Z"
     },
@@ -1806,7 +6071,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "action": "logout",
       "timestamp": "2026-08-12T09:14:39.938Z"
     }
@@ -1867,9 +6132,9 @@
     {
       "id": "key-vsb-04",
       "key": "vsb_live_sk_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d",
-      "name": "Department HOD Integration Key (AIML)",
+      "name": "Department HOD Integration Key (CSE(AIML))",
       "role": "hod",
-      "department": "AIML",
+      "department": "CSE(CSE(AIML))",
       "scopes": [
         "results:read",
         "students:read",

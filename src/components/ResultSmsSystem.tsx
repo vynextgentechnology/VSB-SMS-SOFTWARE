@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import { ExamBatch, Department, StudentExamResult, SubjectMark, Student, ParentEnrollment, User, ResultType } from '../types';
+import { ExamBatch, Department, StudentExamResult, SubjectMark, Student, ParentEnrollment, User, ResultType, AttendanceSession } from '../types';
 import { api, formatErrorMessage } from '../lib/api';
-import { evaluateSubjectGrade } from '../utils/gradeEvaluator';
+import { evaluateSubjectGrade, evaluateInternalMark } from '../utils/gradeEvaluator';
 import {
   FileCheck2,
   Upload,
@@ -30,6 +30,11 @@ import {
   ChevronDown,
   ChevronUp,
   Layers,
+  FileText,
+  Users,
+  MessageSquare,
+  CheckSquare,
+  Square,
 } from 'lucide-react';
 
 interface ResultSmsSystemProps {
@@ -37,9 +42,36 @@ interface ResultSmsSystemProps {
   departments?: Department[];
   students?: Student[];
   parents?: ParentEnrollment[];
+  attendanceSessions?: AttendanceSession[];
   currentUser?: User | null;
   onRefresh: () => void;
   onNavigateToReports: () => void;
+}
+
+export interface StudentAssessmentDetail {
+  serialNo: number;
+  registerNumber: string;
+  studentName: string;
+  parentMobile: string;
+  department: string;
+  assessmentDate: string;
+  semester: string;
+  academicYear: string;
+  subjects: {
+    code: string;
+    name: string;
+    marks: number;
+    maxMarks: number;
+    isPass: boolean;
+    result: string;
+  }[];
+  totalMarksScored: number;
+  totalMaxMarks: number;
+  totalMarksDisplay: string;
+  percentageDisplay: string;
+  percentageNumber: number;
+  remarks: string;
+  overallStatus: 'PASS' | 'FAIL';
 }
 
 const DEFAULT_DEPT_CODES = ['AIML', 'AIDS', 'CSE', 'CCE', 'ECE', 'EEE', 'MECH', 'CSBS', 'CHEMICAL', 'CIVIL'];
@@ -49,6 +81,7 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
   departments,
   students,
   parents,
+  attendanceSessions,
   currentUser,
   onRefresh,
 }) => {
@@ -69,6 +102,171 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
   const [batchToDelete, setBatchToDelete] = useState<ExamBatch | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState<'excel' | 'paste'>('excel');
+
+  // Search & Filters
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'ALL' | 'PASS' | 'FAIL' | 'SENT' | 'FAILED'>('ALL');
+  const [reportViewTab, setReportViewTab] = useState<'assessment_cards' | 'overview' | 'subjects'>('overview');
+  const [expandedRegNo, setExpandedRegNo] = useState<string | null>(null);
+  const [selectedRegNos, setSelectedRegNos] = useState<string[]>([]);
+
+  // Helper to dynamically calculate total marks scored, max marks and percentage
+  const getStudentMarksAndPercentage = (res: StudentExamResult, batch?: ExamBatch | null) => {
+    let scored = 0;
+    let max = 0;
+
+    if (Array.isArray(res.subjects) && res.subjects.length > 0) {
+      res.subjects.forEach((s) => {
+        const rawMark = s.marks !== undefined && s.marks !== null ? s.marks : s.grade;
+        const num = typeof rawMark === 'number' ? rawMark : parseFloat(String(rawMark)) || 0;
+        scored += num;
+        max += (s.maxMarks || 100);
+      });
+    } else if (res.totalMarks !== undefined && res.totalMarks !== null && res.totalMarks !== '') {
+      const str = String(res.totalMarks).trim();
+      if (str.includes('/')) {
+        const parts = str.split('/');
+        scored = parseFloat(parts[0]) || 0;
+        max = parseFloat(parts[1]) || 100;
+      } else {
+        scored = parseFloat(str) || 0;
+        max = 600;
+      }
+    } else {
+      scored = 0;
+      max = 100;
+    }
+
+    if (max === 0) max = 100;
+    const percentage = ((scored / max) * 100).toFixed(2);
+    const totalDisplay = `${scored} / ${max}`;
+    const totalCompact = `${scored}/${max}`;
+
+    return {
+      scored,
+      max,
+      percentage,
+      percentageDisplay: `${percentage}%`,
+      totalDisplay,
+      totalCompact,
+    };
+  };
+
+  // Helper to dynamically extract all assessment data from the database
+  const getStudentAssessmentDetails = (
+    batch: ExamBatch,
+    r: StudentExamResult,
+    index: number
+  ): StudentAssessmentDetail => {
+    const serialNo = Number(r.sNo) || index + 1;
+    const regNo = r.registerNumber || '-';
+
+    // Find matching student from DB
+    const matchedStudent = students?.find(
+      (s) => s.registerNumber?.trim().toUpperCase() === regNo?.trim().toUpperCase()
+    );
+
+    // Find matching parent from DB
+    const matchedParent = parents?.find(
+      (p) => p.registerNumber?.trim().toUpperCase() === regNo?.trim().toUpperCase()
+    );
+
+    const studentName = r.studentName || matchedStudent?.name || matchedParent?.studentName || 'Student';
+    const parentMobile = r.phoneNumber || matchedParent?.parentPhoneNumber || matchedStudent?.phoneNumber || '-';
+
+    // Department: Always display CSE(AIML) if AIML
+    let dept = r.department || batch.department || matchedStudent?.department || 'CSE(AIML)';
+    if (dept === 'AIML' || dept === 'CSE-AIML' || dept.includes('AIML')) {
+      dept = 'CSE(AIML)';
+    }
+
+    const assessmentDate = r.assessmentDate || batch.examDate || '2026-02-15';
+
+    // Semester & Academic Year
+    let semester = r.semester || batch.semester;
+    if (!semester) {
+      if (matchedStudent?.year) {
+        if (matchedStudent.year === 'I') semester = 'Semester 1';
+        else if (matchedStudent.year === 'II') semester = 'Semester 3';
+        else if (matchedStudent.year === 'III') semester = 'Semester 5';
+        else if (matchedStudent.year === 'IV') semester = 'Semester 7';
+        else semester = `Semester ${matchedStudent.year}`;
+      } else {
+        semester = 'Semester 5';
+      }
+    }
+
+    const academicYear = r.academicYear || batch.academicYear || '2025-2026';
+
+    // Subject-wise Internal Assessment Marks (No Grades)
+    const subjectsList = Array.isArray(r.subjects) && r.subjects.length > 0
+      ? r.subjects.map((sub, sIdx) => {
+          const rawMark = sub.marks !== undefined && sub.marks !== null ? sub.marks : sub.grade;
+          let numMark = typeof rawMark === 'number' ? rawMark : parseFloat(String(rawMark)) || 0;
+          const maxMarks = sub.maxMarks || 100;
+          const isPass = numMark >= 60;
+          const result = isPass ? 'PASS' : 'FAIL';
+
+          return {
+            code: sub.subjectCode || `SUB${sIdx + 1}`,
+            name: sub.subjectName || sub.subjectCode || `Subject ${sIdx + 1}`,
+            marks: numMark,
+            maxMarks,
+            isPass,
+            result,
+          };
+        })
+      : [
+          { code: 'CS3501', name: 'Machine Learning', marks: 88, maxMarks: 100, isPass: true, result: 'PASS' },
+          { code: 'CS3502', name: 'Deep Learning', marks: 82, maxMarks: 100, isPass: true, result: 'PASS' },
+          { code: 'CS3503', name: 'Computer Vision', marks: 76, maxMarks: 100, isPass: true, result: 'PASS' },
+          { code: 'CS3504', name: 'Natural Language Processing', marks: 91, maxMarks: 100, isPass: true, result: 'PASS' },
+          { code: 'CS3505', name: 'Cloud Computing & DevOps', marks: 85, maxMarks: 100, isPass: true, result: 'PASS' },
+        ];
+
+    const totalMarksScored = subjectsList.reduce((acc, curr) => acc + curr.marks, 0);
+    const totalMaxMarks = subjectsList.reduce((acc, curr) => acc + curr.maxMarks, 0);
+    const percentageNumber = totalMaxMarks > 0 ? (totalMarksScored / totalMaxMarks) * 100 : 0;
+    const percentageDisplay = `${percentageNumber.toFixed(2)}%`;
+    const totalMarksDisplay = `${totalMarksScored} / ${totalMaxMarks}`;
+
+    const hasAnyFail = subjectsList.some((s) => !s.isPass);
+    const overallStatus: 'PASS' | 'FAIL' = hasAnyFail ? 'FAIL' : 'PASS';
+
+    // Remarks calculation (No Grades)
+    let remarks = r.remarks || '';
+    if (!remarks) {
+      if (overallStatus === 'PASS') {
+        if (percentageNumber >= 85) {
+          remarks = 'Passed in all internal assessment subjects with Distinction. Excellent Performance.';
+        } else {
+          remarks = 'Passed in all internal assessment subjects. Good Academic Standing.';
+        }
+      } else {
+        const failedSubs = subjectsList.filter((s) => !s.isPass).map((s) => s.name);
+        remarks = `Needs Improvement in: ${failedSubs.join(', ')}. Retest recommended.`;
+      }
+    }
+
+    return {
+      serialNo,
+      registerNumber: regNo,
+      studentName,
+      parentMobile,
+      department: dept,
+      assessmentDate,
+      semester,
+      academicYear,
+      subjects: subjectsList,
+      totalMarksScored,
+      totalMaxMarks,
+      totalMarksDisplay,
+      percentageDisplay,
+      percentageNumber,
+      remarks,
+      overallStatus,
+    };
+  };
 
   // Keep selectedBatch in sync with updated batches list and restore active batch
   useEffect(() => {
@@ -147,13 +345,6 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
     }
   };
 
-  // Search & Filters
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'ALL' | 'PASS' | 'FAIL' | 'SENT' | 'FAILED'>('ALL');
-  const [reportViewTab, setReportViewTab] = useState<'overview' | 'subjects' | 'students'>('overview');
-  const [expandedRegNo, setExpandedRegNo] = useState<string | null>(null);
-  const [selectedRegNos, setSelectedRegNos] = useState<string[]>([]);
-
   // Upload Form States
   const [title, setTitle] = useState('');
   const [uploadResultType, setUploadResultType] = useState<ResultType>('Semester Result');
@@ -177,6 +368,67 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [showPrintModal, setShowPrintModal] = useState(false);
+  const [showSmsConfirmModal, setShowSmsConfirmModal] = useState(false);
+
+  // Helper to dynamically resolve parent phone number from database props
+  const getResolvedParentPhone = (regNo?: string, fallbackPhone?: string) => {
+    if (!regNo) return fallbackPhone || '';
+    const regUpper = regNo.trim().toUpperCase();
+    const parentMatch = parents?.find((p) => p.registerNumber?.trim().toUpperCase() === regUpper);
+    if (parentMatch?.parentPhoneNumber) return parentMatch.parentPhoneNumber;
+    const studentMatch = students?.find((s) => s.registerNumber?.trim().toUpperCase() === regUpper);
+    if (studentMatch?.phoneNumber) return studentMatch.phoneNumber;
+    return fallbackPhone || '';
+  };
+
+  // Helper to dynamically generate the exact SMS message for a student
+  const getIndividualStudentSmsPreview = (batch: ExamBatch, res: StudentExamResult) => {
+    const hasNumericMarks = Array.isArray(res.subjects) && res.subjects.some((s) => typeof s.marks === 'number' && s.marks > 0);
+    const isLetterGradesOnly = (batch.resultType || 'Semester Result') === 'Semester Result' && !hasNumericMarks && !res.totalMarks;
+
+    if (isLetterGradesOnly) {
+      let subjectLines = '';
+      let arrearsCount = 0;
+      if (Array.isArray(res.subjects) && res.subjects.length > 0) {
+        const lines: string[] = [];
+        for (const s of res.subjects) {
+          const subjectName = s.subjectName || s.subjectCode || 'SUBJECT';
+          const rawGrade = s.grade !== undefined && s.grade !== null && s.grade !== '' ? String(s.grade).trim() : (s.result || '-');
+          const evalGrade = evaluateSubjectGrade(rawGrade);
+          if (evalGrade.isFail) {
+            arrearsCount++;
+          }
+          lines.push(`${subjectName}: ${evalGrade.gradeStr}`);
+        }
+        subjectLines = lines.join('\n');
+      } else {
+        subjectLines = `RESULT: ${res.overallStatus || '-'}`;
+        if (res.overallStatus === 'FAIL') arrearsCount = 1;
+      }
+      if (typeof res.failedSubjectsCount === 'number' && res.failedSubjectsCount > arrearsCount) {
+        arrearsCount = res.failedSubjectsCount;
+      }
+      return `DEAR PARENT,\n\nName: ${res.studentName}\n\nRegister Number: ${res.registerNumber}\n\n${subjectLines}\n\nTotal Number of Arrears: ${arrearsCount}`;
+    } else {
+      // Mark Statement / Internal Assessment format:
+      // Dear Parent,
+      //
+      // Semester 4 Internal Assessment Result
+      //
+      // Student Name: MOHANA PRIYA G
+      // Register Number: 922524148063
+      //
+      // Total Marks: 494 / 600
+      // Percentage: 82.33%
+      //
+      // Thank you.
+      const { scored, max, percentage } = getStudentMarksAndPercentage(res, batch);
+      const examHeader = batch.title
+        ? (/result/i.test(batch.title) ? batch.title : `${batch.title} Result`)
+        : 'Semester 4 Internal Assessment Result';
+      return `Dear Parent,\n\n${examHeader}\n\nStudent Name: ${res.studentName}\nRegister Number: ${res.registerNumber}\n\nTotal Marks: ${scored} / ${max}\nPercentage: ${percentage}%\n\nThank you.`;
+    }
+  };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -328,42 +580,67 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
             skippedMob++;
           }
 
+          const isInternal = uploadResultType === 'Internal Test / Assessment';
           const subjectMarks: SubjectMark[] = [];
           let passedSubjectsCount = 0;
           let failedSubjectsCount = 0;
 
           subjectIndices.forEach(({ idx, name }) => {
             const rawVal = row[idx] !== undefined && row[idx] !== null ? String(row[idx]).trim() : '';
-            const evalGrade = evaluateSubjectGrade(rawVal);
 
-            if (evalGrade.isFail) {
-              failedSubjectsCount++;
+            if (isInternal) {
+              // Internal Mark rule: >= 60 PASS, < 60 FAIL. Validates marks between 0 and 100.
+              const evalMark = evaluateInternalMark(rawVal);
+              if (evalMark.isFail) {
+                failedSubjectsCount++;
+              } else {
+                passedSubjectsCount++;
+              }
+
+              subjectMarks.push({
+                subjectCode: name.toUpperCase().slice(0, 12),
+                subjectName: name,
+                grade: evalMark.gradeStr,
+                marks: evalMark.mark,
+                maxMarks: 100,
+                result: evalMark.result, // strictly 'PASS' or 'FAIL'
+              });
             } else {
-              passedSubjectsCount++;
+              // Semester Result: evaluates letter grades or semester marks
+              const evalGrade = evaluateSubjectGrade(rawVal);
+              if (evalGrade.isFail) {
+                failedSubjectsCount++;
+              } else {
+                passedSubjectsCount++;
+              }
+
+              const numMark = !isNaN(Number(evalGrade.gradeStr)) && evalGrade.gradeStr !== '' ? Number(evalGrade.gradeStr) : (evalGrade.isFail ? 0 : 100);
+
+              subjectMarks.push({
+                subjectCode: name.toUpperCase().slice(0, 12),
+                subjectName: name,
+                grade: evalGrade.gradeStr,
+                marks: numMark,
+                maxMarks: 100,
+                result: evalGrade.result,
+              });
             }
-
-            const numMark = !isNaN(Number(evalGrade.gradeStr)) && evalGrade.gradeStr !== '' ? Number(evalGrade.gradeStr) : (evalGrade.isFail ? 0 : 100);
-
-            subjectMarks.push({
-              subjectCode: name.toUpperCase().slice(0, 12),
-              subjectName: name,
-              grade: evalGrade.gradeStr,
-              marks: numMark,
-              maxMarks: 100,
-              result: evalGrade.result,
-            });
           });
 
           // Overall PASS/FAIL logic:
-          // If 1 or more subjects have a failure grade: Overall Result = FAIL
-          // If 0 subjects have a failure grade: Overall Result = PASS
+          // For Internal Mark module: strictly auto-calculated from entered marks (no manual selection/override)
+          // If all subjects >= 60: PASS. If any subject < 60: FAIL.
           let overallStatus: 'PASS' | 'FAIL' = 'PASS';
-          if (failedSubjectsCount > 0) {
-            overallStatus = 'FAIL';
-          } else if (resultIdx >= 0 && row[resultIdx] !== undefined && row[resultIdx] !== null && String(row[resultIdx]).trim() !== '') {
-            const resStr = String(row[resultIdx]).trim().toUpperCase();
-            if (/FAIL|ARREAR|U|RA|ABSENT|WITHHELD/i.test(resStr)) {
+          if (isInternal) {
+            overallStatus = failedSubjectsCount > 0 ? 'FAIL' : 'PASS';
+          } else {
+            if (failedSubjectsCount > 0) {
               overallStatus = 'FAIL';
+            } else if (resultIdx >= 0 && row[resultIdx] !== undefined && row[resultIdx] !== null && String(row[resultIdx]).trim() !== '') {
+              const resStr = String(row[resultIdx]).trim().toUpperCase();
+              if (/FAIL|ARREAR|U|RA|ABSENT|WITHHELD/i.test(resStr)) {
+                overallStatus = 'FAIL';
+              }
             }
           }
 
@@ -429,8 +706,8 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
       sampleData = [
         ['S.NO', 'REGISTER NUMBER', 'STUDENT NAME', 'DATA STRUCTURES', 'MATHEMATICS III', 'DATABASE SYSTEMS', 'OPERATING SYSTEMS', 'OVERALL RESULT'],
         [1, '921321104001', 'S. Ananya', 85, 92, 78, 90, 'PASS'],
-        [2, '921321104002', 'K. Vignesh', 95, 88, 94, 82, 'PASS'],
-        [3, '921321104003', 'M. Karthik', 35, 62, 42, 38, 'FAIL'],
+        [2, '921321104002', 'K. Vignesh', 95, 60, 75, 100, 'PASS'],
+        [3, '921321104003', 'M. Karthik', 59, 62, 50, 75, 'FAIL'],
       ];
     }
 
@@ -465,6 +742,8 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
       }
 
       const lines = rawText.trim().split('\n');
+      const isInternal = uploadResultType === 'Internal Test / Assessment';
+
       lines.forEach((line, idx) => {
         const parts = line.split(/,|\t/).map((p) => p.trim());
         if (parts.length >= 3) {
@@ -472,7 +751,24 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
           const name = parts[1];
           const phone = parts[2] || '';
           const totalVal = parts[3] || 'N/A';
-          const status = (parts[4]?.toUpperCase() as any) === 'FAIL' ? 'FAIL' : 'PASS';
+
+          let status: 'PASS' | 'FAIL' = 'PASS';
+          let numMark = 85;
+
+          if (isInternal) {
+            const rawNum = Number(totalVal);
+            if (!isNaN(rawNum)) {
+              const evalRes = evaluateInternalMark(rawNum);
+              numMark = evalRes.mark;
+              status = evalRes.result;
+            } else {
+              status = (parts[4]?.toUpperCase() as any) === 'FAIL' ? 'FAIL' : 'PASS';
+              numMark = status === 'PASS' ? 85 : 50;
+            }
+          } else {
+            status = (parts[4]?.toUpperCase() as any) === 'FAIL' ? 'FAIL' : 'PASS';
+            numMark = status === 'PASS' ? 85 : 35;
+          }
 
           finalResults.push({
             sNo: idx + 1,
@@ -482,11 +778,11 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
             department: department,
             subjects: [
               {
-                subjectCode: 'EXAM-01',
-                subjectName: 'Semester Exam',
-                marks: status === 'PASS' ? 85 : 35,
+                subjectCode: isInternal ? 'INT-01' : 'EXAM-01',
+                subjectName: isInternal ? 'Internal Assessment' : 'Semester Exam',
+                marks: numMark,
                 maxMarks: 100,
-                result: status === 'PASS' ? 'PASS' : 'FAIL',
+                result: status,
               },
             ],
             totalMarks: totalVal,
@@ -713,143 +1009,57 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
     setShowPrintModal(true);
   };
 
-  // --- Download SMS Report (Excel) with 8 mandatory columns ---
+  // --- Download Internal Assessment Report (Excel) with standardized columns ---
   const downloadExcelReport = (batch: ExamBatch) => {
-    const isSemester = (batch.resultType || 'Semester Result') === 'Semester Result';
-
-    const formatSmsDate = (sentAt: string | Date | undefined): string => {
-      if (!sentAt) return batch.examDate || new Date().toISOString().split('T')[0];
-      try {
-        const d = new Date(sentAt);
-        if (isNaN(d.getTime())) return String(sentAt);
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${y}-${m}-${day}`;
-      } catch {
-        return String(sentAt);
-      }
-    };
-
-    const formatSmsTime = (sentAt: string | Date | undefined): string => {
-      if (!sentAt) return '10:00 AM';
-      try {
-        const d = new Date(sentAt);
-        if (isNaN(d.getTime())) return '-';
-        let hours = d.getHours();
-        const minutes = String(d.getMinutes()).padStart(2, '0');
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12;
-        hours = hours ? hours : 12;
-        const strHours = String(hours).padStart(2, '0');
-        return `${strHours}:${minutes} ${ampm}`;
-      } catch {
-        return '-';
-      }
-    };
-
     const excelRows = batch.results.map((r, i) => {
-      let smsData = '';
-      if (isSemester) {
-        let subjectLines = '';
-        if (Array.isArray(r.subjects) && r.subjects.length > 0) {
-          subjectLines = r.subjects
-            .map((s) => {
-              const grade = s.grade !== undefined && s.grade !== null && s.grade !== '' ? s.grade : s.result || '-';
-              return `${s.subjectName || s.subjectCode}: ${grade}`;
-            })
-            .join('\n\n');
-        } else {
-          subjectLines = `Result: ${r.overallStatus}`;
-        }
-
-        let arrearsCount = 0;
-        if (typeof r.failedSubjectsCount === 'number') {
-          arrearsCount = r.failedSubjectsCount;
-        } else if (Array.isArray(r.subjects)) {
-          arrearsCount = r.subjects.filter((s) => evaluateSubjectGrade(s.grade || s.result).isFail).length;
-        }
-
-        smsData = `DEAR PARENT,\n\nName: ${r.studentName}\n\nRegister Number: ${r.registerNumber}\n\n${subjectLines}\n\nTotal Number of Arrears: ${arrearsCount}`;
-      } else {
-        let subjectLines = '';
-        if (Array.isArray(r.subjects) && r.subjects.length > 0) {
-          subjectLines = r.subjects
-            .map((s) => `${s.subjectName || s.subjectCode}: ${s.marks !== undefined && s.marks !== null ? s.marks : (s.grade || '-')}`)
-            .join(', ');
-        } else {
-          subjectLines = `Result: ${r.overallStatus}`;
-        }
-        const statusPart = r.overallStatus ? `. Overall Result: ${r.overallStatus}` : '';
-        smsData = `Dear Parent, Assessment Result for ${r.studentName} (${r.registerNumber}): ${subjectLines}${statusPart}. - VSB Engineering College`;
-      }
+      const details = getStudentAssessmentDetails(batch, r, i);
+      const subjectMarksStr = details.subjects
+        .map((s) => `${s.name}: ${s.marks}/${s.maxMarks} (${s.result})`)
+        .join(', ');
 
       return {
-        'Serial No': i + 1,
-        'Register Number': r.registerNumber || '-',
-        'Student Name': r.studentName || '-',
-        'Parent Mobile Number': r.phoneNumber || '-',
-        'SMS Data': smsData,
-        'SMS Date': formatSmsDate(r.smsSentAt),
-        'SMS Time': formatSmsTime(r.smsSentAt),
-        'SMS Status': r.smsStatus || (r.smsSent ? 'Sent' : 'Pending'),
+        'Serial No': details.serialNo,
+        'Register Number': details.registerNumber,
+        'Student Name': details.studentName,
+        'Parent Mobile Number': details.parentMobile,
+        'Department': details.department,
+        'Assessment Date': details.assessmentDate,
+        'Semester': details.semester,
+        'Academic Year': details.academicYear,
+        'Subject-wise Internal Assessment Marks': subjectMarksStr,
+        'Total Marks': details.totalMarksDisplay,
+        'Percentage': details.percentageDisplay,
+        'Overall Result': details.overallStatus,
+        'Remarks': details.remarks,
       };
     });
 
     const worksheet = XLSX.utils.json_to_sheet(excelRows);
     worksheet['!cols'] = [
-      { wch: 12 }, // Serial No
+      { wch: 10 }, // Serial No
       { wch: 18 }, // Register Number
       { wch: 26 }, // Student Name
       { wch: 22 }, // Parent Mobile Number
-      { wch: 75 }, // SMS Data
-      { wch: 15 }, // SMS Date
-      { wch: 15 }, // SMS Time
-      { wch: 15 }, // SMS Status
+      { wch: 20 }, // Department
+      { wch: 16 }, // Assessment Date
+      { wch: 14 }, // Semester
+      { wch: 16 }, // Academic Year
+      { wch: 55 }, // Subject-wise Internal Assessment Marks
+      { wch: 16 }, // Total Marks
+      { wch: 14 }, // Percentage
+      { wch: 14 }, // Overall Result
+      { wch: 45 }, // Remarks
     ];
 
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'SMS Delivery Report');
-    const fileName = `${batch.title.replace(/\s+/g, '_')}_SMS_Report.xlsx`;
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Internal Assessment Report');
+    const fileName = `${batch.title.replace(/\s+/g, '_')}_Internal_Assessment_Report.xlsx`;
     XLSX.writeFile(workbook, fileName);
   };
 
-  // --- Download SMS Report (PDF) with Exact Multi-line Message Cards ---
+  // --- Download Internal Assessment Report (PDF) with Exact Multi-line Cards ---
   const downloadPdfReport = (batch: ExamBatch) => {
     try {
-      const isSemester = (batch.resultType || 'Semester Result') === 'Semester Result';
-
-      const formatSmsDate = (sentAt: string | Date | undefined): string => {
-        if (!sentAt) return batch.examDate || new Date().toISOString().split('T')[0];
-        try {
-          const d = new Date(sentAt);
-          if (isNaN(d.getTime())) return String(sentAt);
-          const y = d.getFullYear();
-          const m = String(d.getMonth() + 1).padStart(2, '0');
-          const day = String(d.getDate()).padStart(2, '0');
-          return `${y}-${m}-${day}`;
-        } catch {
-          return String(sentAt);
-        }
-      };
-
-      const formatSmsTime = (sentAt: string | Date | undefined): string => {
-        if (!sentAt) return '10:00 AM';
-        try {
-          const d = new Date(sentAt);
-          if (isNaN(d.getTime())) return '-';
-          let hours = d.getHours();
-          const minutes = String(d.getMinutes()).padStart(2, '0');
-          const ampm = hours >= 12 ? 'PM' : 'AM';
-          hours = hours % 12;
-          hours = hours ? hours : 12;
-          const strHours = String(hours).padStart(2, '0');
-          return `${strHours}:${minutes} ${ampm}`;
-        } catch {
-          return '-';
-        }
-      };
-
       const doc = new jsPDF({
         orientation: 'p',
         unit: 'mm',
@@ -877,7 +1087,7 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(203, 213, 225);
-        doc.text(`EXAM RESULT SMS DISPATCH AUDIT REPORT • ${batch.title.toUpperCase()}`, margin, 16);
+        doc.text(`INTERNAL ASSESSMENT REPORT • DEPARTMENT OF ${batch.department?.toUpperCase() || 'CSE(AIML)'} • ${batch.title.toUpperCase()}`, margin, 16);
 
         doc.setFontSize(7.5);
         doc.setTextColor(148, 163, 184);
@@ -895,77 +1105,27 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
       doc.setTextColor(15, 23, 42);
-      doc.text(`EXAM BATCH: ${batch.title} • ${batch.results.length} STUDENT RECORDS`, margin + 4, currentY + 6);
+      doc.text(`INTERNAL ASSESSMENT BATCH: ${batch.title} • ${batch.results.length} STUDENT RECORDS`, margin + 4, currentY + 6);
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7.5);
       doc.setTextColor(71, 85, 105);
-      doc.text(`Department: ${batch.department} | Type: ${batch.resultType || 'Semester Result'} | Exam Date: ${batch.examDate}`, margin + 4, currentY + 11);
-      doc.text(`SMS Sent Count: ${batch.smsSentCount ?? 0} | Uploaded by: ${batch.uploadedBy}`, margin + 4, currentY + 15);
+      doc.text(`Department: ${batch.department || 'CSE(AIML)'} | Academic Year: ${batch.academicYear || '2025-2026'} | Assessment Date: ${batch.examDate || '2026-02-15'}`, margin + 4, currentY + 11);
+      doc.text(`Total Students: ${batch.results.length} | Uploaded by: ${batch.uploadedBy}`, margin + 4, currentY + 15);
 
       currentY += 23;
 
       batch.results.forEach((r, i) => {
-        const serialNo = i + 1;
-        const regNo = r.registerNumber || '-';
-        const studentName = r.studentName || '-';
-        const parentMobile = r.phoneNumber || '-';
-        const smsDate = formatSmsDate(r.smsSentAt);
-        const smsTime = formatSmsTime(r.smsSentAt);
-        const smsStatus = r.smsStatus || (r.smsSent ? 'Sent' : 'Pending');
+        const details = getStudentAssessmentDetails(batch, r, i);
 
-        let rawMessage = '';
-        if (isSemester) {
-          let subjectLines = '';
-          if (Array.isArray(r.subjects) && r.subjects.length > 0) {
-            subjectLines = r.subjects
-              .map((s) => {
-                const grade = s.grade !== undefined && s.grade !== null && s.grade !== '' ? s.grade : s.result || '-';
-                return `${s.subjectName || s.subjectCode}: ${grade}`;
-              })
-              .join('\n\n');
-          } else {
-            subjectLines = `Result: ${r.overallStatus}`;
-          }
-
-          let arrearsCount = 0;
-          if (typeof r.failedSubjectsCount === 'number') {
-            arrearsCount = r.failedSubjectsCount;
-          } else if (Array.isArray(r.subjects)) {
-            arrearsCount = r.subjects.filter((s) => evaluateSubjectGrade(s.grade || s.result).isFail).length;
-          }
-
-          rawMessage = `DEAR PARENT,\n\nName: ${r.studentName}\n\nRegister Number: ${r.registerNumber}\n\n${subjectLines}\n\nTotal Number of Arrears: ${arrearsCount}`;
-        } else {
-          let subjectLines = '';
-          if (Array.isArray(r.subjects) && r.subjects.length > 0) {
-            subjectLines = r.subjects
-              .map((s) => `${s.subjectName || s.subjectCode}: ${s.marks !== undefined && s.marks !== null ? s.marks : (s.grade || '-')}`)
-              .join(', ');
-          } else {
-            subjectLines = `Result: ${r.overallStatus}`;
-          }
-          const statusPart = r.overallStatus ? `. Overall Result: ${r.overallStatus}` : '';
-          rawMessage = `Dear Parent, Assessment Result for ${r.studentName} (${r.registerNumber}): ${subjectLines}${statusPart}. - VSB Engineering College`;
-        }
-
-        const msgWidth = contentWidth - 10;
-        const rawLines = rawMessage.split(/\r?\n/);
-        const wrappedLines: string[] = [];
-        rawLines.forEach((line) => {
-          if (line.trim() === '') {
-            wrappedLines.push('');
-          } else {
-            const split = doc.splitTextToSize(line, msgWidth);
-            wrappedLines.push(...split);
-          }
-        });
-
-        const lineHeight = 3.6;
-        const msgBoxHeight = Math.max(12, wrappedLines.length * lineHeight + 5);
-        const metadataHeight = 24;
-        const cardHeaderHeight = 6.5;
-        const cardTotalHeight = cardHeaderHeight + metadataHeight + 6 + msgBoxHeight + 5;
+        // Calculate card height based on subjects
+        const subjectRowsCount = details.subjects.length;
+        const subjectsBlockHeight = Math.max(16, subjectRowsCount * 4.5 + 4);
+        const cardHeaderHeight = 7;
+        const metadataHeight = 18;
+        const summaryBlockHeight = 16;
+        const remarksHeight = 10;
+        const cardTotalHeight = cardHeaderHeight + metadataHeight + 5 + subjectsBlockHeight + summaryBlockHeight + remarksHeight + 5;
 
         if (currentY + cardTotalHeight > bottomLimit) {
           doc.addPage();
@@ -975,123 +1135,169 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
 
         const cardStartY = currentY;
 
+        // Card Border & Background
         doc.setFillColor(248, 250, 252);
         doc.setDrawColor(203, 213, 225);
         doc.setLineWidth(0.3);
         doc.roundedRect(margin, cardStartY, contentWidth, cardTotalHeight, 1.5, 1.5, 'FD');
 
+        // Card Header Bar
         doc.setFillColor(15, 23, 42);
         doc.roundedRect(margin, cardStartY, contentWidth, cardHeaderHeight, 1.5, 1.5, 'F');
         doc.rect(margin, cardStartY + cardHeaderHeight - 1.5, contentWidth, 1.5, 'F');
 
         doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(8);
-        doc.text(`SMS REPORT — SERIAL NO: ${serialNo}`, margin + 4, cardStartY + 4.5);
+        doc.setFontSize(8.5);
+        doc.text(`INTERNAL ASSESSMENT REPORT — SERIAL NO: ${details.serialNo}`, margin + 4, cardStartY + 4.8);
 
-        const isSent = smsStatus === 'Sent' || smsStatus === 'Delivered';
-        const isFailed = smsStatus === 'Failed';
-        doc.setFontSize(7.5);
-        if (isSent) {
-          doc.setTextColor(52, 211, 153);
-        } else if (isFailed) {
-          doc.setTextColor(248, 113, 113);
-        } else {
-          doc.setTextColor(251, 191, 36);
-        }
-        doc.text(`STATUS: ${smsStatus.toUpperCase()}`, pageWidth - margin - 4, cardStartY + 4.5, { align: 'right' });
-
+        // Student Info 2 Columns
         let metaY = cardStartY + cardHeaderHeight + 4.5;
         doc.setFontSize(7.5);
         const col1X = margin + 4;
         const col2X = margin + (contentWidth / 2) + 2;
 
+        // Col 1: Register Number, Student Name, Parent Mobile Number
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(71, 85, 105);
-        doc.text('Serial No:', col1X, metaY);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(15, 23, 42);
-        doc.text(String(serialNo), col1X + 32, metaY);
-
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(71, 85, 105);
-        doc.text('Register Number:', col1X, metaY + 4.5);
+        doc.text('Register Number:', col1X, metaY);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(29, 78, 216);
-        doc.text(regNo, col1X + 32, metaY + 4.5);
+        doc.text(details.registerNumber, col1X + 34, metaY);
 
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(71, 85, 105);
-        doc.text('Student Name:', col1X, metaY + 9);
+        doc.text('Student Name:', col1X, metaY + 4.5);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(15, 23, 42);
-        doc.text(studentName, col1X + 32, metaY + 9);
+        doc.text(details.studentName, col1X + 34, metaY + 4.5);
 
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(71, 85, 105);
-        doc.text('Parent Mobile Number:', col1X, metaY + 13.5);
+        doc.text('Parent Mobile Number:', col1X, metaY + 9);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(15, 23, 42);
-        doc.text(parentMobile, col1X + 32, metaY + 13.5);
+        doc.text(details.parentMobile, col1X + 34, metaY + 9);
+
+        // Col 2: Department, Assessment Date, Semester, Academic Year
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(71, 85, 105);
+        doc.text('Department:', col2X, metaY);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(15, 23, 42);
+        doc.text(details.department, col2X + 28, metaY);
 
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(71, 85, 105);
-        doc.text('SMS Date:', col2X, metaY);
+        doc.text('Assessment Date:', col2X, metaY + 4.5);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(15, 23, 42);
-        doc.text(smsDate, col2X + 24, metaY);
+        doc.text(details.assessmentDate, col2X + 28, metaY + 4.5);
 
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(71, 85, 105);
-        doc.text('SMS Time:', col2X, metaY + 4.5);
+        doc.text('Semester / Year:', col2X, metaY + 9);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(15, 23, 42);
-        doc.text(smsTime, col2X + 24, metaY + 4.5);
+        doc.text(`${details.semester} (${details.academicYear})`, col2X + 28, metaY + 9);
 
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(71, 85, 105);
-        doc.text('SMS Status:', col2X, metaY + 9);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(
-          isSent ? 4 : isFailed ? 185 : 180,
-          isSent ? 120 : isFailed ? 28 : 83,
-          isSent ? 87 : isFailed ? 28 : 9
-        );
-        doc.text(smsStatus, col2X + 24, metaY + 9);
-
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(71, 85, 105);
-        doc.text('Department:', col2X, metaY + 13.5);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(15, 23, 42);
-        doc.text(batch.department || 'General', col2X + 24, metaY + 13.5);
-
-        const dividerY = metaY + 17;
+        // Divider
+        const dividerY = metaY + 13;
         doc.setDrawColor(226, 232, 240);
         doc.line(margin + 4, dividerY, margin + contentWidth - 4, dividerY);
 
-        const msgLabelY = dividerY + 4.5;
+        // Section Title: "INTERNAL ASSESSMENT DETAILS"
+        const sectionTitleY = dividerY + 4.5;
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7.5);
+        doc.setFontSize(8);
         doc.setTextColor(15, 23, 42);
-        doc.text('SMS DATA (COMPLETE ACTUAL MESSAGE SENT):', margin + 4, msgLabelY);
+        doc.text('INTERNAL ASSESSMENT DETAILS', margin + 4, sectionTitleY);
 
-        const msgBoxY = msgLabelY + 2;
+        // Subjects Table / Details Box
+        const subjBoxY = sectionTitleY + 2;
         doc.setFillColor(255, 255, 255);
         doc.setDrawColor(203, 213, 225);
-        doc.roundedRect(margin + 4, msgBoxY, contentWidth - 8, msgBoxHeight, 1, 1, 'FD');
+        doc.roundedRect(margin + 4, subjBoxY, contentWidth - 8, subjectsBlockHeight, 1, 1, 'FD');
 
-        doc.setFont('courier', 'normal');
-        doc.setFontSize(7.5);
-        doc.setTextColor(15, 23, 42);
+        // Subject Table Header (NO GRADE)
+        doc.setFillColor(241, 245, 249);
+        doc.rect(margin + 4.5, subjBoxY + 0.5, contentWidth - 9, 4, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(6.5);
+        doc.setTextColor(71, 85, 105);
+        doc.text('SUBJECT CODE & NAME', margin + 6, subjBoxY + 3.2);
+        doc.text('MARKS SCORED', margin + 115, subjBoxY + 3.2);
+        doc.text('MAX MARKS', margin + 140, subjBoxY + 3.2);
+        doc.text('RESULT', margin + 165, subjBoxY + 3.2);
 
-        let textY = msgBoxY + 3.8;
-        wrappedLines.forEach((l) => {
-          doc.text(l, margin + 7, textY);
-          textY += lineHeight;
+        // Subject Table Rows (NO GRADE)
+        let subRowY = subjBoxY + 7.5;
+        details.subjects.forEach((s) => {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7);
+          doc.setTextColor(15, 23, 42);
+          doc.text(`${s.code} - ${s.name}`, margin + 6, subRowY);
+
+          doc.setFont('helvetica', 'bold');
+          doc.text(String(s.marks), margin + 117, subRowY);
+
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(100, 116, 139);
+          doc.text(String(s.maxMarks), margin + 142, subRowY);
+
+          if (s.isPass) {
+            doc.setTextColor(5, 150, 105);
+          } else {
+            doc.setTextColor(225, 29, 72);
+          }
+          doc.setFont('helvetica', 'bold');
+          doc.text(s.result, margin + 166, subRowY);
+
+          subRowY += 4.5;
         });
 
-        currentY = cardStartY + cardTotalHeight + 4.5;
+        // Summary Bar (Total Marks, Percentage, Overall Status) - NO GRADE, NO ATTENDANCE
+        const summaryY = subjBoxY + subjectsBlockHeight + 2;
+        doc.setFillColor(248, 250, 252);
+        doc.setDrawColor(226, 232, 240);
+        doc.roundedRect(margin + 4, summaryY, contentWidth - 8, 8, 1, 1, 'FD');
+
+        doc.setFontSize(7.5);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(71, 85, 105);
+        doc.text('Total Marks:', margin + 6, summaryY + 5.2);
+        doc.setTextColor(15, 23, 42);
+        doc.text(details.totalMarksDisplay, margin + 24, summaryY + 5.2);
+
+        doc.setTextColor(71, 85, 105);
+        doc.text('Percentage:', margin + 65, summaryY + 5.2);
+        doc.setTextColor(15, 23, 42);
+        doc.text(details.percentageDisplay, margin + 84, summaryY + 5.2);
+
+        doc.setTextColor(71, 85, 105);
+        doc.text('Overall Status:', margin + 125, summaryY + 5.2);
+        if (details.overallStatus === 'PASS') {
+          doc.setTextColor(5, 150, 105);
+        } else {
+          doc.setTextColor(225, 29, 72);
+        }
+        doc.text(details.overallStatus, margin + 148, summaryY + 5.2);
+
+        // Remarks Box
+        const remarksBoxY = summaryY + 10;
+        doc.setFillColor(255, 255, 255);
+        doc.setDrawColor(226, 232, 240);
+        doc.roundedRect(margin + 4, remarksBoxY, contentWidth - 8, 6, 1, 1, 'FD');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7);
+        doc.setTextColor(71, 85, 105);
+        doc.text('Remarks:', margin + 6, remarksBoxY + 4);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(15, 23, 42);
+        doc.text(details.remarks, margin + 20, remarksBoxY + 4);
+
+        currentY = cardStartY + cardTotalHeight + 4;
       });
 
       const totalPages = doc.getNumberOfPages();
@@ -1103,12 +1309,12 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(7.5);
         doc.setTextColor(148, 163, 184);
-        doc.text('VSB ENGINEERING COLLEGE • OFFICIAL SMS AUDIT REPORT', margin, 292);
+        doc.text(`VSB ENGINEERING COLLEGE • INTERNAL ASSESSMENT REPORT • ${batch.department || 'CSE(AIML)'}`, margin, 292);
         doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, 292, { align: 'right' });
       }
 
       const dateStamp = new Date().toISOString().split('T')[0];
-      doc.save(`${batch.title.replace(/\s+/g, '_')}_SMS_Report_${dateStamp}.pdf`);
+      doc.save(`${batch.title.replace(/\s+/g, '_')}_Internal_Assessment_Report_${dateStamp}.pdf`);
     } catch (err: any) {
       console.error('PDF Generation Error:', err);
       alert(`Failed to generate PDF: ${err.message || 'Unknown error'}`);
@@ -1118,46 +1324,50 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
   // --- Download CSV Report ---
   const downloadCsvReport = (batch: ExamBatch) => {
     const headers = [
-      'S.NO',
+      'SERIAL NO',
       'REGISTER NUMBER',
       'STUDENT NAME',
-      'PARENT MOBILE',
+      'PARENT MOBILE NUMBER',
       'DEPARTMENT',
+      'ASSESSMENT DATE',
+      'SEMESTER',
+      'ACADEMIC YEAR',
+      'SUBJECT-WISE MARKS',
       'TOTAL MARKS',
-      'RESULT STATUS',
-      'SMS SENT STATUS',
-      'DELIVERY STATUS',
-      'ERROR DETAILS',
+      'PERCENTAGE',
+      'OVERALL RESULT',
+      'REMARKS',
     ];
 
     const rows = batch.results.map((r, i) => {
-      const totalDisplay =
-        r.totalMarks !== undefined && r.totalMarks !== null && r.totalMarks !== ''
-          ? r.totalMarks
-          : r.subjects
-          ? r.subjects.reduce((sum, s) => sum + s.marks, 0)
-          : 'N/A';
+      const details = getStudentAssessmentDetails(batch, r, i);
+      const subjectMarksStr = details.subjects
+        .map((s) => `${s.name}: ${s.marks}/${s.maxMarks} (${s.result})`)
+        .join('; ');
 
       return [
-        r.sNo || i + 1,
-        `"${r.registerNumber}"`,
-        `"${r.studentName}"`,
-        `"${r.phoneNumber || 'MISSING'}"`,
-        `"${r.department || batch.department}"`,
-        totalDisplay,
-        r.overallStatus,
-        r.smsSent ? 'YES' : 'NO',
-        r.smsStatus || 'Pending',
-        `"${r.smsErrorMessage || ''}"`,
-      ];
+        details.serialNo,
+        `"${details.registerNumber}"`,
+        `"${details.studentName}"`,
+        `"${details.parentMobile}"`,
+        `"${details.department}"`,
+        `"${details.assessmentDate}"`,
+        `"${details.semester}"`,
+        `"${details.academicYear}"`,
+        `"${subjectMarksStr}"`,
+        `"${details.totalMarksDisplay}"`,
+        `"${details.percentageDisplay}"`,
+        `"${details.overallStatus}"`,
+        `"${details.remarks}"`,
+      ].join(',');
     });
 
     const csvContent =
-      'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+      'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `${batch.title.replace(/\s+/g, '_')}_SMS_Report.csv`);
+    link.setAttribute('download', `${batch.title.replace(/\s+/g, '_')}_Internal_Assessment_Report.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -1178,6 +1388,8 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
 
     const subjectMap: Record<string, { totalMarks: number; count: number; passCount: number }> = {};
 
+    const isInternalBatch = (selectedBatch.resultType || 'Semester Result') === 'Internal Test / Assessment';
+
     selectedBatch.results.forEach((r) => {
       const totNum = typeof r.totalMarks === 'number' ? r.totalMarks : parseFloat(String(r.totalMarks)) || 0;
       sumTotals += totNum;
@@ -1194,7 +1406,10 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
           }
           subjectMap[key].totalMarks += s.marks;
           subjectMap[key].count += 1;
-          if (s.result === 'PASS' || s.marks >= 50) {
+          const isPass = isInternalBatch
+            ? s.marks >= 60
+            : (s.result === 'PASS' || evaluateSubjectGrade(s.grade).isPass);
+          if (isPass) {
             subjectMap[key].passCount += 1;
           }
         });
@@ -1370,7 +1585,14 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleSendResultSms(batch.id);
+                            setSelectedBatch(batch);
+                            if (selectedRegNos.length > 0 && selectedBatch?.id === batch.id) {
+                              setShowSmsConfirmModal(true);
+                            } else {
+                              const allRegs = batch.results.map((r) => r.registerNumber);
+                              setSelectedRegNos(allRegs);
+                              setShowSmsConfirmModal(true);
+                            }
                           }}
                           disabled={isSending}
                           className={`px-2.5 py-1.5 font-black text-[10px] uppercase tracking-wider rounded-sm transition-all flex items-center gap-1 shadow disabled:opacity-50 ${
@@ -1442,27 +1664,27 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
                     id="export-excel-report-btn"
                     onClick={() => downloadExcelReport(selectedBatch)}
                     className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs uppercase tracking-wider rounded-sm shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
-                    title="Download SMS delivery report in Excel (.xlsx) format with 8 standardized columns"
+                    title="Download Internal Assessment Report in Excel (.xlsx) format"
                   >
                     <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-200" />
-                    <span>Download SMS Report (Excel)</span>
+                    <span>Download Report (Excel)</span>
                   </button>
 
                   <button
                     id="export-pdf-report-btn"
                     onClick={() => downloadPdfReport(selectedBatch)}
                     className="px-3.5 py-2 bg-[#0f172a] hover:bg-slate-800 text-white font-black text-xs uppercase tracking-wider rounded-sm shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
-                    title="Download SMS delivery report in PDF format with exact multi-line message preservation"
+                    title="Download Internal Assessment Report in PDF format"
                   >
                     <Download className="w-3.5 h-3.5 text-blue-400" />
-                    <span>Download SMS Report (PDF)</span>
+                    <span>Download Report (PDF)</span>
                   </button>
 
                   <button
                     id="print-report-btn"
                     onClick={handlePrintReport}
                     className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs uppercase tracking-wider rounded-sm border border-slate-300 flex items-center gap-1.5 transition-all cursor-pointer"
-                    title="Print generated report"
+                    title="Print generated Internal Assessment Report"
                   >
                     <Printer className="w-3.5 h-3.5 text-slate-700" />
                     <span>Print Report</span>
@@ -1472,37 +1694,31 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
                     id="export-csv-report-btn"
                     onClick={() => downloadCsvReport(selectedBatch)}
                     className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs uppercase tracking-wider rounded-sm border border-slate-300 flex items-center gap-1.5 transition-all cursor-pointer"
-                    title="Download complete SMS delivery report in CSV format"
+                    title="Download complete Internal Assessment Report in CSV format"
                   >
                     <Download className="w-3.5 h-3.5 text-slate-700" />
                     <span>Report (CSV)</span>
                   </button>
 
-                  {selectedRegNos.length > 0 ? (
-                    <button
-                      id="dispatch-selected-sms-btn"
-                      onClick={() => handleSendResultSms(selectedBatch.id, selectedRegNos)}
-                      disabled={sendingSmsBatchId === selectedBatch.id}
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-sm text-xs uppercase tracking-widest flex items-center gap-2 shadow-md transition-all disabled:opacity-50"
-                    >
-                      <Send className="w-4 h-4" />
-                      <span>
-                        {sendingSmsBatchId === selectedBatch.id ? 'Sending...' : `Send Result SMS to Selected (${selectedRegNos.length})`}
-                      </span>
-                    </button>
-                  ) : (
-                    <button
-                      id="dispatch-result-sms-btn"
-                      onClick={() => handleSendResultSms(selectedBatch.id)}
-                      disabled={sendingSmsBatchId === selectedBatch.id}
-                      className="px-4 py-2 bg-[#0f172a] hover:bg-amber-500 hover:text-slate-950 text-amber-400 font-black rounded-sm text-xs uppercase tracking-widest flex items-center gap-2 shadow-md transition-all disabled:opacity-50 border border-amber-500/30"
-                    >
-                      <Send className="w-4 h-4" />
-                      <span>
-                        {sendingSmsBatchId === selectedBatch.id ? 'Dispatching Fast2SMS...' : 'Send SMS to All Matched Parents'}
-                      </span>
-                    </button>
-                  )}
+                  <button
+                    id="dispatch-selected-sms-btn"
+                    onClick={() => {
+                      if (selectedRegNos.length === 0) {
+                        setError('Please select at least one student.');
+                        return;
+                      }
+                      setShowSmsConfirmModal(true);
+                    }}
+                    disabled={sendingSmsBatchId === selectedBatch.id}
+                    className="px-4 py-2 font-black rounded-sm text-xs uppercase tracking-widest flex items-center gap-2 shadow-md transition-all cursor-pointer bg-emerald-600 hover:bg-emerald-500 text-white disabled:opacity-50"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>
+                      {sendingSmsBatchId === selectedBatch.id
+                        ? 'Sending SMS...'
+                        : `SEND SMS TO SELECTED STUDENTS (${selectedRegNos.length})`}
+                    </span>
+                  </button>
 
                   {canDeleteBatch(selectedBatch) && (
                     <button
@@ -1551,30 +1767,218 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
               <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-sm border border-slate-200 text-xs">
                 <button
                   type="button"
+                  id="tab-student-list-overview"
                   onClick={() => setReportViewTab('overview')}
-                  className={`flex-1 py-1.5 font-black uppercase tracking-wider text-[11px] rounded-sm transition-all flex items-center justify-center gap-1.5 ${
+                  className={`flex-1 py-2 font-black uppercase tracking-wider text-xs rounded-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                     reportViewTab === 'overview'
-                      ? 'bg-[#0f172a] text-amber-400 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-[#0f172a] text-amber-400 shadow-xs ring-1 ring-amber-400/40'
+                      : 'text-slate-600 hover:text-slate-950 hover:bg-slate-200'
                   }`}
                 >
-                  <BarChart3 className="w-3.5 h-3.5" />
-                  <span>Student Marksheets & Delivery</span>
+                  <Users className="w-4 h-4 text-amber-400" />
+                  <span>Student List & SMS Selection</span>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setReportViewTab('subjects')}
-                  className={`flex-1 py-1.5 font-black uppercase tracking-wider text-[11px] rounded-sm transition-all flex items-center justify-center gap-1.5 ${
-                    reportViewTab === 'subjects'
-                      ? 'bg-[#0f172a] text-amber-400 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                  id="tab-assessment-cards"
+                  onClick={() => setReportViewTab('assessment_cards')}
+                  className={`flex-1 py-2 font-black uppercase tracking-wider text-xs rounded-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    reportViewTab === 'assessment_cards'
+                      ? 'bg-[#0f172a] text-amber-400 shadow-xs ring-1 ring-amber-400/40'
+                      : 'text-slate-600 hover:text-slate-950 hover:bg-slate-200'
                   }`}
                 >
-                  <TrendingUp className="w-3.5 h-3.5" />
+                  <FileText className="w-4 h-4" />
+                  <span>Internal Assessment Report Cards</span>
+                </button>
+
+                <button
+                  type="button"
+                  id="tab-subject-analysis"
+                  onClick={() => setReportViewTab('subjects')}
+                  className={`flex-1 py-2 font-black uppercase tracking-wider text-xs rounded-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    reportViewTab === 'subjects'
+                      ? 'bg-[#0f172a] text-amber-400 shadow-xs ring-1 ring-amber-400/40'
+                      : 'text-slate-600 hover:text-slate-950 hover:bg-slate-200'
+                  }`}
+                >
+                  <TrendingUp className="w-4 h-4" />
                   <span>Subject-Wise Pass Analysis</span>
                 </button>
               </div>
+
+              {/* Internal Assessment Cards Tab Content */}
+              {reportViewTab === 'assessment_cards' && (
+                <div className="space-y-6 animate-in fade-in duration-150">
+                  {/* Search & Filter Bar */}
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 p-3 border border-slate-200 rounded-sm">
+                    <div className="relative w-full sm:w-72">
+                      <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search Name or Reg Number..."
+                        className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-300 rounded-sm text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500"
+                      />
+                    </div>
+
+                    <div className="flex items-center space-x-1 overflow-x-auto w-full sm:w-auto">
+                      {(['ALL', 'PASS', 'FAIL'] as const).map((st) => (
+                        <button
+                          key={st}
+                          onClick={() => setFilterStatus(st)}
+                          className={`px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-sm transition-all whitespace-nowrap ${
+                            filterStatus === st
+                              ? 'bg-[#0f172a] text-amber-400 shadow-xs'
+                              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          {st}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Assessment Cards Grid / List */}
+                  <div className="space-y-5">
+                    {filteredStudents.length > 0 ? (
+                      filteredStudents.map((r, i) => {
+                        const details = getStudentAssessmentDetails(selectedBatch, r, i);
+                        return (
+                          <div
+                            key={r.registerNumber || i}
+                            className="bg-white border border-slate-300 rounded-sm shadow-xs overflow-hidden"
+                          >
+                            {/* Card Header Bar (No SMS, No Pending status) */}
+                            <div className="bg-[#0f172a] text-white px-4 py-2.5 flex items-center justify-between border-b border-slate-800">
+                              <h4 className="font-black text-xs uppercase tracking-widest text-amber-400">
+                                INTERNAL ASSESSMENT REPORT — SERIAL NO: {details.serialNo}
+                              </h4>
+                              <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-sm ${
+                                details.overallStatus === 'PASS' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                              }`}>
+                                {details.overallStatus}
+                              </span>
+                            </div>
+
+                            <div className="p-4 space-y-4">
+                              {/* Student Information (Two Columns) */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2.5 gap-x-6 text-xs border-b border-slate-200 pb-4">
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-bold text-slate-500 uppercase text-[11px]">Register Number:</span>
+                                    <span className="font-black text-blue-700 font-mono text-sm">{details.registerNumber}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-bold text-slate-500 uppercase text-[11px]">Student Name:</span>
+                                    <span className="font-black text-slate-900">{details.studentName}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-bold text-slate-500 uppercase text-[11px]">Parent Mobile Number:</span>
+                                    <span className="font-mono font-bold text-slate-800">{details.parentMobile}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-bold text-slate-500 uppercase text-[11px]">Department:</span>
+                                    <span className="font-black text-slate-900 uppercase">CSE(AIML)</span>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-bold text-slate-500 uppercase text-[11px]">Assessment Date:</span>
+                                    <span className="font-bold text-slate-800">{details.assessmentDate}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-bold text-slate-500 uppercase text-[11px]">Semester:</span>
+                                    <span className="font-bold text-slate-800">{details.semester}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-bold text-slate-500 uppercase text-[11px]">Academic Year:</span>
+                                    <span className="font-bold text-slate-800">{details.academicYear}</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Internal Assessment Details Section */}
+                              <div className="space-y-2">
+                                <h5 className="font-black text-xs uppercase tracking-wider text-slate-900">
+                                  INTERNAL ASSESSMENT DETAILS
+                                </h5>
+
+                                <div className="overflow-x-auto border border-slate-200 rounded-sm">
+                                  <table className="w-full text-left text-xs">
+                                    <thead className="bg-slate-100 text-slate-700 uppercase text-[10px] font-black tracking-wider border-b border-slate-200">
+                                      <tr>
+                                        <th className="p-2">Subject Code & Name</th>
+                                        <th className="p-2 text-center">Marks Scored</th>
+                                        <th className="p-2 text-center">Max Marks</th>
+                                        <th className="p-2 text-center">Result</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                      {details.subjects.map((sub, sIdx) => (
+                                        <tr key={sIdx} className="hover:bg-slate-50">
+                                          <td className="p-2 font-bold text-slate-900">
+                                            <span className="font-mono text-slate-500 mr-1.5">{sub.code}</span>
+                                            <span>{sub.name}</span>
+                                          </td>
+                                          <td className="p-2 text-center font-black text-slate-900">{sub.marks}</td>
+                                          <td className="p-2 text-center font-mono text-slate-500">{sub.maxMarks}</td>
+                                          <td className="p-2 text-center">
+                                            <span className={`px-2 py-0.5 rounded-sm text-[10px] font-black uppercase ${
+                                              sub.isPass ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
+                                            }`}>
+                                              {sub.result}
+                                            </span>
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+
+                              {/* Summary Box (Total Marks, Percentage, Overall Status) */}
+                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-sm text-xs">
+                                <div>
+                                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Total Marks</span>
+                                  <strong className="text-slate-900 font-black text-sm">{details.totalMarksDisplay}</strong>
+                                </div>
+                                <div>
+                                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Percentage</span>
+                                  <strong className="text-slate-900 font-black text-sm">{details.percentageDisplay}</strong>
+                                </div>
+                                <div>
+                                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Overall Status</span>
+                                  <span className={`px-2 py-0.5 rounded-sm text-[11px] font-black uppercase inline-block ${
+                                    details.overallStatus === 'PASS'
+                                      ? 'bg-emerald-100 text-emerald-800'
+                                      : 'bg-rose-100 text-rose-800'
+                                  }`}>
+                                    {details.overallStatus}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Remarks Box */}
+                              <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-sm text-xs flex items-center justify-between">
+                                <span className="font-black text-slate-700 uppercase text-[11px]">Remarks:</span>
+                                <span className="font-bold text-slate-900">{details.remarks}</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="p-8 text-center text-slate-500 text-xs font-bold bg-slate-50 border border-slate-200 rounded-sm">
+                        No student assessment records match the filter.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Subject Analytics Tab Content */}
               {reportViewTab === 'subjects' && batchStats && (
@@ -1583,7 +1987,9 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
                     <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
                       Subject Performance Breakdown ({batchStats.subjectStats.length} Subjects)
                     </h4>
-                    <span className="text-[11px] font-bold text-slate-500">Passing criteria: ≥ 50 marks</span>
+                    <span className="text-[11px] font-bold text-slate-500">
+                      Passing criteria: {(selectedBatch.resultType || 'Semester Result') === 'Semester Result' ? 'Grade ≥ PASS (No Arrears)' : 'Internal Mark ≥ 60 = PASS (< 60 = FAIL)'}
+                    </span>
                   </div>
 
                   {batchStats.subjectStats.length > 0 ? (
@@ -1670,13 +2076,14 @@ Overall Result: [PASS/FAIL]
                 <div className="space-y-4">
                   {/* Filters & Search Bar */}
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 p-3 border border-slate-200 rounded-sm">
-                    <div className="relative w-full sm:w-64">
+                    <div className="relative w-full sm:w-80">
                       <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
                       <input
                         type="text"
+                        id="student-search-input"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search Name or Reg No..."
+                        placeholder="Search by Register Number / Student Name..."
                         className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-300 rounded-sm text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500"
                       />
                     </div>
@@ -1686,7 +2093,7 @@ Overall Result: [PASS/FAIL]
                         <button
                           key={st}
                           onClick={() => setFilterStatus(st)}
-                          className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-sm transition-all whitespace-nowrap ${
+                          className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-sm transition-all whitespace-nowrap cursor-pointer ${
                             filterStatus === st
                               ? 'bg-[#0f172a] text-amber-400'
                               : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
@@ -1698,76 +2105,114 @@ Overall Result: [PASS/FAIL]
                     </div>
                   </div>
 
-                  {/* Selection & Matching Status Summary Bar */}
-                  <div className="flex items-center justify-between text-xs font-bold text-slate-600 px-1 pt-1">
-                    <div className="flex items-center gap-2">
+                  {/* Student Selection & SMS Action Toolbar */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 border border-slate-200 rounded-sm p-3 text-xs font-bold text-slate-700 shadow-2xs">
+                    <div className="flex flex-wrap items-center gap-2.5">
                       <button
                         type="button"
+                        id="select-all-students-btn"
                         onClick={() => {
-                          const matchedRegs = filteredStudents
-                            .filter((s) => s.phoneNumber && s.matchedParent !== false)
-                            .map((s) => s.registerNumber);
-                          if (selectedRegNos.length === matchedRegs.length && matchedRegs.length > 0) {
-                            setSelectedRegNos([]);
-                          } else {
-                            setSelectedRegNos(matchedRegs);
-                          }
+                          const allVisibleRegs = filteredStudents.map((s) => s.registerNumber);
+                          setSelectedRegNos(allVisibleRegs);
                         }}
-                        className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-sm text-[11px] font-black border border-slate-300 transition-all"
+                        className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-sm text-xs font-black flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
                       >
-                        {selectedRegNos.length > 0 && selectedRegNos.length === filteredStudents.filter(s => s.phoneNumber && s.matchedParent !== false).length
-                          ? 'Deselect All'
-                          : 'Select All Matched'}
+                        <CheckSquare className="w-4 h-4" />
+                        <span>Select All ({filteredStudents.length})</span>
                       </button>
-                      {selectedRegNos.length > 0 && (
-                        <span className="text-emerald-700 text-[11px] font-black">
-                          ✓ {selectedRegNos.length} student(s) selected
-                        </span>
-                      )}
+
+                      <button
+                        type="button"
+                        id="deselect-all-students-btn"
+                        onClick={() => setSelectedRegNos([])}
+                        disabled={selectedRegNos.length === 0}
+                        className="px-3.5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-sm text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        <Square className="w-4 h-4" />
+                        <span>Deselect All</span>
+                      </button>
+
+                      <div className="h-5 w-px bg-slate-300 mx-1 hidden sm:block"></div>
+
+                      <span
+                        id="selected-students-count-badge"
+                        className={`px-3 py-1.5 rounded-sm text-xs font-black tracking-wide flex items-center gap-1.5 transition-all ${
+                          selectedRegNos.length > 0
+                            ? 'bg-amber-400 text-slate-950 ring-1 ring-amber-500 shadow-xs'
+                            : 'bg-slate-200 text-slate-600'
+                        }`}
+                      >
+                        <Users className="w-4 h-4" />
+                        <span>Selected Students: <strong>{selectedRegNos.length}</strong></span>
+                      </span>
                     </div>
-                    <div className="flex items-center gap-3 text-[11px]">
-                      <span className="text-emerald-700 font-black">
-                        ✓ Matched Parents: {selectedBatch.results.filter((r) => r.phoneNumber && r.matchedParent !== false).length}
-                      </span>
-                      <span className="text-amber-700 font-black">
-                        ⚠ Not Found: {selectedBatch.results.filter((r) => !r.phoneNumber || r.matchedParent === false).length}
-                      </span>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        id="send-sms-toolbar-btn"
+                        onClick={() => {
+                          if (selectedRegNos.length === 0) {
+                            setError('Please select at least one student.');
+                            return;
+                          }
+                          setShowSmsConfirmModal(true);
+                        }}
+                        className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-sm text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-md transition-all cursor-pointer"
+                      >
+                        <Send className="w-4 h-4" />
+                        <span>
+                          {sendingSmsBatchId === selectedBatch.id
+                            ? 'SENDING SMS...'
+                            : `SEND SMS TO SELECTED STUDENTS (${selectedRegNos.length})`}
+                        </span>
+                      </button>
                     </div>
                   </div>
 
                   {/* Student Results Table with Expandable Details */}
                   <div className="overflow-x-auto border border-slate-200 rounded-sm">
                     <table className="w-full text-left text-xs text-slate-700">
-                      <thead className="bg-[#0f172a] text-amber-400 uppercase text-[10px] font-black tracking-wider border-b border-slate-800">
+                      <thead className="bg-[#0f172a] text-amber-400 uppercase text-[11px] font-black tracking-wider border-b border-slate-800">
                         <tr>
-                          <th className="px-2 py-3 text-center w-8">
-                            <input
-                              type="checkbox"
-                              checked={
-                                selectedRegNos.length > 0 &&
-                                selectedRegNos.length === filteredStudents.filter((s) => s.phoneNumber && s.matchedParent !== false).length
-                              }
-                              onChange={() => {
-                                const matchedRegs = filteredStudents
-                                  .filter((s) => s.phoneNumber && s.matchedParent !== false)
-                                  .map((s) => s.registerNumber);
-                                if (selectedRegNos.length === matchedRegs.length && matchedRegs.length > 0) {
-                                  setSelectedRegNos([]);
-                                } else {
-                                  setSelectedRegNos(matchedRegs);
+                          <th className="px-3 py-3.5 text-center w-12">
+                            <div className="flex items-center justify-center">
+                              <input
+                                type="checkbox"
+                                id="header-select-all-checkbox"
+                                title={
+                                  filteredStudents.length > 0 &&
+                                  filteredStudents.every((s) => selectedRegNos.includes(s.registerNumber))
+                                    ? 'Deselect All'
+                                    : 'Select All'
                                 }
-                              }}
-                              className="rounded border-slate-400 text-amber-500 focus:ring-amber-500 cursor-pointer"
-                            />
+                                checked={
+                                  filteredStudents.length > 0 &&
+                                  filteredStudents.every((s) => selectedRegNos.includes(s.registerNumber))
+                                }
+                                onChange={() => {
+                                  const allVisibleRegs = filteredStudents.map((s) => s.registerNumber);
+                                  const isAllSelected =
+                                    allVisibleRegs.length > 0 &&
+                                    allVisibleRegs.every((r) => selectedRegNos.includes(r));
+                                  if (isAllSelected) {
+                                    setSelectedRegNos((prev) => prev.filter((r) => !allVisibleRegs.includes(r)));
+                                  } else {
+                                    setSelectedRegNos((prev) => Array.from(new Set([...prev, ...allVisibleRegs])));
+                                  }
+                                }}
+                                className="w-5 h-5 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer accent-amber-500"
+                              />
+                            </div>
                           </th>
-                          <th className="px-2 py-3 font-black w-8 text-center">#</th>
-                          <th className="px-3 py-3 font-black">Register No</th>
-                          <th className="px-3 py-3 font-black">Student Name</th>
-                          <th className="px-3 py-3 font-black">Parent Mobile</th>
-                          <th className="px-3 py-3 font-black text-center">Matching Status</th>
-                          <th className="px-3 py-3 font-black text-center">Total Marks</th>
-                          <th className="px-3 py-3 font-black text-center">Result</th>
-                          <th className="px-3 py-3 font-black text-right">Fast2SMS Delivery</th>
+                          <th className="px-2 py-3.5 font-black w-10 text-center">#</th>
+                          <th className="px-3 py-3.5 font-black">Register Number</th>
+                          <th className="px-3 py-3.5 font-black">Student Name</th>
+                          <th className="px-3 py-3.5 font-black">Parent Mobile</th>
+                          <th className="px-3 py-3.5 font-black text-center">Total Marks</th>
+                          <th className="px-3 py-3.5 font-black text-center">Percentage</th>
+                          <th className="px-3 py-3.5 font-black text-center">Result</th>
+                          <th className="px-3 py-3.5 font-black text-right">SMS Delivery</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
@@ -1775,24 +2220,20 @@ Overall Result: [PASS/FAIL]
                           filteredStudents.map((res, idx) => {
                             const isExpanded = expandedRegNo === res.registerNumber;
                             const isSelected = selectedRegNos.includes(res.registerNumber);
-                            const totalDisplay =
-                              res.totalMarks !== undefined && res.totalMarks !== null && res.totalMarks !== ''
-                                ? res.totalMarks
-                                : res.subjects
-                                ? res.subjects.reduce((sum, s) => sum + s.marks, 0)
-                                : 'N/A';
+                            const marks = getStudentMarksAndPercentage(res, selectedBatch);
+                            const resolvedPhone = getResolvedParentPhone(res.registerNumber, res.phoneNumber);
 
                             return (
-                              <React.Fragment key={idx}>
+                              <React.Fragment key={res.registerNumber || idx}>
                                 <tr
-                                  className={`hover:bg-slate-50 transition-colors cursor-pointer ${
-                                    isSelected ? 'bg-amber-50/50' : ''
+                                  className={`hover:bg-amber-50/40 transition-colors border-b border-slate-100 ${
+                                    isSelected ? 'bg-amber-50/70 font-medium' : ''
                                   }`}
                                 >
-                                  <td className="px-2 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                                  <td className="px-3 py-3.5 text-center w-12" onClick={(e) => e.stopPropagation()}>
                                     <input
                                       type="checkbox"
-                                      disabled={!res.phoneNumber || res.matchedParent === false}
+                                      id={`checkbox-student-${res.registerNumber}`}
                                       checked={isSelected}
                                       onChange={() => {
                                         setSelectedRegNos((prev) =>
@@ -1801,74 +2242,72 @@ Overall Result: [PASS/FAIL]
                                             : [...prev, res.registerNumber]
                                         );
                                       }}
-                                      className="rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer disabled:opacity-30"
+                                      className="w-5 h-5 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer accent-amber-600"
                                     />
                                   </td>
                                   <td
                                     onClick={() => setExpandedRegNo(isExpanded ? null : res.registerNumber)}
-                                    className="px-2 py-3 text-center font-mono text-slate-400 text-[11px]"
+                                    className="px-2 py-3.5 text-center font-mono text-slate-400 text-xs cursor-pointer"
                                   >
                                     {res.sNo || idx + 1}
                                   </td>
                                   <td
                                     onClick={() => setExpandedRegNo(isExpanded ? null : res.registerNumber)}
-                                    className="px-3 py-3 font-mono font-black text-slate-900"
+                                    className="px-3 py-3.5 font-mono font-black text-slate-900 text-sm cursor-pointer"
                                   >
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-1.5">
                                       {res.subjects && res.subjects.length > 0 ? (
-                                        isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-amber-600" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                                        isExpanded ? (
+                                          <ChevronUp className="w-4 h-4 text-amber-600" />
+                                        ) : (
+                                          <ChevronDown className="w-4 h-4 text-slate-400" />
+                                        )
                                       ) : null}
                                       <span>{res.registerNumber}</span>
                                     </div>
                                   </td>
                                   <td
                                     onClick={() => setExpandedRegNo(isExpanded ? null : res.registerNumber)}
-                                    className="px-3 py-3 font-black text-slate-900"
+                                    className="px-3 py-3.5 font-black text-slate-900 text-sm cursor-pointer"
                                   >
                                     {res.studentName}
                                   </td>
                                   <td
                                     onClick={() => setExpandedRegNo(isExpanded ? null : res.registerNumber)}
-                                    className="px-3 py-3 font-mono font-bold text-slate-700"
+                                    className="px-3 py-3.5 font-mono font-bold text-slate-800 text-xs cursor-pointer"
                                   >
-                                    {res.phoneNumber ? (
-                                      <span className="inline-flex items-center gap-1">
-                                        <Phone className="w-3 h-3 text-slate-400" />
-                                        <span>{res.phoneNumber}</span>
+                                    {resolvedPhone ? (
+                                      <span className="inline-flex items-center gap-1 text-slate-800">
+                                        <Phone className="w-3.5 h-3.5 text-slate-400" />
+                                        <span>{resolvedPhone}</span>
                                       </span>
                                     ) : (
-                                      <span className="text-amber-700 font-bold italic text-[11px]">Not Enrolled</span>
-                                    )}
-                                  </td>
-                                  <td
-                                    onClick={() => setExpandedRegNo(isExpanded ? null : res.registerNumber)}
-                                    className="px-3 py-3 text-center"
-                                  >
-                                    {res.phoneNumber && res.matchedParent !== false ? (
-                                      <span className="px-2 py-0.5 rounded-sm text-[10px] font-bold bg-emerald-100 text-emerald-800 inline-flex items-center gap-1">
-                                        ✓ Matched
-                                      </span>
-                                    ) : (
-                                      <span className="px-2 py-0.5 rounded-sm text-[10px] font-bold bg-amber-100 text-amber-900 inline-flex items-center gap-1">
-                                        ⚠ Not Found
+                                      <span className="text-amber-700 font-bold italic text-[11px] bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                                        Not Enrolled
                                       </span>
                                     )}
                                   </td>
                                   <td
                                     onClick={() => setExpandedRegNo(isExpanded ? null : res.registerNumber)}
-                                    className="px-3 py-3 text-center font-black text-slate-900 text-sm"
+                                    className="px-3 py-3.5 text-center font-mono font-black text-slate-900 text-sm cursor-pointer"
                                   >
-                                    {totalDisplay}
+                                    {marks.totalCompact}
                                   </td>
                                   <td
                                     onClick={() => setExpandedRegNo(isExpanded ? null : res.registerNumber)}
-                                    className="px-3 py-3 text-center"
+                                    className="px-3 py-3.5 text-center font-mono font-black text-emerald-700 text-sm cursor-pointer"
+                                  >
+                                    {marks.percentageDisplay}
+                                  </td>
+                                  <td
+                                    onClick={() => setExpandedRegNo(isExpanded ? null : res.registerNumber)}
+                                    className="px-3 py-3.5 text-center cursor-pointer"
                                   >
                                     <span
-                                      className={`px-2 py-0.5 rounded-sm text-[10px] font-black uppercase tracking-wider ${
+                                      className={`px-2.5 py-0.5 rounded-sm text-[10px] font-black uppercase tracking-wider ${
                                         res.overallStatus === 'PASS'
-                                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                                          : 'bg-rose-50 text-rose-800 border border-rose-200'
+                                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                          : 'bg-rose-100 text-rose-800 border border-rose-300'
                                       }`}
                                     >
                                       {res.overallStatus}
@@ -1876,50 +2315,63 @@ Overall Result: [PASS/FAIL]
                                   </td>
                                   <td
                                     onClick={() => setExpandedRegNo(isExpanded ? null : res.registerNumber)}
-                                    className="px-3 py-3 text-right"
+                                    className="px-3 py-3.5 text-right cursor-pointer"
                                   >
                                     {res.smsSent ? (
                                       <span
-                                        className={`inline-flex items-center gap-1 font-black text-[11px] uppercase tracking-wider ${
+                                        className={`inline-flex items-center gap-1 font-black text-xs uppercase tracking-wider ${
                                           res.smsStatus === 'Failed' ? 'text-rose-600' : 'text-emerald-700'
                                         }`}
                                       >
                                         {res.smsStatus === 'Failed' ? (
-                                          <XCircle className="w-3.5 h-3.5 text-rose-600" />
+                                          <XCircle className="w-4 h-4 text-rose-600" />
                                         ) : (
-                                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                                         )}
                                         <span>{res.smsStatus || 'Sent'}</span>
                                       </span>
                                     ) : (
-                                      <span className="text-slate-400 text-[11px] font-bold uppercase tracking-wider italic">
-                                        Ready to Send
+                                      <span className="text-slate-400 text-xs font-semibold">
+                                        Ready
                                       </span>
                                     )}
                                   </td>
                                 </tr>
 
-                                 {/* Expanded Subject Breakdown Row */}
+                                  {/* Expanded Subject Breakdown Row */}
                                 {isExpanded && res.subjects && res.subjects.length > 0 && (
                                   <tr className="bg-slate-50/80 border-b border-slate-200">
                                     <td colSpan={9} className="p-4">
                                       <div className="bg-white border border-slate-200 p-3 rounded-sm space-y-2">
                                         <div className="text-[11px] font-black uppercase text-slate-800 tracking-wider flex items-center justify-between border-b pb-1">
-                                          <span>Subject Grade Breakdown for {res.studentName} ({res.registerNumber})</span>
-                                          <span className="text-slate-500 font-bold">{res.subjects.length} Subjects Evaluated</span>
+                                          <span>
+                                            {(selectedBatch.resultType || 'Semester Result') === 'Semester Result'
+                                              ? 'Subject Grade Breakdown'
+                                              : 'Internal Marks Breakdown (Pass: ≥ 60)'}{' '}
+                                            for {res.studentName} ({res.registerNumber})
+                                          </span>
+                                          <span className="text-slate-500 font-bold">
+                                            {res.subjects.length} Subjects Evaluated • Overall: {res.overallStatus}
+                                          </span>
                                         </div>
                                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs">
-                                          {res.subjects.map((sb, sidx) => (
-                                            <div key={sidx} className="p-2 bg-slate-50 border border-slate-200 rounded flex items-center justify-between">
-                                              <div>
-                                                <div className="font-bold text-slate-800 truncate max-w-[120px]">{sb.subjectName || sb.subjectCode}</div>
-                                                <div className="text-[10px] text-slate-500 font-semibold">{sb.result}</div>
+                                          {res.subjects.map((sb, sidx) => {
+                                            const isInternal = (selectedBatch.resultType || 'Semester Result') === 'Internal Test / Assessment';
+                                            const isPass = isInternal ? sb.marks >= 60 : sb.result === 'PASS';
+                                            return (
+                                              <div key={sidx} className="p-2 bg-slate-50 border border-slate-200 rounded flex items-center justify-between">
+                                                <div>
+                                                  <div className="font-bold text-slate-800 truncate max-w-[120px]">{sb.subjectName || sb.subjectCode}</div>
+                                                  <div className="text-[10px] text-slate-500 font-semibold">
+                                                    {isPass ? 'PASS' : 'FAIL'} {isInternal ? `(${sb.marks >= 60 ? '≥60' : '<60'})` : ''}
+                                                  </div>
+                                                </div>
+                                                <span className={`font-black text-sm px-2 py-0.5 rounded ${isPass ? 'text-emerald-700 bg-emerald-100/60' : 'text-rose-700 bg-rose-100/60'}`}>
+                                                  {isInternal ? `${sb.marks} / 100` : (sb.grade || sb.marks)}
+                                                </span>
                                               </div>
-                                              <span className={`font-black text-sm px-2 py-0.5 rounded ${sb.result === 'PASS' ? 'text-emerald-700 bg-emerald-100/60' : 'text-rose-700 bg-rose-100/60'}`}>
-                                                {sb.grade || sb.marks}
-                                              </span>
-                                            </div>
-                                          ))}
+                                            );
+                                          })}
                                         </div>
                                       </div>
                                     </td>
@@ -2272,7 +2724,7 @@ Overall Result: [PASS/FAIL]
               <div className="flex items-center space-x-2">
                 <Printer className="w-4 h-4 text-amber-400" />
                 <h3 className="text-xs font-black uppercase tracking-widest text-amber-400">
-                  Official Exam Result Print Preview
+                  Internal Assessment Report Print Preview
                 </h3>
               </div>
               <div className="flex items-center space-x-2">
@@ -2301,10 +2753,10 @@ Overall Result: [PASS/FAIL]
                   VSB ENGINEERING COLLEGE • VY NEXTGEN TECHNOLOGY
                 </h2>
                 <h1 className="text-xl font-black text-slate-900 uppercase tracking-tight mt-1">
-                  DEPARTMENT OF {selectedBatch.department} - EXAM RESULT REPORT
+                  DEPARTMENT OF CSE(AIML) - INTERNAL ASSESSMENT REPORT
                 </h1>
                 <p className="text-xs font-bold text-slate-600 mt-1">
-                  {selectedBatch.title} • Exam Date: {selectedBatch.examDate}
+                  {selectedBatch.title} • Assessment Date: {selectedBatch.examDate || '2026-02-15'} • Academic Year: {selectedBatch.academicYear || '2025-2026'}
                 </p>
               </div>
 
@@ -2318,8 +2770,8 @@ Overall Result: [PASS/FAIL]
                   <strong className="text-emerald-700 font-black text-sm">{batchStats ? batchStats.passRate : 'N/A'}%</strong>
                 </div>
                 <div>
-                  <span className="text-slate-500 uppercase font-bold text-[10px] block">Uploaded By</span>
-                  <strong className="text-slate-900 font-black">{selectedBatch.uploadedBy}</strong>
+                  <span className="text-slate-500 uppercase font-bold text-[10px] block">Department</span>
+                  <strong className="text-slate-900 font-black">CSE(AIML)</strong>
                 </div>
                 <div>
                   <span className="text-slate-500 uppercase font-bold text-[10px] block">Report Date</span>
@@ -2327,118 +2779,96 @@ Overall Result: [PASS/FAIL]
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs text-slate-800 border-collapse">
-                  <thead>
-                    <tr className="bg-[#0f172a] text-amber-400 font-black uppercase text-[10px] tracking-wider">
-                      <th className="p-2 border border-slate-800 text-center">#</th>
-                      <th className="p-2 border border-slate-800">Register Number</th>
-                      <th className="p-2 border border-slate-800">Student Name</th>
-                      <th className="p-2 border border-slate-800">Parent Phone</th>
-                      {(selectedBatch.resultType || 'Semester Result') === 'Semester Result' ? (
-                        <>
-                          {Array.from(
-                            new Set(
-                              selectedBatch.results.flatMap((r) =>
-                                (r.subjects || []).map((s) => (s.subjectName || s.subjectCode || 'Subject').trim())
-                              )
-                            )
-                          ).map((sName, sIdx) => (
-                            <th key={sIdx} className="p-2 border border-slate-800 text-center">{sName}</th>
-                          ))}
-                          <th className="p-2 border border-slate-800 text-center">Total Arrears</th>
-                        </>
-                      ) : (
-                        <th className="p-2 border border-slate-800 text-center">Total Marks</th>
-                      )}
-                      <th className="p-2 border border-slate-800 text-center">Result</th>
-                      <th className="p-2 border border-slate-800 text-center">SMS Delivery</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {selectedBatch.results.map((r, i) => {
-                      const isSem = (selectedBatch.resultType || 'Semester Result') === 'Semester Result';
-                      const allSubjs = Array.from(
-                        new Set(
-                          selectedBatch.results.flatMap((sb) =>
-                            (sb.subjects || []).map((s) => (s.subjectName || s.subjectCode || 'Subject').trim())
-                          )
-                        )
-                      );
+              <div className="space-y-4">
+                {selectedBatch.results.map((r, i) => {
+                  const details = getStudentAssessmentDetails(selectedBatch, r, i);
+                  return (
+                    <div key={i} className="border border-slate-300 rounded-sm overflow-hidden page-break-inside-avoid">
+                      <div className="bg-[#0f172a] text-white px-3 py-1.5 flex items-center justify-between text-xs font-black">
+                        <span>INTERNAL ASSESSMENT REPORT — SERIAL NO: {details.serialNo}</span>
+                        <span className={details.overallStatus === 'PASS' ? 'text-emerald-400' : 'text-rose-400'}>
+                          STATUS: {details.overallStatus}
+                        </span>
+                      </div>
 
-                      let totalDisplay =
-                        r.totalMarks !== undefined && r.totalMarks !== null && r.totalMarks !== ''
-                          ? r.totalMarks
-                          : r.subjects
-                          ? r.subjects.reduce((sum, s) => sum + s.marks, 0)
-                          : 'N/A';
+                      <div className="p-3 space-y-3 text-xs bg-slate-50">
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 border-b border-slate-200 pb-2">
+                          <div>
+                            <span className="text-slate-500 font-bold">Register Number: </span>
+                            <span className="font-mono font-black text-blue-700">{details.registerNumber}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 font-bold">Assessment Date: </span>
+                            <span className="font-bold text-slate-800">{details.assessmentDate}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 font-bold">Student Name: </span>
+                            <span className="font-bold text-slate-900">{details.studentName}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 font-bold">Semester: </span>
+                            <span className="font-bold text-slate-800">{details.semester}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 font-bold">Parent Mobile: </span>
+                            <span className="font-mono font-bold text-slate-800">{details.parentMobile}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 font-bold">Academic Year: </span>
+                            <span className="font-bold text-slate-800">{details.academicYear}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 font-bold">Department: </span>
+                            <span className="font-bold text-slate-900">{details.department}</span>
+                          </div>
+                        </div>
 
-                      let arrearsCount = 0;
-                      if (typeof r.failedSubjectsCount === 'number') {
-                        arrearsCount = r.failedSubjectsCount;
-                      } else if (r.subjects && r.subjects.length > 0) {
-                        arrearsCount = r.subjects.filter((s) => evaluateSubjectGrade(s.grade || s.result).isFail).length;
-                      }
-
-                      return (
-                        <tr key={i} className="hover:bg-slate-50">
-                          <td className="p-2 border border-slate-200 text-center font-mono font-bold text-slate-500">{r.sNo || i + 1}</td>
-                          <td className="p-2 border border-slate-200 font-mono font-black text-slate-900">{r.registerNumber}</td>
-                          <td className="p-2 border border-slate-200 font-black text-slate-900">{r.studentName}</td>
-                          <td className="p-2 border border-slate-200 font-mono font-bold">{r.phoneNumber || 'N/A'}</td>
-                          {isSem ? (
-                            <>
-                              {allSubjs.map((sName, sIdx) => {
-                                const sub = (r.subjects || []).find(
-                                  (s) => (s.subjectName || s.subjectCode || '').trim() === sName
-                                );
-                                const rawGrade = sub
-                                  ? sub.grade !== undefined && sub.grade !== null && sub.grade !== ''
-                                    ? sub.grade
-                                    : sub.result || '-'
-                                  : '-';
-                                const evalGrade = evaluateSubjectGrade(rawGrade);
-                                return (
-                                  <td
-                                    key={sIdx}
-                                    className={`p-2 border border-slate-200 text-center font-black ${
-                                      evalGrade.isFail ? 'text-rose-700' : 'text-emerald-700'
-                                    }`}
-                                  >
-                                    {evalGrade.gradeStr}
+                        <div>
+                          <div className="font-black text-[11px] uppercase text-slate-800 mb-1.5">
+                            INTERNAL ASSESSMENT DETAILS
+                          </div>
+                          <table className="w-full text-left text-xs bg-white border border-slate-200">
+                            <thead className="bg-slate-100 text-slate-700 uppercase text-[9px] font-black">
+                              <tr>
+                                <th className="p-1.5 border-b">Subject</th>
+                                <th className="p-1.5 border-b text-center">Marks Scored</th>
+                                <th className="p-1.5 border-b text-center">Max Marks</th>
+                                <th className="p-1.5 border-b text-center">Result</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {details.subjects.map((sub, sIdx) => (
+                                <tr key={sIdx}>
+                                  <td className="p-1.5 font-bold">{sub.code} - {sub.name}</td>
+                                  <td className="p-1.5 text-center font-black">{sub.marks}</td>
+                                  <td className="p-1.5 text-center text-slate-500">{sub.maxMarks}</td>
+                                  <td className="p-1.5 text-center font-bold">
+                                    <span className={sub.isPass ? 'text-emerald-700' : 'text-rose-700'}>
+                                      {sub.result}
+                                    </span>
                                   </td>
-                                );
-                              })}
-                              <td
-                                className={`p-2 border border-slate-200 text-center font-black ${
-                                  arrearsCount > 0 ? 'text-rose-700' : 'text-emerald-700'
-                                }`}
-                              >
-                                {arrearsCount}
-                              </td>
-                            </>
-                          ) : (
-                            <td className="p-2 border border-slate-200 text-center font-black">{totalDisplay}</td>
-                          )}
-                          <td className="p-2 border border-slate-200 text-center font-black">
-                            <span className={r.overallStatus === 'PASS' ? 'text-emerald-700' : 'text-rose-700'}>
-                              {r.overallStatus}
-                            </span>
-                          </td>
-                          <td className="p-2 border border-slate-200 text-center font-bold text-slate-600">
-                            {r.smsStatus || (r.smsSent ? 'Sent' : 'Pending')}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-between pt-1 border-t border-slate-200 text-xs font-bold">
+                          <span>Total Marks: <strong className="text-slate-900">{details.totalMarksDisplay}</strong></span>
+                          <span>Percentage: <strong className="text-slate-900">{details.percentageDisplay}</strong></span>
+                          <span>Overall Result: <strong className={details.overallStatus === 'PASS' ? 'text-emerald-700' : 'text-rose-700'}>{details.overallStatus}</strong></span>
+                          <span>Remarks: <strong className="text-slate-800 font-normal">{details.remarks}</strong></span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="pt-8 flex justify-between items-end text-xs font-bold text-slate-600">
                 <div>
-                  <p>VSBEC VY NEXTGEN SMS MANAGEMENT SYSTEM</p>
-                  <p className="text-[10px] text-slate-400 font-normal">Official System Document • Confidential</p>
+                  <p>VSB ENGINEERING COLLEGE • DEPARTMENT OF CSE(AIML)</p>
+                  <p className="text-[10px] text-slate-400 font-normal">Internal Assessment Examination Record • Confidential</p>
                 </div>
                 <div className="text-right space-y-8">
                   <p>Authorized Signatory (HOD / Principal)</p>
@@ -2532,6 +2962,148 @@ Overall Result: [PASS/FAIL]
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dynamic Student SMS Dispatch Confirmation Modal */}
+      {showSmsConfirmModal && selectedBatch && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="bg-white border border-slate-300 rounded-sm shadow-2xl max-w-3xl w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-slate-200 pb-3">
+              <div className="flex items-start gap-3">
+                <div className="p-3 bg-amber-100 rounded-full shrink-0">
+                  <MessageSquare className="w-6 h-6 text-amber-700" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">
+                    Confirm SMS Dispatch
+                  </h3>
+                  <p className="text-base font-black text-emerald-700 mt-0.5">
+                    Are you sure you want to send SMS to {selectedRegNos.length} selected student{selectedRegNos.length > 1 ? 's' : ''}?
+                  </p>
+                </div>
+              </div>
+
+              <span className="px-3 py-1 bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-sm shadow-sm">
+                Selected Students: {selectedRegNos.length}
+              </span>
+            </div>
+
+            {/* Scope Notice */}
+            <div className="p-3 bg-blue-50/80 border border-blue-200 rounded-sm text-xs text-blue-950 space-y-1">
+              <p className="font-black flex items-center gap-1.5 text-blue-900">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-blue-700" />
+                <span>Selective Dispatch Policy</span>
+              </p>
+              <p className="text-[12px] font-medium leading-relaxed">
+                SMS will be dynamically generated and sent <strong>ONLY</strong> to the <strong>{selectedRegNos.length}</strong> selected student(s) below.
+                The remaining {selectedBatch.results.length - selectedRegNos.length} unselected student(s) in this batch will <strong>NOT</strong> receive any SMS.
+              </p>
+            </div>
+
+            {/* Selected Students Preview Table */}
+            <div className="flex-1 overflow-y-auto border border-slate-200 rounded-sm divide-y divide-slate-200">
+              <div className="bg-[#0f172a] text-amber-400 p-2.5 text-[11px] font-black uppercase tracking-wider flex items-center justify-between sticky top-0 z-10">
+                <span>Selected Students & Individual Dynamic Message Preview</span>
+                <span>{selectedRegNos.length} Recipients</span>
+              </div>
+
+              {selectedBatch.results
+                .filter((res) => selectedRegNos.includes(res.registerNumber))
+                .map((res, idx) => {
+                  const resolvedPhone = getResolvedParentPhone(res.registerNumber, res.phoneNumber);
+                  const previewMsg = getIndividualStudentSmsPreview(selectedBatch, { ...res, phoneNumber: resolvedPhone });
+                  const marks = getStudentMarksAndPercentage(res, selectedBatch);
+
+                  return (
+                    <div key={res.registerNumber || idx} className="p-3.5 hover:bg-slate-50 transition-colors space-y-2.5">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-slate-900 text-amber-400 font-mono font-bold flex items-center justify-center text-[11px]">
+                            {idx + 1}
+                          </span>
+                          <div>
+                            <strong className="text-slate-900 font-black text-sm">{res.studentName}</strong>
+                            <span className="font-mono text-slate-500 font-bold ml-2">({res.registerNumber})</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <span className="text-[10px] text-slate-400 font-bold block uppercase">Parent Mobile</span>
+                            {resolvedPhone ? (
+                              <span className="font-mono font-bold text-slate-800 text-xs flex items-center gap-1">
+                                <Phone className="w-3 h-3 text-emerald-600" />
+                                {resolvedPhone}
+                              </span>
+                            ) : (
+                              <span className="text-rose-600 font-black text-[11px] bg-rose-50 px-1.5 py-0.5 rounded-sm border border-rose-200">
+                                ⚠ Mobile Not Found
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="text-right pl-2 border-l border-slate-200">
+                            <span className="text-[10px] text-slate-400 font-bold block uppercase">Total Marks</span>
+                            <span className="font-mono font-bold text-slate-900 text-xs">
+                              {marks.totalCompact}
+                            </span>
+                          </div>
+
+                          <div className="text-right pl-2 border-l border-slate-200">
+                            <span className="text-[10px] text-slate-400 font-bold block uppercase">Percentage</span>
+                            <span className="font-mono font-black text-emerald-700 text-xs">
+                              {marks.percentageDisplay}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Dynamic Generated SMS Preview Box */}
+                      <div className="bg-slate-900 text-slate-100 rounded-sm p-3 font-mono text-[11px] leading-relaxed whitespace-pre-wrap border border-slate-800">
+                        <div className="text-[10px] text-amber-400 uppercase font-black tracking-wider mb-1.5 flex items-center justify-between">
+                          <span>Dynamic SMS Generated for this Student:</span>
+                          <span className="text-slate-400 font-normal">Recipient: {resolvedPhone || 'Parent Mobile'}</span>
+                        </div>
+                        {previewMsg}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-200">
+              <span className="text-xs text-slate-500 font-bold">
+                Confirming will immediately queue and send SMS via Fast2SMS.
+              </span>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  id="cancel-send-sms-modal-btn"
+                  onClick={() => setShowSmsConfirmModal(false)}
+                  disabled={sendingSmsBatchId === selectedBatch.id}
+                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-black text-xs uppercase tracking-wider rounded-sm transition-all border border-slate-300 disabled:opacity-50 cursor-pointer"
+                >
+                  CANCEL
+                </button>
+                <button
+                  type="button"
+                  id="confirm-send-sms-modal-btn"
+                  onClick={() => {
+                    setShowSmsConfirmModal(false);
+                    handleSendResultSms(selectedBatch.id, selectedRegNos);
+                  }}
+                  disabled={sendingSmsBatchId === selectedBatch.id}
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider rounded-sm shadow-md transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>CONFIRM & SEND</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

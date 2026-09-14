@@ -91,11 +91,18 @@ export interface StudentExamResult {
   parentName?: string;
   subjects: SubjectMark[];
   totalMarks?: number | string;
+  maxTotalMarks?: number;
+  percentage?: number | string;
   gpa?: string;
   overallGrade?: string;
   passedSubjectsCount?: number;
   failedSubjectsCount?: number;
   overallStatus: 'PASS' | 'FAIL' | 'WITHHELD';
+  assessmentDate?: string;
+  semester?: string;
+  academicYear?: string;
+  attendance?: string | number;
+  remarks?: string;
   smsSent: boolean;
   smsSentAt?: string;
   smsStatus?: DeliveryStatus;
@@ -108,6 +115,8 @@ export interface ExamBatch {
   resultType?: ResultType;
   department: string;
   examDate: string;
+  semester?: string;
+  academicYear?: string;
   results: StudentExamResult[];
   uploadedAt: string;
   uploadedBy: string;

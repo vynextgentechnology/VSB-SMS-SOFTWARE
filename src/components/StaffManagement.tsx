@@ -22,7 +22,7 @@ interface StaffManagementProps {
   onRefresh: () => void;
 }
 
-const DEFAULT_DEPT_CODES = ['AIML', 'AIDS', 'CSE', 'CCE', 'ECE', 'EEE', 'MECH', 'CSBS', 'CHEMICAL', 'CIVIL', 'ADMIN'];
+const DEFAULT_DEPT_CODES = ['CSE(AIML)', 'AIDS', 'CSE', 'CCE', 'ECE', 'EEE', 'MECH', 'CSBS', 'CHEMICAL', 'CIVIL', 'ADMIN'];
 
 const ALL_PERMISSIONS: { key: Permission; label: string; desc: string }[] = [
   { key: 'send_sms', label: 'Send SMS Module', desc: 'Can compose and send SMS to students' },

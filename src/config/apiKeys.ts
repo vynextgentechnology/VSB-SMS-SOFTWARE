@@ -52,14 +52,14 @@ export const INITIAL_API_KEYS: ApiKeyConfig[] = [
   {
     id: 'key-vsb-04',
     key: 'vsb_live_sk_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d',
-    name: 'Department HOD Integration Key (AIML)',
+    name: 'Department HOD Integration Key (CSE(AIML))',
     role: 'hod',
-    department: 'AIML',
+    department: 'CSE(AIML)',
     scopes: ['results:read', 'students:read', 'sms:send'],
     status: 'active',
     createdAt: '2026-08-04T09:00:00.000Z',
     lastUsedAt: '2026-08-08T18:30:00.000Z',
-    description: 'Departmental key for AI & Machine Learning department head result dispatching.',
+    description: 'Departmental key for Computer Science & Engineering (AI & ML) department head result dispatching.',
   },
   {
     id: 'key-vsb-05',

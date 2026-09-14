@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Student, Staff, Department, SmsTemplate, ExamBatch, SmsLog, DashboardStats, ParentEnrollment } from './types';
+import { User, Student, Staff, Department, SmsTemplate, ExamBatch, SmsLog, DashboardStats, ParentEnrollment, AttendanceSession } from './types';
 import { api, getCurrentUserId, setCurrentUserId, getAuthToken, setAuthToken, normalizeUser } from './lib/api';
 
 import { Header } from './components/Header';
@@ -36,6 +36,7 @@ export default function App() {
   const [templates, setTemplates] = useState<SmsTemplate[]>([]);
   const [examBatches, setExamBatches] = useState<ExamBatch[]>([]);
   const [smsLogs, setSmsLogs] = useState<SmsLog[]>([]);
+  const [attendanceSessions, setAttendanceSessions] = useState<AttendanceSession[]>([]);
 
   // Navigation state passed to SMS compose
   const [preSelectedStudent, setPreSelectedStudent] = useState<Student | null>(null);
@@ -94,7 +95,7 @@ export default function App() {
 
   const refreshData = async () => {
     try {
-      const [statsData, parentsData, stdsData, staffData, deptsData, tplsData, batchesData, logsData] = await Promise.all([
+      const [statsData, parentsData, stdsData, staffData, deptsData, tplsData, batchesData, logsData, attData] = await Promise.all([
         api.getDashboardStats().catch((e) => {
           console.error('getDashboardStats failed:', e);
           return null;
@@ -106,6 +107,7 @@ export default function App() {
         api.getTemplates().catch(() => []),
         api.getExamBatches().catch(() => []),
         api.getSmsReports().catch(() => []),
+        api.getAttendanceSessions().catch(() => []),
       ]);
 
       if (statsData) setStats(statsData);
@@ -116,6 +118,7 @@ export default function App() {
       setTemplates(tplsData);
       setExamBatches(batchesData);
       setSmsLogs(logsData);
+      setAttendanceSessions(attData);
     } catch (err) {
       console.error('Error refreshing application data:', err);
     }
@@ -313,6 +316,7 @@ export default function App() {
                   departments={departments}
                   students={students}
                   parents={parents}
+                  attendanceSessions={attendanceSessions}
                   currentUser={currentUser}
                   onRefresh={refreshData}
                   onNavigateToReports={() => setActiveTab('sms_reports')}
