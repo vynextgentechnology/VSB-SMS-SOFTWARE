@@ -19,6 +19,7 @@ export interface ParentEnrollment {
   parentPhoneNumber: string;
   studentName: string;
   registerNumber: string;
+  department?: string;
   createdAt: string;
 }
 

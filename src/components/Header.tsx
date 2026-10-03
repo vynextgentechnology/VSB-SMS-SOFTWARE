@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { User } from '../types';
-import { ShieldCheck, MessageSquare, LogOut, Clock, Wifi, Sparkles, Building2 } from 'lucide-react';
+import { ShieldCheck, MessageSquare, LogOut, Clock, Wifi, Sparkles, Building2, FileSpreadsheet, CheckCircle2 } from 'lucide-react';
+import { GoogleAccountModal } from './GoogleAccountModal';
+import { getGoogleUser, getAccessToken } from '../lib/googleAuth';
 
 interface HeaderProps {
   user: User | null;
@@ -10,11 +12,22 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeView }) => {
   const [time, setTime] = useState(new Date());
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [isGoogleConnected, setIsGoogleConnected] = useState(false);
+  const [googleEmail, setGoogleEmail] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    getAccessToken().then((token) => {
+      setIsGoogleConnected(Boolean(token));
+      const gUser = getGoogleUser();
+      setGoogleEmail(gUser?.email || null);
+    });
+  }, [showGoogleModal]);
 
   const getViewTitle = () => {
     switch (activeView) {
@@ -78,6 +91,27 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeView }) =>
               <span>Gateway Active</span>
             </div>
 
+            {/* Google Sheets Status & Account Modal Button */}
+            <button
+              type="button"
+              id="header-google-sheets-btn"
+              onClick={() => setShowGoogleModal(true)}
+              className={`hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer border ${
+                isGoogleConnected
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-850 hover:bg-emerald-100 shadow-xs'
+                  : 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200'
+              }`}
+              title="Google Sheets & Drive Workspace Settings"
+            >
+              <FileSpreadsheet className={`w-3.5 h-3.5 ${isGoogleConnected ? 'text-emerald-600' : 'text-slate-500'}`} />
+              <span>Google Sheets</span>
+              {isGoogleConnected ? (
+                <span className="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-200 ml-0.5" title="Google Connected" />
+              ) : (
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400 ml-0.5" title="Not Connected" />
+              )}
+            </button>
+
             {/* Live Clock */}
             <div className="hidden lg:flex items-center space-x-1.5 text-xs text-slate-600 bg-slate-50 px-3 py-1.5 rounded border border-slate-200 font-mono font-bold">
               <Clock className="w-3.5 h-3.5 text-blue-600" />
@@ -126,6 +160,11 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, activeView }) =>
 
         </div>
       </div>
+
+      <GoogleAccountModal
+        isOpen={showGoogleModal}
+        onClose={() => setShowGoogleModal(false)}
+      />
     </header>
   );
 };

@@ -22,7 +22,13 @@ import {
   Check,
   FileArchive,
   Layers,
+  FileSpreadsheet,
+  ExternalLink,
+  FolderOpen,
+  RefreshCw,
 } from 'lucide-react';
+import { getAccessToken, getGoogleUser, googleSignIn, logoutGoogle, WORKSPACE_SCOPES } from '../lib/googleAuth';
+import { listGoogleSpreadsheets } from '../services/googleSheetsService';
 
 interface SettingsViewProps {
   onRefresh: () => void;
@@ -61,11 +67,58 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+  // Google Workspace Integration State
+  const [googleUser, setGoogleUser] = useState<any>(getGoogleUser());
+  const [googleToken, setGoogleToken] = useState<string | null>(null);
+  const [testingGoogle, setTestingGoogle] = useState(false);
+  const [googleTestSuccess, setGoogleTestSuccess] = useState<string | null>(null);
+
   useEffect(() => {
     loadSettings();
     loadApiKeys();
     loadDbStatus();
+    getAccessToken().then((t) => {
+      setGoogleToken(t);
+      setGoogleUser(getGoogleUser());
+    });
   }, []);
+
+  const handleConnectGoogle = async () => {
+    try {
+      const res = await googleSignIn();
+      if (res) {
+        setGoogleToken(res.accessToken);
+        setGoogleUser(res.user);
+        setSuccessMsg('Successfully connected Google Workspace with Drive and Sheets access!');
+        setTimeout(() => setSuccessMsg(null), 5000);
+      }
+    } catch (e: any) {
+      setError(e.message || 'Google sign-in failed.');
+    }
+  };
+
+  const handleDisconnectGoogle = async () => {
+    await logoutGoogle();
+    setGoogleToken(null);
+    setGoogleUser(null);
+    setGoogleTestSuccess(null);
+    setSuccessMsg('Disconnected Google account.');
+    setTimeout(() => setSuccessMsg(null), 4000);
+  };
+
+  const handleTestGoogleSheets = async () => {
+    if (!googleToken) return;
+    setTestingGoogle(true);
+    setGoogleTestSuccess(null);
+    try {
+      const files = await listGoogleSpreadsheets(googleToken);
+      setGoogleTestSuccess(`✓ Successfully verified Google Workspace connection! Found ${files.length} spreadsheet(s) in Google Drive.`);
+    } catch (err: any) {
+      setError(`Google Workspace test failed: ${err.message}`);
+    } finally {
+      setTestingGoogle(false);
+    }
+  };
 
   const loadDbStatus = async () => {
     try {
@@ -541,6 +594,105 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onRefresh }) => {
         </div>
 
       </form>
+
+      {/* Google Workspace & Sheets Integration Card */}
+      <div className="bg-white border border-slate-200 rounded-sm p-6 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-sm bg-emerald-100 text-emerald-700 flex items-center justify-center">
+              <FileSpreadsheet className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                <span>Google Workspace & Google Sheets</span>
+                {googleToken ? (
+                  <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded uppercase">
+                    Connected
+                  </span>
+                ) : (
+                  <span className="text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded uppercase">
+                    Ready to Connect
+                  </span>
+                )}
+              </h3>
+              <p className="text-xs text-slate-500">
+                Official Google Workspace integration for importing student records, reading test marksheets, and exporting assessment results directly into Google Drive.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {googleToken ? (
+              <>
+                <button
+                  type="button"
+                  onClick={handleTestGoogleSheets}
+                  disabled={testingGoogle}
+                  className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs uppercase tracking-wider rounded-sm transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${testingGoogle ? 'animate-spin' : ''}`} />
+                  <span>{testingGoogle ? 'Testing...' : 'Test Connection'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDisconnectGoogle}
+                  className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs uppercase tracking-wider rounded-sm transition-all cursor-pointer"
+                >
+                  Disconnect
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={handleConnectGoogle}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-wider rounded-sm shadow-sm flex items-center gap-2 transition-all cursor-pointer"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                <span>Connect Google Account</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {googleTestSuccess && (
+          <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-sm flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{googleTestSuccess}</span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-sm space-y-1">
+            <span className="font-bold text-slate-900 block flex items-center gap-1.5 text-[11px] uppercase">
+              <Shield className="w-3.5 h-3.5 text-blue-600" />
+              Authenticated User
+            </span>
+            <p className="text-slate-600 font-mono text-[11px] truncate">
+              {googleUser?.email || 'No active user session'}
+            </p>
+          </div>
+
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-sm space-y-1">
+            <span className="font-bold text-slate-900 block flex items-center gap-1.5 text-[11px] uppercase">
+              <FolderOpen className="w-3.5 h-3.5 text-emerald-600" />
+              Active Scopes
+            </span>
+            <p className="text-slate-600 text-[10px]">
+              drive.file, drive.readonly, spreadsheets
+            </p>
+          </div>
+
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-sm space-y-1">
+            <span className="font-bold text-slate-900 block flex items-center gap-1.5 text-[11px] uppercase">
+              <Check className="w-3.5 h-3.5 text-emerald-600" />
+              App Capabilities
+            </span>
+            <p className="text-slate-600 text-[10px]">
+              Import marks, parse student rosters, create Drive spreadsheets
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Code Export & Download Section */}
       <div className="bg-gradient-to-br from-slate-900 to-slate-950 text-white p-6 rounded-sm shadow-md space-y-4">

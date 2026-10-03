@@ -99,7 +99,7 @@ export const GeminiAssistant: React.FC = () => {
             Smart AI Assistant & Content Generator
           </h2>
           <p className="text-xs text-slate-300 max-w-2xl font-medium">
-            Powered by official <strong className="text-indigo-300">@google/genai</strong> SDK and model <strong className="text-indigo-300">gemini-3.6-flash</strong>.
+            Powered by official <strong className="text-indigo-300">@google/genai</strong> SDK and model <strong className="text-indigo-300">gemini-3.8-flash</strong>.
             API Key is securely managed via server-side environment variables (`GEMINI_API_KEY`).
           </p>
         </div>
@@ -339,7 +339,7 @@ export const GeminiAssistant: React.FC = () => {
 
               {response && (
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-medium">
-                  <span>Model: <strong>gemini-3.6-flash</strong></span>
+                  <span>Model: <strong>gemini-3.8-flash</strong></span>
                   <span>Length: <strong>{response.length} chars</strong></span>
                 </div>
               )}
@@ -418,7 +418,7 @@ app.post('/api/gemini/generate', async (req, res) => {
   try {
     const { prompt } = req.body;
     const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
+      model: 'gemini-3.8-flash',
       contents: prompt,
     });
     return res.json({ success: true, response: response.text });

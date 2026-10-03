@@ -109,14 +109,189 @@ const defaultTemplates: SmsTemplate[] = [
   },
 ];
 
+export function sanitizeDepartmentCode(dept?: string): string {
+  if (!dept) return '';
+  const trimmed = dept.trim();
+  if (/cse\s*\(\s*cse\s*\(\s*aiml\s*\)\s*\)/i.test(trimmed) || /cse\s*\(\s*aiml\s*\)/i.test(trimmed) || /^(cse[-_ ]?)?aiml$/i.test(trimmed)) {
+    return 'CSE(AIML)';
+  }
+  return trimmed;
+}
+
+export function sanitizeTextAIML(text?: string): string {
+  if (!text) return '';
+  return text.replace(/cse\s*\(\s*cse\s*\(\s*aiml\s*\)\s*\)/gi, 'CSE(AIML)');
+}
+
 class Database {
   private data: DatabaseSchema;
 
   constructor() {
     this.ensureDirectory();
     this.data = this.loadData();
+    this.normalizeDepartmentNames();
     this.seedDefaultDepartments();
     this.ensureSuperAdminUser();
+  }
+
+  public normalizeDepartmentNames() {
+    let changed = false;
+
+    // 1. Departments array
+    if (this.data.departments) {
+      for (const d of this.data.departments) {
+        const clean = sanitizeDepartmentCode(d.code);
+        if (clean && clean !== d.code) {
+          d.code = clean;
+          changed = true;
+        }
+        if (d.code === 'CSE(AIML)' && (!d.name || d.name.toLowerCase().includes('artificial'))) {
+          d.name = 'Computer Science & Engineering (AI & ML)';
+          changed = true;
+        }
+      }
+
+      // Deduplicate departments by code
+      const uniqueDepts: Department[] = [];
+      const seenCodes = new Set<string>();
+      for (const d of this.data.departments) {
+        const upper = (d.code || '').toUpperCase();
+        if (!seenCodes.has(upper)) {
+          seenCodes.add(upper);
+          uniqueDepts.push(d);
+        } else {
+          changed = true;
+        }
+      }
+      this.data.departments = uniqueDepts;
+    }
+
+    // 2. Students
+    if (this.data.students) {
+      for (const s of this.data.students) {
+        const clean = sanitizeDepartmentCode(s.department);
+        if (clean && clean !== s.department) {
+          s.department = clean;
+          changed = true;
+        }
+      }
+    }
+
+    // 3. Parent enrollments
+    if (this.data.parentEnrollments) {
+      for (const p of this.data.parentEnrollments) {
+        const clean = sanitizeDepartmentCode(p.department);
+        if (clean && clean !== p.department) {
+          p.department = clean;
+          changed = true;
+        }
+      }
+    }
+
+    // 4. Staff
+    if (this.data.staff) {
+      for (const st of this.data.staff) {
+        const clean = sanitizeDepartmentCode(st.department);
+        if (clean && clean !== st.department) {
+          st.department = clean;
+          changed = true;
+        }
+      }
+    }
+
+    // 5. Exam batches
+    if (this.data.examBatches) {
+      for (const b of this.data.examBatches) {
+        const cleanDept = sanitizeDepartmentCode(b.department);
+        if (cleanDept && cleanDept !== b.department) {
+          b.department = cleanDept;
+          changed = true;
+        }
+        const cleanTitle = sanitizeTextAIML(b.title);
+        if (cleanTitle !== b.title) {
+          b.title = cleanTitle;
+          changed = true;
+        }
+        if (Array.isArray(b.results)) {
+          for (const r of b.results) {
+            const cleanResultDept = sanitizeDepartmentCode(r.department);
+            if (cleanResultDept && cleanResultDept !== r.department) {
+              r.department = cleanResultDept;
+              changed = true;
+            }
+          }
+        }
+      }
+    }
+
+    // 6. API Keys
+    if (this.data.apiKeys) {
+      for (const k of this.data.apiKeys) {
+        const cleanDept = sanitizeDepartmentCode(k.department);
+        if (cleanDept && cleanDept !== k.department) {
+          k.department = cleanDept;
+          changed = true;
+        }
+        const cleanName = sanitizeTextAIML(k.name);
+        if (cleanName !== k.name) {
+          k.name = cleanName;
+          changed = true;
+        }
+      }
+    }
+
+    // 7. Users
+    if (this.data.users) {
+      for (const u of this.data.users) {
+        const cleanDept = sanitizeDepartmentCode(u.department);
+        if (cleanDept && cleanDept !== u.department) {
+          u.department = cleanDept;
+          changed = true;
+        }
+      }
+    }
+
+    // 8. SMS logs
+    if (this.data.smsLogs) {
+      for (const l of this.data.smsLogs) {
+        const cleanDept = sanitizeDepartmentCode(l.department);
+        if (cleanDept && cleanDept !== l.department) {
+          l.department = cleanDept;
+          changed = true;
+        }
+        const cleanMsg = sanitizeTextAIML(l.messageContent);
+        if (cleanMsg !== l.messageContent) {
+          l.messageContent = cleanMsg;
+          changed = true;
+        }
+      }
+    }
+
+    // 9. Login logs
+    if (this.data.loginLogs) {
+      for (const lg of this.data.loginLogs) {
+        const cleanDept = sanitizeDepartmentCode(lg.department);
+        if (cleanDept && cleanDept !== lg.department) {
+          lg.department = cleanDept;
+          changed = true;
+        }
+      }
+    }
+
+    // 10. Activity logs
+    if (this.data.activityLogs) {
+      for (const a of this.data.activityLogs) {
+        const cleanDetails = sanitizeTextAIML(a.details);
+        if (cleanDetails !== a.details) {
+          a.details = cleanDetails;
+          changed = true;
+        }
+      }
+    }
+
+    if (changed) {
+      this.save();
+    }
   }
 
   public ensureSuperAdminUser() {
@@ -604,6 +779,7 @@ class Database {
 
     const newParent: ParentEnrollment = {
       ...data,
+      department: sanitizeDepartmentCode(data.department),
       registerNumber: regNoUpper,
       id: `prn-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       createdAt: new Date().toISOString(),
@@ -674,6 +850,7 @@ class Database {
 
       const newParent: ParentEnrollment = {
         ...p,
+        department: sanitizeDepartmentCode(p.department),
         registerNumber: regNoUpper,
         id: `prn-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         createdAt: new Date().toISOString(),
@@ -1346,7 +1523,7 @@ class Database {
       ...studentData,
       name: studentData.name.trim(),
       registerNumber: cleanReg,
-      department: studentData.department.trim().toUpperCase(),
+      department: sanitizeDepartmentCode(studentData.department),
       phoneNumber: studentData.phoneNumber.trim(),
       id: `std-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       createdAt: new Date().toISOString(),
@@ -1416,11 +1593,12 @@ class Database {
     const cleanId = id.trim();
     const index = this.data.students.findIndex((s) => s.id === cleanId || s.registerNumber.toUpperCase() === cleanId.toUpperCase());
     if (index === -1) throw new Error('Student not found');
+    const currentStudent = this.data.students[index];
 
     if (updates.registerNumber) {
       const cleanReg = updates.registerNumber.trim().toUpperCase();
       const conflict = this.data.students.find(
-        (s) => s.id !== cleanId && s.registerNumber.toUpperCase() === cleanReg
+        (s) => s !== currentStudent && s.registerNumber.toUpperCase() === cleanReg
       );
       if (conflict) throw new Error(`Register number ${updates.registerNumber} already assigned to another student`);
     }
@@ -1430,7 +1608,7 @@ class Database {
       ...updates,
       ...(updates.registerNumber ? { registerNumber: updates.registerNumber.trim().toUpperCase() } : {}),
       ...(updates.name ? { name: updates.name.trim() } : {}),
-      ...(updates.department ? { department: updates.department.trim().toUpperCase() } : {}),
+      ...(updates.department ? { department: sanitizeDepartmentCode(updates.department) } : {}),
       ...(updates.phoneNumber ? { phoneNumber: updates.phoneNumber.trim() } : {}),
     };
 
@@ -1879,15 +2057,17 @@ class Database {
   }
 
   public addDepartment(deptData: Omit<Department, 'id' | 'createdAt'>, user: string): Department {
+    const cleanCode = sanitizeDepartmentCode(deptData.code);
     const existing = this.data.departments.find(
-      (d) => d.code.toUpperCase() === deptData.code.toUpperCase()
+      (d) => d.code.toUpperCase() === cleanCode.toUpperCase()
     );
     if (existing) {
-      throw new Error(`Department with code ${deptData.code} already exists`);
+      throw new Error(`Department with code ${cleanCode} already exists`);
     }
 
     const newDept: Department = {
       ...deptData,
+      code: cleanCode,
       id: `dept-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       createdAt: new Date().toISOString(),
     };
@@ -1908,9 +2088,9 @@ class Database {
     if (index === -1) throw new Error('Department not found');
 
     if (updates.code) {
-      const cleanNewCode = updates.code.trim().toUpperCase();
+      const cleanNewCode = sanitizeDepartmentCode(updates.code);
       const conflict = this.data.departments.find(
-        (d) => d.id !== cleanId && d.code.toUpperCase() === cleanNewCode
+        (d) => d.id !== cleanId && d.code.toUpperCase() === cleanNewCode.toUpperCase()
       );
       if (conflict) throw new Error(`Department code ${updates.code} already in use`);
       updates.code = cleanNewCode;
@@ -2115,6 +2295,7 @@ class Database {
 
     const newStaff: Staff = {
       ...staffData,
+      department: sanitizeDepartmentCode(staffData.department),
       id: `stf-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       createdAt: new Date().toISOString(),
     };
@@ -2155,6 +2336,9 @@ class Database {
     const index = this.data.staff.findIndex((s) => s.id === cleanId || s.staffId.toUpperCase() === cleanId.toUpperCase());
     if (index === -1) throw new Error('Staff member not found');
 
+    if (updates.department) {
+      updates.department = sanitizeDepartmentCode(updates.department);
+    }
     const oldStaffId = this.data.staff[index].staffId;
     this.data.staff[index] = { ...this.data.staff[index], ...updates };
     const currentStaff = this.data.staff[index];
@@ -2617,7 +2801,7 @@ class Database {
         studentName,
         parentName,
         phoneNumber,
-        department: rec.department || department,
+        department: sanitizeDepartmentCode(rec.department || department),
         subjects,
         passedSubjectsCount,
         failedSubjectsCount,
@@ -2640,9 +2824,9 @@ class Database {
 
     const batch: ExamBatch = {
       id: `exm-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      title,
+      title: sanitizeTextAIML(title),
       resultType: resultType || 'Semester Result',
-      department,
+      department: sanitizeDepartmentCode(department),
       examDate,
       results: processedResults,
       uploadedAt: new Date().toISOString(),

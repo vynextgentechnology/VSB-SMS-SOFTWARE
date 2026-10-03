@@ -4,6 +4,8 @@ import jsPDF from 'jspdf';
 import { ExamBatch, Department, StudentExamResult, SubjectMark, Student, ParentEnrollment, User, ResultType, AttendanceSession } from '../types';
 import { api, formatErrorMessage } from '../lib/api';
 import { evaluateSubjectGrade, evaluateInternalMark } from '../utils/gradeEvaluator';
+import { GoogleSheetsPicker } from './GoogleSheetsPicker';
+import { GoogleSheetsExportModal } from './GoogleSheetsExportModal';
 import {
   FileCheck2,
   Upload,
@@ -74,7 +76,21 @@ export interface StudentAssessmentDetail {
   overallStatus: 'PASS' | 'FAIL';
 }
 
-const DEFAULT_DEPT_CODES = ['AIML', 'AIDS', 'CSE', 'CCE', 'ECE', 'EEE', 'MECH', 'CSBS', 'CHEMICAL', 'CIVIL'];
+const DEFAULT_DEPT_CODES = ['CSE(AIML)', 'AIDS', 'CSE', 'CCE', 'ECE', 'EEE', 'MECH', 'CSBS', 'CHEMICAL', 'CIVIL'];
+
+export const cleanDepartmentDisplay = (dept?: string): string => {
+  if (!dept) return 'CSE(AIML)';
+  const trimmed = dept.trim();
+  if (/cse\s*\(\s*cse\s*\(\s*aiml\s*\)\s*\)/i.test(trimmed) || /cse\s*\(\s*aiml\s*\)/i.test(trimmed) || /^(cse[-_ ]?)?aiml$/i.test(trimmed) || trimmed.toLowerCase().includes('aiml')) {
+    return 'CSE(AIML)';
+  }
+  return trimmed;
+};
+
+export const cleanTitleDisplay = (t?: string): string => {
+  if (!t) return '';
+  return t.replace(/cse\s*\(\s*cse\s*\(\s*aiml\s*\)\s*\)/gi, 'CSE(AIML)');
+};
 
 export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
   batches,
@@ -85,7 +101,9 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
   currentUser,
   onRefresh,
 }) => {
-  const DEPARTMENTS = departments && departments.length > 0 ? departments.map((d) => d.code) : DEFAULT_DEPT_CODES;
+  const DEPARTMENTS = departments && departments.length > 0
+    ? Array.from(new Set(departments.map((d) => cleanDepartmentDisplay(d.code))))
+    : DEFAULT_DEPT_CODES;
 
   // View & Modal States
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -101,7 +119,8 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
   });
   const [batchToDelete, setBatchToDelete] = useState<ExamBatch | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [activeTab, setActiveTab] = useState<'excel' | 'paste'>('excel');
+  const [activeTab, setActiveTab] = useState<'excel' | 'sheets' | 'paste'>('excel');
+  const [showGoogleSheetsExportModal, setShowGoogleSheetsExportModal] = useState(false);
 
   // Search & Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -175,10 +194,7 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
     const parentMobile = r.phoneNumber || matchedParent?.parentPhoneNumber || matchedStudent?.phoneNumber || '-';
 
     // Department: Always display CSE(AIML) if AIML
-    let dept = r.department || batch.department || matchedStudent?.department || 'CSE(AIML)';
-    if (dept === 'AIML' || dept === 'CSE-AIML' || dept.includes('AIML')) {
-      dept = 'CSE(AIML)';
-    }
+    const dept = cleanDepartmentDisplay(r.department || batch.department || matchedStudent?.department);
 
     const assessmentDate = r.assessmentDate || batch.examDate || '2026-02-15';
 
@@ -460,28 +476,21 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
     }
   };
 
-  const processExcelFile = (file: File) => {
+  const parseRowsToResults = (rawRows: any[][], sourceName?: string) => {
     setError(null);
-    setFileName(file.name);
-
-    if (!title) {
-      const suggestedTitle = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
-      setTitle(suggestedTitle);
+    if (sourceName) {
+      setFileName(sourceName);
+      if (!title) {
+        const cleanSuggested = sourceName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+        setTitle(cleanSuggested);
+      }
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-
-        const rawRows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        if (!rawRows || rawRows.length < 2) {
-          setError('Excel file contains no data rows.');
-          return;
-        }
+    try {
+      if (!rawRows || rawRows.length < 2) {
+        setError('Data contains no student rows.');
+        return;
+      }
 
         // Find header row
         let headerRowIdx = 0;
@@ -681,14 +690,37 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
         setValidMobileCount(validMob);
         setSkippedMobileCount(skippedMob);
       } catch (err: any) {
-        console.log(err);
-        if (err?.message) console.log(err.message);
-        if (err?.response?.data) console.log(err.response?.data);
+        console.error('Error parsing sheet rows:', err);
+        setError(`Failed to parse rows: ${formatErrorMessage(err)}`);
+      }
+  };
+
+  const processExcelFile = (file: File) => {
+    setError(null);
+    setFileName(file.name);
+    if (!title) {
+      const suggestedTitle = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+      setTitle(suggestedTitle);
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const rawRows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        parseRowsToResults(rawRows, file.name);
+      } catch (err: any) {
         setError(`Failed to parse Excel file: ${formatErrorMessage(err)}`);
       }
     };
-
     reader.readAsArrayBuffer(file);
+  };
+
+  const handleGoogleSheetDataLoaded = (rows: any[][], sheetTitle: string, spreadsheetName: string) => {
+    parseRowsToResults(rows, `${spreadsheetName} - ${sheetTitle}`);
+    setSuccessMsg(`✓ Successfully loaded ${rows.length - 1} student rows from Google Sheet "${spreadsheetName} (${sheetTitle})"! Review and click Create Exam Batch below.`);
   };
 
   // --- Download Sample Excel Template ---
@@ -958,8 +990,8 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
             <body>
               <div class="header">
                 <h2>VSB ENGINEERING COLLEGE • VY NEXTGEN TECHNOLOGY</h2>
-                <h1>DEPARTMENT OF ${selectedBatch.department} - EXAM RESULT REPORT</h1>
-                <p style="margin: 4px 0 0 0; font-size: 12px; font-weight: bold;">${selectedBatch.title} | Exam Date: ${selectedBatch.examDate}</p>
+                <h1>DEPARTMENT OF ${cleanDepartmentDisplay(selectedBatch.department)} - EXAM RESULT REPORT</h1>
+                <p style="margin: 4px 0 0 0; font-size: 12px; font-weight: bold;">${cleanTitleDisplay(selectedBatch.title)} | Exam Date: ${selectedBatch.examDate}</p>
               </div>
               <div class="meta">
                 <div>Total Students: <strong>${selectedBatch.totalStudents}</strong></div>
@@ -1087,7 +1119,7 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(203, 213, 225);
-        doc.text(`INTERNAL ASSESSMENT REPORT • DEPARTMENT OF ${batch.department?.toUpperCase() || 'CSE(AIML)'} • ${batch.title.toUpperCase()}`, margin, 16);
+        doc.text(`INTERNAL ASSESSMENT REPORT • DEPARTMENT OF ${cleanDepartmentDisplay(batch.department).toUpperCase()} • ${cleanTitleDisplay(batch.title).toUpperCase()}`, margin, 16);
 
         doc.setFontSize(7.5);
         doc.setTextColor(148, 163, 184);
@@ -1105,12 +1137,12 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
       doc.setTextColor(15, 23, 42);
-      doc.text(`INTERNAL ASSESSMENT BATCH: ${batch.title} • ${batch.results.length} STUDENT RECORDS`, margin + 4, currentY + 6);
+      doc.text(`INTERNAL ASSESSMENT BATCH: ${cleanTitleDisplay(batch.title)} • ${batch.results.length} STUDENT RECORDS`, margin + 4, currentY + 6);
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7.5);
       doc.setTextColor(71, 85, 105);
-      doc.text(`Department: ${batch.department || 'CSE(AIML)'} | Academic Year: ${batch.academicYear || '2025-2026'} | Assessment Date: ${batch.examDate || '2026-02-15'}`, margin + 4, currentY + 11);
+      doc.text(`Department: ${cleanDepartmentDisplay(batch.department)} | Academic Year: ${batch.academicYear || '2025-2026'} | Assessment Date: ${batch.examDate || '2026-02-15'}`, margin + 4, currentY + 11);
       doc.text(`Total Students: ${batch.results.length} | Uploaded by: ${batch.uploadedBy}`, margin + 4, currentY + 15);
 
       currentY += 23;
@@ -1309,7 +1341,7 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(7.5);
         doc.setTextColor(148, 163, 184);
-        doc.text(`VSB ENGINEERING COLLEGE • INTERNAL ASSESSMENT REPORT • ${batch.department || 'CSE(AIML)'}`, margin, 292);
+        doc.text(`VSB ENGINEERING COLLEGE • INTERNAL ASSESSMENT REPORT • ${cleanDepartmentDisplay(batch.department)}`, margin, 292);
         doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, 292, { align: 'right' });
       }
 
@@ -1554,11 +1586,11 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
                     <div className="flex items-start justify-between">
                       <div>
                         <h4 className={`font-black text-sm uppercase tracking-tight ${isSelected ? 'text-white' : 'text-slate-900'}`}>
-                          {batch.title}
+                          {cleanTitleDisplay(batch.title)}
                         </h4>
                         <div className="flex flex-wrap items-center gap-1.5 text-xs mt-1 font-medium opacity-80">
                           <span className={`px-2 py-0.5 rounded-sm text-[10px] font-black uppercase ${isSelected ? 'bg-amber-400 text-slate-950' : 'bg-slate-900 text-white'}`}>
-                            {batch.department}
+                            {cleanDepartmentDisplay(batch.department)}
                           </span>
                           <span className={`px-2 py-0.5 rounded-sm text-[10px] font-black uppercase ${
                             (batch.resultType || 'Semester Result') === 'Semester Result'
@@ -1649,11 +1681,11 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="px-2.5 py-0.5 bg-[#0f172a] text-amber-400 rounded-sm text-[10px] font-black uppercase tracking-wider border border-amber-500/30">
-                      DEPARTMENT OF {selectedBatch.department}
+                      DEPARTMENT OF {cleanDepartmentDisplay(selectedBatch.department)}
                     </span>
                     <span className="text-xs text-slate-500 font-bold">• Exam Date: {selectedBatch.examDate}</span>
                   </div>
-                  <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">{selectedBatch.title}</h3>
+                  <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">{cleanTitleDisplay(selectedBatch.title)}</h3>
                   <p className="text-xs text-slate-500 font-medium mt-0.5">
                     Uploaded by <strong className="text-slate-800 font-black">{selectedBatch.uploadedBy}</strong> on {new Date(selectedBatch.uploadedAt).toLocaleString()}
                   </p>
@@ -1668,6 +1700,16 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
                   >
                     <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-200" />
                     <span>Download Report (Excel)</span>
+                  </button>
+
+                  <button
+                    id="export-google-sheets-btn"
+                    onClick={() => setShowGoogleSheetsExportModal(true)}
+                    className="px-3.5 py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-black text-xs uppercase tracking-wider rounded-sm shadow-sm flex items-center gap-1.5 transition-all cursor-pointer border border-emerald-600/40"
+                    title="Export assessment results to Google Sheets in your Google Drive"
+                  >
+                    <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-300" />
+                    <span>Export to Google Sheets</span>
                   </button>
 
                   <button
@@ -1740,7 +1782,7 @@ export const ResultSmsSystem: React.FC<ResultSmsSystemProps> = ({
                   <div className="p-3 bg-slate-50 border border-slate-200 rounded-sm space-y-1">
                     <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Total Evaluated</span>
                     <div className="text-xl font-black text-slate-900">{batchStats.total} Students</div>
-                    <span className="text-[10px] font-medium text-slate-500">Department of {selectedBatch.department}</span>
+                    <span className="text-[10px] font-medium text-slate-500">Department of {cleanDepartmentDisplay(selectedBatch.department)}</span>
                   </div>
 
                   <div className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-sm space-y-1">
@@ -2434,30 +2476,42 @@ Overall Result: [PASS/FAIL]
             </div>
 
             {/* Mode Switcher Tabs */}
-            <div className="grid grid-cols-2 bg-slate-100 p-1 border-b border-slate-200 gap-1">
+            <div className="grid grid-cols-1 sm:grid-cols-3 bg-slate-100 p-1 border-b border-slate-200 gap-1">
               <button
                 type="button"
                 onClick={() => setActiveTab('excel')}
-                className={`py-2 px-3 text-xs font-black uppercase tracking-wider rounded-sm transition-all flex items-center justify-center space-x-2 ${
+                className={`py-2 px-3 text-xs font-black uppercase tracking-wider rounded-sm transition-all flex items-center justify-center space-x-2 cursor-pointer ${
                   activeTab === 'excel'
                     ? 'bg-[#0f172a] text-amber-400 shadow-sm'
                     : 'text-slate-600 hover:bg-slate-200'
                 }`}
               >
                 <FileSpreadsheet className="w-4 h-4 text-amber-400" />
-                <span>Excel File Upload (.xlsx / .csv)</span>
+                <span>Excel (.xlsx / .csv)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('sheets')}
+                className={`py-2 px-3 text-xs font-black uppercase tracking-wider rounded-sm transition-all flex items-center justify-center space-x-2 cursor-pointer ${
+                  activeTab === 'sheets'
+                    ? 'bg-emerald-800 text-white shadow-sm font-black'
+                    : 'text-emerald-800 bg-emerald-50 hover:bg-emerald-100 font-bold'
+                }`}
+              >
+                <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                <span>Google Sheets</span>
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('paste')}
-                className={`py-2 px-3 text-xs font-black uppercase tracking-wider rounded-sm transition-all flex items-center justify-center space-x-2 ${
+                className={`py-2 px-3 text-xs font-black uppercase tracking-wider rounded-sm transition-all flex items-center justify-center space-x-2 cursor-pointer ${
                   activeTab === 'paste'
                     ? 'bg-[#0f172a] text-amber-400 shadow-sm'
                     : 'text-slate-600 hover:bg-slate-200'
                 }`}
               >
                 <BookOpen className="w-4 h-4 text-amber-400" />
-                <span>Text / Tabular Data Paste</span>
+                <span>Tabular Text Paste</span>
               </button>
             </div>
 
@@ -2557,7 +2611,7 @@ Overall Result: [PASS/FAIL]
                 </div>
               </div>
 
-              {activeTab === 'excel' ? (
+              {activeTab === 'excel' && (
                 <div className="space-y-3">
                   {/* Drag & Drop File Zone */}
                   <div
@@ -2669,7 +2723,83 @@ Overall Result: [PASS/FAIL]
                     </div>
                   )}
                 </div>
-              ) : (
+              )}
+
+              {activeTab === 'sheets' && (
+                <div className="space-y-3">
+                  <GoogleSheetsPicker
+                    onDataLoaded={handleGoogleSheetDataLoaded}
+                    onError={(msg) => setError(msg)}
+                  />
+
+                  {/* Dynamic Subject & Parent Mobile Validation Banner */}
+                  {parsedResults.length > 0 && (
+                    <div className="p-3.5 bg-slate-900 text-white rounded-sm text-xs space-y-2 border border-emerald-500/30">
+                      <div className="flex items-center justify-between text-emerald-400 font-black uppercase text-[11px]">
+                        <span>✓ Parsed {parsedResults.length} Student Records from Google Sheet</span>
+                        <span>Auto-Detected {detectedSubjects.length} Dynamic Subject Columns</span>
+                      </div>
+
+                      {detectedSubjects.length > 0 && (
+                        <div className="flex flex-wrap gap-1 text-[10px] font-bold">
+                          <span className="text-slate-400">Subjects:</span>
+                          {detectedSubjects.map((sb, i) => (
+                            <span key={i} className="px-1.5 py-0.5 bg-slate-800 text-emerald-300 rounded-sm border border-emerald-700/50">
+                              {sb}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-4 text-[11px] font-bold pt-1 border-t border-slate-800">
+                        <span className="text-emerald-400">✓ Parent Mobiles Matched: {validMobileCount}</span>
+                        {skippedMobileCount > 0 && (
+                          <span className="text-amber-300">⚠ Unmatched in File: {skippedMobileCount} (Will auto-match from database)</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Parsed Data Preview Table */}
+                  {parsedResults.length > 0 && (
+                    <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-sm">
+                      <table className="w-full text-left text-[11px] text-slate-700">
+                        <thead className="bg-slate-100 text-slate-700 uppercase font-black sticky top-0">
+                          <tr>
+                            <th className="p-2 font-black">Reg No</th>
+                            <th className="p-2 font-black">Student Name</th>
+                            <th className="p-2 font-black">Parent Mobile</th>
+                            <th className="p-2 font-black text-center">Total</th>
+                            <th className="p-2 font-black text-center">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {parsedResults.slice(0, 10).map((r, i) => (
+                            <tr key={i} className="hover:bg-slate-50">
+                              <td className="p-2 font-mono font-bold text-slate-900">{r.registerNumber}</td>
+                              <td className="p-2 font-bold text-slate-800">{r.studentName}</td>
+                              <td className="p-2 font-mono text-slate-600">{r.phoneNumber || 'MISSING'}</td>
+                              <td className="p-2 text-center font-bold text-slate-900">{r.totalMarks}</td>
+                              <td className="p-2 text-center font-bold">
+                                <span className={r.overallStatus === 'PASS' ? 'text-emerald-700' : 'text-rose-600'}>
+                                  {r.overallStatus}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {parsedResults.length > 10 && (
+                        <div className="p-2 text-center text-[10px] text-slate-500 bg-slate-50 font-bold border-t border-slate-200">
+                          ...and {parsedResults.length - 10} more students
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'paste' && (
                 /* Tabular Text Paste Area */
                 <div className="space-y-2">
                   <p className="text-xs text-slate-600 font-medium">
@@ -2756,7 +2886,7 @@ Overall Result: [PASS/FAIL]
                   DEPARTMENT OF CSE(AIML) - INTERNAL ASSESSMENT REPORT
                 </h1>
                 <p className="text-xs font-bold text-slate-600 mt-1">
-                  {selectedBatch.title} • Assessment Date: {selectedBatch.examDate || '2026-02-15'} • Academic Year: {selectedBatch.academicYear || '2025-2026'}
+                  {cleanTitleDisplay(selectedBatch.title)} • Assessment Date: {selectedBatch.examDate || '2026-02-15'} • Academic Year: {selectedBatch.academicYear || '2025-2026'}
                 </p>
               </div>
 
@@ -3107,6 +3237,15 @@ Overall Result: [PASS/FAIL]
             </div>
           </div>
         </div>
+      )}
+
+      {/* Google Sheets Export Modal */}
+      {selectedBatch && (
+        <GoogleSheetsExportModal
+          batch={selectedBatch}
+          isOpen={showGoogleSheetsExportModal}
+          onClose={() => setShowGoogleSheetsExportModal(false)}
+        />
       )}
 
     </div>

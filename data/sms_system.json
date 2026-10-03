@@ -64,7 +64,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "8754020556",
       "rawPassword": "VSBVali1278",
       "permissions": [
@@ -77,17 +77,25 @@
   "parentEnrollments": [],
   "students": [
     {
+      "name": "Test Student Antigravity",
+      "registerNumber": "921321104999",
+      "department": "CSE",
+      "phoneNumber": "9876543210",
+      "id": "std-1791017359162-gud6p",
+      "createdAt": "2026-10-03T08:49:19.162Z"
+    },
+    {
       "registerNumber": "922524148117",
       "name": "VALIULLAH",
       "phoneNumber": "+917092483276",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "id": "std-1786070186130-kvzti",
       "createdAt": "2026-08-07T02:36:26.130Z"
     },
     {
       "name": "MOHANA PRIYA G",
       "registerNumber": "922524148063",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+917871254655",
       "id": "std-1786532199893-8eu7o",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -95,7 +103,7 @@
     {
       "name": "MUHAMMAD NASAR",
       "registerNumber": "922524148064",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919994687503",
       "id": "std-1786532199893-toyiz",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -103,7 +111,7 @@
     {
       "name": "MUKILA K",
       "registerNumber": "922524148065",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+916374855308",
       "id": "std-1786532199893-7krch",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -111,7 +119,7 @@
     {
       "name": "MUKILAN K",
       "registerNumber": "922524148066",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919751872112",
       "id": "std-1786532199893-2806b",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -119,7 +127,7 @@
     {
       "name": "MURALIKARTHICK A",
       "registerNumber": "922524148067",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+917620817193",
       "id": "std-1786532199893-l5dog",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -127,7 +135,7 @@
     {
       "name": "NAGULAN K",
       "registerNumber": "922524148068",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919787413247",
       "id": "std-1786532199893-8nhp1",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -135,7 +143,7 @@
     {
       "name": "NANDHITHA PT",
       "registerNumber": "922524148069",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919942135141",
       "id": "std-1786532199893-kl9m6",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -143,7 +151,7 @@
     {
       "name": "NARENDHRA PRAS",
       "registerNumber": "922524148070",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919688875559",
       "id": "std-1786532199893-weqii",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -151,7 +159,7 @@
     {
       "name": "NARMADHA   A",
       "registerNumber": "922524148071",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919942423165",
       "id": "std-1786532199893-14q3d",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -159,7 +167,7 @@
     {
       "name": "NAVEEN S",
       "registerNumber": "922524148072",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+917548827109",
       "id": "std-1786532199893-hd3ha",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -167,7 +175,7 @@
     {
       "name": "NETHRA K",
       "registerNumber": "922524148073",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919443407312",
       "id": "std-1786532199893-n9uk2",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -175,7 +183,7 @@
     {
       "name": "POOJA SRI M",
       "registerNumber": "922524148074",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919150922072",
       "id": "std-1786532199893-uo50y",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -183,7 +191,7 @@
     {
       "name": "PRASANTH R",
       "registerNumber": "922524148075",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+918883312075",
       "id": "std-1786532199893-l33sz",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -191,7 +199,7 @@
     {
       "name": "PRAVIN T",
       "registerNumber": "922524148076",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919965419555",
       "id": "std-1786532199893-owg2y",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -199,7 +207,7 @@
     {
       "name": "PRITHIV T",
       "registerNumber": "922524148078",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919442681683",
       "id": "std-1786532199893-954mz",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -207,7 +215,7 @@
     {
       "name": "PRIYADHARSHAN B",
       "registerNumber": "922524148079",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919842690379",
       "id": "std-1786532199893-nhep8",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -215,7 +223,7 @@
     {
       "name": "PRIYADHARSHINI R",
       "registerNumber": "922524148080",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919715717487",
       "id": "std-1786532199893-w9aiw",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -223,7 +231,7 @@
     {
       "name": "RAKSHANA S",
       "registerNumber": "922524148081",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919080407060",
       "id": "std-1786532199893-jkoel",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -231,7 +239,7 @@
     {
       "name": "RANJANI V",
       "registerNumber": "922524148082",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919080747978",
       "id": "std-1786532199893-g8l2x",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -239,7 +247,7 @@
     {
       "name": "RATHIKA S",
       "registerNumber": "922524148084",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919894021963",
       "id": "std-1786532199893-23ysf",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -247,7 +255,7 @@
     {
       "name": "RATHINA KIRUTHIK",
       "registerNumber": "922524148085",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+918608323481",
       "id": "std-1786532199893-utq41",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -255,7 +263,7 @@
     {
       "name": "RISHI ADITHYA V. V",
       "registerNumber": "922524148086",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919443621362",
       "id": "std-1786532199893-rl05i",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -263,7 +271,7 @@
     {
       "name": "RISHIDEV S",
       "registerNumber": "922524148087",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+918489075401",
       "id": "std-1786532199893-vomdh",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -271,7 +279,7 @@
     {
       "name": "RITHAN S",
       "registerNumber": "922524148088",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919976496022",
       "id": "std-1786532199893-0wq5g",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -279,7 +287,7 @@
     {
       "name": "RITHIKA S",
       "registerNumber": "922524148089",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919842849200",
       "id": "std-1786532199893-jbhjh",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -287,7 +295,7 @@
     {
       "name": "RITHIKASRI P",
       "registerNumber": "922524148090",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919894026438",
       "id": "std-1786532199893-s81af",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -295,7 +303,7 @@
     {
       "name": "RITHIKAA J",
       "registerNumber": "922524148091",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919786022876",
       "id": "std-1786532199893-fpr3m",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -303,7 +311,7 @@
     {
       "name": "RITIKA V",
       "registerNumber": "922524148092",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919566730099",
       "id": "std-1786532199893-h9p0x",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -311,7 +319,7 @@
     {
       "name": "ROHAN C R",
       "registerNumber": "922524148093",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919388453507",
       "id": "std-1786532199893-bbgqn",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -319,7 +327,7 @@
     {
       "name": "SABARISH S",
       "registerNumber": "922524148094",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919843824012",
       "id": "std-1786532199893-9rge0",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -327,7 +335,7 @@
     {
       "name": "SADHANAA R",
       "registerNumber": "922524148095",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+918754038877",
       "id": "std-1786532199893-z84nu",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -335,7 +343,7 @@
     {
       "name": "SAMIKSHA N",
       "registerNumber": "922524148096",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919791204222",
       "id": "std-1786532199893-peaf1",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -343,7 +351,7 @@
     {
       "name": "SANDHIYA P",
       "registerNumber": "922524148097",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919486115261",
       "id": "std-1786532199893-2p941",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -351,7 +359,7 @@
     {
       "name": "SANTHOSH.S",
       "registerNumber": "922524148098",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919994452882",
       "id": "std-1786532199893-q7ylf",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -359,7 +367,7 @@
     {
       "name": "SATHIYA PRIYA L",
       "registerNumber": "922524148099",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919442681060",
       "id": "std-1786532199893-xx8vl",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -367,7 +375,7 @@
     {
       "name": "SELVA GANAPATHY",
       "registerNumber": "922524148100",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+918015049743",
       "id": "std-1786532199893-1hp85",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -375,7 +383,7 @@
     {
       "name": "SELVA JEYAKRISHN",
       "registerNumber": "922524148101",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919385926257",
       "id": "std-1786532199893-64omj",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -383,7 +391,7 @@
     {
       "name": "SHANTHOSH KANN",
       "registerNumber": "922524148102",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919788230275",
       "id": "std-1786532199893-i1bi9",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -391,7 +399,7 @@
     {
       "name": "SHIVNESH KUMAR",
       "registerNumber": "922524148103",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919500500336",
       "id": "std-1786532199893-u8lt5",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -399,7 +407,7 @@
     {
       "name": "SHRI PRAJITH S",
       "registerNumber": "922524148104",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+918300005191",
       "id": "std-1786532199893-k2n52",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -407,7 +415,7 @@
     {
       "name": "SIVASATHYA K",
       "registerNumber": "922524148105",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919942723685",
       "id": "std-1786532199893-ib8o0",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -415,7 +423,7 @@
     {
       "name": "SRI VISHNU V",
       "registerNumber": "922524148106",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919443593907",
       "id": "std-1786532199893-o3fov",
       "createdAt": "2026-08-12T10:56:39.893Z"
@@ -423,7 +431,7 @@
     {
       "name": "SRIVARSHAN. M",
       "registerNumber": "922524148107",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919865417776",
       "id": "std-1786532199894-c18fy",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -431,7 +439,7 @@
     {
       "name": "SUBASH P",
       "registerNumber": "922524148108",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919844813944",
       "id": "std-1786532199894-owxs5",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -439,7 +447,7 @@
     {
       "name": "SUDHAN D",
       "registerNumber": "922524148109",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919751413152",
       "id": "std-1786532199894-kywlk",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -447,7 +455,7 @@
     {
       "name": "SUJEETH S",
       "registerNumber": "922524148110",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919942413211",
       "id": "std-1786532199894-qt6z6",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -455,7 +463,7 @@
     {
       "name": "SUJITH P S",
       "registerNumber": "922524148111",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919095773507",
       "id": "std-1786532199894-bb9ht",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -463,7 +471,7 @@
     {
       "name": "SUPIKSHA C",
       "registerNumber": "922524148112",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919362999888",
       "id": "std-1786532199894-ebrzm",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -471,7 +479,7 @@
     {
       "name": "TAMILARASAN M",
       "registerNumber": "922524148113",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919952895003",
       "id": "std-1786532199894-nxxif",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -479,7 +487,7 @@
     {
       "name": "THANGALAKSHMI A",
       "registerNumber": "922524148114",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919995999752",
       "id": "std-1786532199894-7np2s",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -487,7 +495,7 @@
     {
       "name": "THARUNIKA P",
       "registerNumber": "922524148115",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919087498767",
       "id": "std-1786532199894-z49zb",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -495,7 +503,7 @@
     {
       "name": "VAISNAVA S",
       "registerNumber": "922524148116",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919865125123",
       "id": "std-1786532199894-446gr",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -503,7 +511,7 @@
     {
       "name": "VARUN SANKAR M",
       "registerNumber": "922524148118",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919629324665",
       "id": "std-1786532199894-3yivx",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -511,7 +519,7 @@
     {
       "name": "VELMURUGAN B",
       "registerNumber": "922524148119",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+916281286751",
       "id": "std-1786532199894-an0kb",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -519,7 +527,7 @@
     {
       "name": "VENGADESWARAN",
       "registerNumber": "922524148120",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919750627465",
       "id": "std-1786532199894-myyid",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -527,7 +535,7 @@
     {
       "name": "VIJAYRAM.J",
       "registerNumber": "922524148121",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919500737480",
       "id": "std-1786532199894-keg5n",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -535,7 +543,7 @@
     {
       "name": "VISHNU B",
       "registerNumber": "922524148122",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+918760439110",
       "id": "std-1786532199894-l9ohc",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -543,7 +551,7 @@
     {
       "name": "YASWANTH V",
       "registerNumber": "922524148123",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919346045673",
       "id": "std-1786532199894-3j421",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -551,7 +559,7 @@
     {
       "name": "YESWANTH S M",
       "registerNumber": "922524148124",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919629802883",
       "id": "std-1786532199894-dyqdu",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -559,7 +567,7 @@
     {
       "name": "YOGALAKSHMI S",
       "registerNumber": "922524148125",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919629802883",
       "id": "std-1786532199894-3p93u",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -567,7 +575,7 @@
     {
       "name": "YUVAN SHANKAR R",
       "registerNumber": "922524148126",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "+919751322018",
       "id": "std-1786532199894-107rf",
       "createdAt": "2026-08-12T10:56:39.894Z"
@@ -577,7 +585,7 @@
     {
       "name": "VALIULLAH",
       "staffId": "Vali1278",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "phoneNumber": "8754020556",
       "permissions": [
         "send_sms",
@@ -590,8 +598,8 @@
   "departments": [
     {
       "id": "dept-aiml",
-      "code": "CSE(CSE(AIML))",
-      "name": "Artificial Intelligence & Machine Learning",
+      "code": "CSE(AIML)",
+      "name": "Computer Science & Engineering (AI & ML)",
       "headOfDepartment": "Dr. A. Ramesh",
       "createdAt": "2026-08-07T02:24:06.396Z"
     },
@@ -677,7 +685,7 @@
       "recipientName": "Valiullah",
       "registerNumber": "922524148117",
       "phoneNumber": "+918754020556",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "messageType": "Exam Result",
       "messageContent": "VSB: Dear Parent, Valiullah (Reg No: 922524148117) scored 483 marks. Result: PASS. - VY NEXTGEN TECHNOLOGY",
       "channel": "Fast2SMS Gateway",
@@ -690,7 +698,7 @@
       "recipientName": "Anish Kumar",
       "registerNumber": "921321104001",
       "phoneNumber": "+918754020556",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "messageType": "General Notification",
       "messageContent": "Notice: Dear Student Anish Kumar (921321104001), {messageText}. Issued on {date} by VY NEXTGEN TECHNOLOGY.",
       "channel": "SMS",
@@ -703,7 +711,7 @@
       "recipientName": "Anish Kumar",
       "registerNumber": "921321104001",
       "phoneNumber": "+918754020556",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "messageType": "Exam Result",
       "messageContent": "Dear Parent/Student, Result for 921321104001 (Anish Kumar) - AIML: Total Marks: {marks}. Result: {status}. - VY NEXTGEN TECHNOLOGY",
       "channel": "SMS",
@@ -716,7 +724,7 @@
       "recipientName": "Anish Kumar",
       "registerNumber": "921321104001",
       "phoneNumber": "+918754020556",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "messageType": "Exam Result",
       "messageContent": "VSB: Dear Parent, Anish Kumar (Reg No: 921321104001) scored 341 marks. Result: PASS. - VY NEXTGEN TECHNOLOGY",
       "channel": "Fast2SMS Gateway",
@@ -729,9 +737,9 @@
   "examBatches": [
     {
       "id": "exm-1788336920211-fzmo1",
-      "title": "VSB Internal Internal Marks  IT1 CSE(CSE(AIML)) B",
+      "title": "VSB Internal Internal Marks  IT1 CSE(AIML) B",
       "resultType": "Internal Test / Assessment",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "examDate": "2026-09-02",
       "results": [
         {
@@ -739,7 +747,7 @@
           "registerNumber": "922524148063",
           "studentName": "MOHANA PRIYA G",
           "phoneNumber": "+917871254655",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -804,7 +812,7 @@
           "registerNumber": "922524148064",
           "studentName": "MUHAMMAD NASAR",
           "phoneNumber": "+919994687503",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -869,7 +877,7 @@
           "registerNumber": "922524148065",
           "studentName": "MUKILA K",
           "phoneNumber": "+916374855308",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -934,7 +942,7 @@
           "registerNumber": "922524148066",
           "studentName": "MUKILAN K",
           "phoneNumber": "+919751872112",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -999,7 +1007,7 @@
           "registerNumber": "922524148067",
           "studentName": "MURALIKARTHICK A",
           "phoneNumber": "+917620817193",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -1064,7 +1072,7 @@
           "registerNumber": "922524148068",
           "studentName": "NAGULAN K",
           "phoneNumber": "+919787413247",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -1129,7 +1137,7 @@
           "registerNumber": "922524148069",
           "studentName": "NANDHITHA PT",
           "phoneNumber": "+919942135141",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -1194,7 +1202,7 @@
           "registerNumber": "922524148070",
           "studentName": "NARENDHRA PRAS",
           "phoneNumber": "+919688875559",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -1259,7 +1267,7 @@
           "registerNumber": "922524148071",
           "studentName": "NARMADHA   A",
           "phoneNumber": "+919942423165",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -1324,7 +1332,7 @@
           "registerNumber": "922524148072",
           "studentName": "NAVEEN S",
           "phoneNumber": "+917548827109",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -1389,7 +1397,7 @@
           "registerNumber": "922524148073",
           "studentName": "NETHRA K",
           "phoneNumber": "+919443407312",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -1454,7 +1462,7 @@
           "registerNumber": "922524148074",
           "studentName": "POOJA SRI M",
           "phoneNumber": "+919150922072",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -1519,7 +1527,7 @@
           "registerNumber": "922524148075",
           "studentName": "PRASANTH R",
           "phoneNumber": "+918883312075",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -1584,7 +1592,7 @@
           "registerNumber": "922524148076",
           "studentName": "PRAVIN T",
           "phoneNumber": "+919965419555",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -1649,7 +1657,7 @@
           "registerNumber": "922524148078",
           "studentName": "PRITHIV T",
           "phoneNumber": "+919442681683",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -1714,7 +1722,7 @@
           "registerNumber": "922524148079",
           "studentName": "PRIYADHARSHAN B",
           "phoneNumber": "+919842690379",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -1779,7 +1787,7 @@
           "registerNumber": "922524148080",
           "studentName": "PRIYADHARSHINI R",
           "phoneNumber": "+919715717487",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -1844,7 +1852,7 @@
           "registerNumber": "922524148081",
           "studentName": "RAKSHANA S",
           "phoneNumber": "+919080407060",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -1909,7 +1917,7 @@
           "registerNumber": "922524148082",
           "studentName": "RANJANI V",
           "phoneNumber": "+919080747978",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -1974,7 +1982,7 @@
           "registerNumber": "922524148084",
           "studentName": "RATHIKA S",
           "phoneNumber": "+919894021963",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -2039,7 +2047,7 @@
           "registerNumber": "922524148085",
           "studentName": "RATHINA KIRUTHIK",
           "phoneNumber": "+918608323481",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -2104,7 +2112,7 @@
           "registerNumber": "922524148086",
           "studentName": "RISHI ADITHYA V. V",
           "phoneNumber": "+919443621362",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -2169,7 +2177,7 @@
           "registerNumber": "922524148087",
           "studentName": "RISHIDEV S",
           "phoneNumber": "+918489075401",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -2234,7 +2242,7 @@
           "registerNumber": "922524148088",
           "studentName": "RITHAN S",
           "phoneNumber": "+919976496022",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -2299,7 +2307,7 @@
           "registerNumber": "922524148089",
           "studentName": "RITHIKA S",
           "phoneNumber": "+919842849200",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -2364,7 +2372,7 @@
           "registerNumber": "922524148090",
           "studentName": "RITHIKASRI P",
           "phoneNumber": "+919894026438",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -2429,7 +2437,7 @@
           "registerNumber": "922524148091",
           "studentName": "RITHIKAA J",
           "phoneNumber": "+919786022876",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -2494,7 +2502,7 @@
           "registerNumber": "922524148092",
           "studentName": "RITIKA V",
           "phoneNumber": "+919566730099",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -2559,7 +2567,7 @@
           "registerNumber": "922524148093",
           "studentName": "ROHAN C R",
           "phoneNumber": "+919388453507",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -2624,7 +2632,7 @@
           "registerNumber": "922524148094",
           "studentName": "SABARISH S",
           "phoneNumber": "+919843824012",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -2689,7 +2697,7 @@
           "registerNumber": "922524148095",
           "studentName": "SADHANAA R",
           "phoneNumber": "+918754038877",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -2754,7 +2762,7 @@
           "registerNumber": "922524148096",
           "studentName": "SAMIKSHA N",
           "phoneNumber": "+919791204222",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -2819,7 +2827,7 @@
           "registerNumber": "922524148097",
           "studentName": "SANDHIYA P",
           "phoneNumber": "+919486115261",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -2884,7 +2892,7 @@
           "registerNumber": "922524148098",
           "studentName": "SANTHOSH.S",
           "phoneNumber": "+919994452882",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -2949,7 +2957,7 @@
           "registerNumber": "922524148099",
           "studentName": "SATHIYA PRIYA L",
           "phoneNumber": "+919442681060",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -3014,7 +3022,7 @@
           "registerNumber": "922524148100",
           "studentName": "SELVA GANAPATHY",
           "phoneNumber": "+918015049743",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -3079,7 +3087,7 @@
           "registerNumber": "922524148101",
           "studentName": "SELVA JEYAKRISHN",
           "phoneNumber": "+919385926257",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -3144,7 +3152,7 @@
           "registerNumber": "922524148102",
           "studentName": "SHANTHOSH KANN",
           "phoneNumber": "+919788230275",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -3209,7 +3217,7 @@
           "registerNumber": "922524148103",
           "studentName": "SHIVNESH KUMAR",
           "phoneNumber": "+919500500336",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -3274,7 +3282,7 @@
           "registerNumber": "922524148104",
           "studentName": "SHRI PRAJITH S",
           "phoneNumber": "+918300005191",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -3339,7 +3347,7 @@
           "registerNumber": "922524148105",
           "studentName": "SIVASATHYA K",
           "phoneNumber": "+919942723685",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -3404,7 +3412,7 @@
           "registerNumber": "922524148106",
           "studentName": "SRI VISHNU V",
           "phoneNumber": "+919443593907",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -3469,7 +3477,7 @@
           "registerNumber": "922524148107",
           "studentName": "SRIVARSHAN. M",
           "phoneNumber": "+919865417776",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -3534,7 +3542,7 @@
           "registerNumber": "922524148108",
           "studentName": "SUBASH P",
           "phoneNumber": "+919844813944",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -3599,7 +3607,7 @@
           "registerNumber": "922524148109",
           "studentName": "SUDHAN D",
           "phoneNumber": "+919751413152",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -3664,7 +3672,7 @@
           "registerNumber": "922524148110",
           "studentName": "SUJEETH S",
           "phoneNumber": "+919942413211",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -3729,7 +3737,7 @@
           "registerNumber": "922524148111",
           "studentName": "SUJITH P S",
           "phoneNumber": "+919095773507",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -3794,7 +3802,7 @@
           "registerNumber": "922524148112",
           "studentName": "SUPIKSHA C",
           "phoneNumber": "+919362999888",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -3859,7 +3867,7 @@
           "registerNumber": "922524148113",
           "studentName": "TAMILARASAN M",
           "phoneNumber": "+919952895003",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -3924,7 +3932,7 @@
           "registerNumber": "922524148114",
           "studentName": "THANGALAKSHMI A",
           "phoneNumber": "+919995999752",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -3989,7 +3997,7 @@
           "registerNumber": "922524148115",
           "studentName": "THARUNIKA P",
           "phoneNumber": "+919087498767",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -4054,7 +4062,7 @@
           "registerNumber": "922524148116",
           "studentName": "VAISNAVA S",
           "phoneNumber": "+919865125123",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -4119,7 +4127,7 @@
           "registerNumber": "922524148117",
           "studentName": "VALIULLAH",
           "phoneNumber": "+917092483276",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -4184,7 +4192,7 @@
           "registerNumber": "922524148118",
           "studentName": "VARUN SANKAR M",
           "phoneNumber": "+919629324665",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -4249,7 +4257,7 @@
           "registerNumber": "922524148119",
           "studentName": "VELMURUGAN B",
           "phoneNumber": "+916281286751",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -4314,7 +4322,7 @@
           "registerNumber": "922524148120",
           "studentName": "VENGADESWARAN",
           "phoneNumber": "+919750627465",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -4379,7 +4387,7 @@
           "registerNumber": "922524148121",
           "studentName": "VIJAYRAM.J",
           "phoneNumber": "+919500737480",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -4444,7 +4452,7 @@
           "registerNumber": "922524148122",
           "studentName": "VISHNU B",
           "phoneNumber": "+918760439110",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -4509,7 +4517,7 @@
           "registerNumber": "922524148123",
           "studentName": "YASWANTH V",
           "phoneNumber": "+919346045673",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -4574,7 +4582,7 @@
           "registerNumber": "922524148124",
           "studentName": "YESWANTH S M",
           "phoneNumber": "+919629802883",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -4639,7 +4647,7 @@
           "registerNumber": "922524148125",
           "studentName": "YOGALAKSHMI S",
           "phoneNumber": "+919629802883",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -4704,7 +4712,7 @@
           "registerNumber": "922524148126",
           "studentName": "YUVAN SHANKAR R",
           "phoneNumber": "+919751322018",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "NLP",
@@ -4847,7 +4855,7 @@
     {
       "id": "exm-1786097757284-2ggs9",
       "title": "INTERNAL",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "examDate": "2026-08-07",
       "results": [
         {
@@ -4855,7 +4863,7 @@
           "registerNumber": "922524148117",
           "studentName": "Valiullah",
           "phoneNumber": "+918754020556",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "MATHEMATICS",
@@ -4915,7 +4923,7 @@
     {
       "id": "exm-1786070186131-uphzj",
       "title": "Semester 5 End Exam",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "examDate": "2026-08-06",
       "results": [
         {
@@ -4923,7 +4931,7 @@
           "registerNumber": "921321104001",
           "studentName": "Anish Kumar",
           "phoneNumber": "+918754020556",
-          "department": "CSE(CSE(AIML))",
+          "department": "CSE(AIML)",
           "subjects": [
             {
               "subjectCode": "MATHS",
@@ -4986,9 +4994,97 @@
   },
   "activityLogs": [
     {
+      "id": "act-1791017415561-n2zyq",
+      "action": "Student Deleted",
+      "details": "Deleted student Test Student Antigravity Updated (921321104888)",
+      "user": "VYNEXTGEN",
+      "type": "student",
+      "timestamp": "2026-10-03T08:50:15.561Z"
+    },
+    {
+      "id": "act-1791017415552-2gdsq",
+      "action": "Student Deleted",
+      "details": "Deleted student Antigravity Full Lifecycle Student (Updated) (921321104777)",
+      "user": "VYNEXTGEN",
+      "type": "student",
+      "timestamp": "2026-10-03T08:50:15.552Z"
+    },
+    {
+      "id": "act-1791017415547-k1ryk",
+      "action": "Student Updated",
+      "details": "Updated details for Antigravity Full Lifecycle Student (Updated) (921321104777)",
+      "user": "VYNEXTGEN",
+      "type": "student",
+      "timestamp": "2026-10-03T08:50:15.547Z"
+    },
+    {
+      "id": "act-1791017415538-683nk",
+      "action": "Student Added",
+      "details": "Added student Antigravity Full Lifecycle Student (921321104777) - Dept: CSE",
+      "user": "VYNEXTGEN",
+      "type": "student",
+      "timestamp": "2026-10-03T08:50:15.538Z"
+    },
+    {
+      "id": "act-1791017404919-yszsi",
+      "action": "Student Updated",
+      "details": "Updated details for Test Student Antigravity Updated (921321104888)",
+      "user": "VYNEXTGEN",
+      "type": "student",
+      "timestamp": "2026-10-03T08:50:04.919Z"
+    },
+    {
+      "id": "act-1791017389244-he5k1",
+      "action": "Student Added",
+      "details": "Added student Test Student Antigravity (921321104888) - Dept: CSE",
+      "user": "VYNEXTGEN",
+      "type": "student",
+      "timestamp": "2026-10-03T08:49:49.244Z"
+    },
+    {
+      "id": "act-1791017359162-t2v6u",
+      "action": "Student Added",
+      "details": "Added student Test Student Antigravity (921321104999) - Dept: CSE",
+      "user": "VYNEXTGEN",
+      "type": "student",
+      "timestamp": "2026-10-03T08:49:19.162Z"
+    },
+    {
+      "id": "act-1791016956320-vb55q",
+      "action": "User Login",
+      "details": "Logged in as Super Administrator (SUPER_ADMIN)",
+      "user": "VYNEXTGEN",
+      "type": "auth",
+      "timestamp": "2026-10-03T08:42:36.320Z"
+    },
+    {
+      "id": "act-1791006974431-plmxw",
+      "action": "User Login",
+      "details": "Logged in as Super Administrator (SUPER_ADMIN)",
+      "user": "VYNEXTGEN",
+      "type": "auth",
+      "timestamp": "2026-10-03T05:56:14.431Z"
+    },
+    {
+      "id": "act-1791006970721-6swbv",
+      "action": "User Logout",
+      "details": "Logged out (Vali1278)",
+      "user": "Vali1278",
+      "type": "auth",
+      "timestamp": "2026-10-03T05:56:10.721Z"
+    },
+    {
+      "id": "act-1791006951829-dpsl5",
+      "action": "Department Migration",
+      "details": "Auto-inserted 1 missing default departments into database",
+      "user": "VSBEC",
+      "type": "settings",
+      "timestamp": "2026-10-03T05:55:51.829Z"
+    },
+    {
       "id": "act-1788336920211-3903w",
       "action": "Uploaded Exam Results",
-      "details": "Uploaded result set \"VSB Internal Internal Marks  IT1 CSE(CSE(AIML)) B\" (CSE(AIML)) - 62 students, 55% pass rate (62 parents matched)",
+      "details": "Uploaded result set \"VSB Internal Internal Marks  IT1 CSE(AIML) B\" (CSE(AIML)) - 62 students, 55% pass rate (62 parents matched)",
       "user": "Vali1278",
       "type": "result",
       "timestamp": "2026-09-02T08:15:20.211Z"
@@ -5696,97 +5792,36 @@
       "user": "Vali1278",
       "type": "auth",
       "timestamp": "2026-08-12T10:14:56.216Z"
-    },
-    {
-      "id": "act-1786529677357-zl24g",
-      "action": "User Logout",
-      "details": "Logged out (VSBEC)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:14:37.357Z"
-    },
-    {
-      "id": "act-1786529676836-gij49",
-      "action": "User Logout",
-      "details": "Logged out (VSBEC)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:14:36.836Z"
-    },
-    {
-      "id": "act-1786529676053-8h96f",
-      "action": "User Logout",
-      "details": "Logged out (VSBEC)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:14:36.053Z"
-    },
-    {
-      "id": "act-1786529675838-bphfn",
-      "action": "User Logout",
-      "details": "Logged out (VSBEC)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:14:35.838Z"
-    },
-    {
-      "id": "act-1786529674015-7j05c",
-      "action": "User Logout",
-      "details": "Logged out (VSBEC)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:14:34.015Z"
-    },
-    {
-      "id": "act-1786529373005-iym7e",
-      "action": "Student Updated",
-      "details": "Updated details for Valiullah (922524148117)",
-      "user": "VSBEC",
-      "type": "student",
-      "timestamp": "2026-08-12T10:09:33.005Z"
-    },
-    {
-      "id": "act-1786529363877-4e13c",
-      "action": "User Login",
-      "details": "Logged in as System Administrator (VY NEXTGEN) (ADMIN)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:09:23.877Z"
-    },
-    {
-      "id": "act-1786529354553-hrqpj",
-      "action": "User Logout",
-      "details": "Logged out (Vali1278)",
-      "user": "Vali1278",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:09:14.553Z"
-    },
-    {
-      "id": "act-1786529234521-sssuc",
-      "action": "User Login",
-      "details": "Logged in as VALIULLAH (STAFF)",
-      "user": "Vali1278",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:07:14.521Z"
-    },
-    {
-      "id": "act-1786529208347-u04fj",
-      "action": "User Logout",
-      "details": "Logged out (Vali1278)",
-      "user": "Vali1278",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:06:48.347Z"
-    },
-    {
-      "id": "act-1786529207428-jav1w",
-      "action": "User Logout",
-      "details": "Logged out (Vali1278)",
-      "user": "Vali1278",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:06:47.428Z"
     }
   ],
   "loginLogs": [
+    {
+      "id": "login-1791016956321-0nuet",
+      "userId": "VYNEXTGEN",
+      "name": "Super Administrator",
+      "role": "SUPER_ADMIN",
+      "department": "ALL",
+      "action": "login",
+      "timestamp": "2026-10-03T08:42:36.321Z"
+    },
+    {
+      "id": "login-1791006974432-tshhc",
+      "userId": "VYNEXTGEN",
+      "name": "Super Administrator",
+      "role": "SUPER_ADMIN",
+      "department": "ALL",
+      "action": "login",
+      "timestamp": "2026-10-03T05:56:14.432Z"
+    },
+    {
+      "id": "login-1791006970720-4rn6m",
+      "userId": "Vali1278",
+      "name": "VALIULLAH",
+      "role": "staff",
+      "department": "CSE(AIML)",
+      "action": "logout",
+      "timestamp": "2026-10-03T05:56:10.720Z"
+    },
     {
       "id": "login-1786778080098-ytq4k",
       "userId": "HOD_CSE_9689",
@@ -5846,7 +5881,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "action": "logout",
       "timestamp": "2026-08-12T10:58:38.705Z"
     },
@@ -5855,7 +5890,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "action": "login",
       "timestamp": "2026-08-12T10:57:23.058Z"
     },
@@ -5882,7 +5917,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "action": "login",
       "timestamp": "2026-08-12T10:14:56.216Z"
     },
@@ -5945,7 +5980,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "action": "logout",
       "timestamp": "2026-08-12T10:09:14.553Z"
     },
@@ -5954,7 +5989,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "action": "login",
       "timestamp": "2026-08-12T10:07:14.522Z"
     },
@@ -5963,7 +5998,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "action": "logout",
       "timestamp": "2026-08-12T10:06:48.346Z"
     },
@@ -5972,7 +6007,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "action": "logout",
       "timestamp": "2026-08-12T10:06:47.428Z"
     },
@@ -5981,7 +6016,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "action": "logout",
       "timestamp": "2026-08-12T10:06:47.188Z"
     },
@@ -5990,7 +6025,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "action": "logout",
       "timestamp": "2026-08-12T10:06:46.913Z"
     },
@@ -5999,7 +6034,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "action": "logout",
       "timestamp": "2026-08-12T10:06:46.014Z"
     },
@@ -6008,7 +6043,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "action": "logout",
       "timestamp": "2026-08-12T10:06:45.727Z"
     },
@@ -6017,7 +6052,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "action": "logout",
       "timestamp": "2026-08-12T10:06:40.049Z"
     },
@@ -6026,7 +6061,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "action": "logout",
       "timestamp": "2026-08-12T10:06:35.752Z"
     },
@@ -6035,7 +6070,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "action": "logout",
       "timestamp": "2026-08-12T10:06:35.407Z"
     },
@@ -6044,7 +6079,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "action": "login",
       "timestamp": "2026-08-12T09:15:30.546Z"
     },
@@ -6071,7 +6106,7 @@
       "userId": "Vali1278",
       "name": "VALIULLAH",
       "role": "staff",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "action": "logout",
       "timestamp": "2026-08-12T09:14:39.938Z"
     }
@@ -6134,7 +6169,7 @@
       "key": "vsb_live_sk_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d",
       "name": "Department HOD Integration Key (CSE(AIML))",
       "role": "hod",
-      "department": "CSE(CSE(AIML))",
+      "department": "CSE(AIML)",
       "scopes": [
         "results:read",
         "students:read",

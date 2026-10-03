@@ -37,7 +37,10 @@ import {
   Sparkles,
   ArrowRight,
   Info,
+  ExternalLink,
 } from 'lucide-react';
+import { GoogleSheetsPicker } from './GoogleSheetsPicker';
+import { AttendanceGoogleSheetsExportModal } from './AttendanceGoogleSheetsExportModal';
 
 interface AttendanceManagementProps {
   currentUser: User | null;
@@ -90,7 +93,9 @@ export const AttendanceManagement: React.FC<AttendanceManagementProps> = ({
   }>>([]);
   const [manualSearchQuery, setManualSearchQuery] = useState('');
 
-  // Excel Upload State
+  // Excel / Google Sheets Upload State
+  const [excelUploadSource, setExcelUploadSource] = useState<'file' | 'sheets'>('file');
+  const [exportingGoogleSheetsSession, setExportingGoogleSheetsSession] = useState<AttendanceSession | null>(null);
   const [excelFile, setExcelFile] = useState<File | null>(null);
   const [excelDept, setExcelDept] = useState<string>(defaultDept);
   const [excelDate, setExcelDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -266,6 +271,46 @@ export const AttendanceManagement: React.FC<AttendanceManagementProps> = ({
       showToast(
         'success',
         `Parsed ${result.totalRows} student rows (${result.presentCount} Present, ${result.absentCount} Absent, ${result.parentMatchedCount} Parent Mobiles matched).`
+      );
+    } catch (err: any) {
+      showToast('error', formatErrorMessage(err));
+      setExcelPreviewRecords([]);
+      setExcelStats(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle Google Sheet Data Loaded for Attendance
+  const handleGoogleSheetAttendanceLoaded = async (rows: any[][], sheetTitle: string, spreadsheetName: string) => {
+    try {
+      setLoading(true);
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, sheetTitle || 'Attendance');
+      const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const file = new File([blob], `${spreadsheetName}_${sheetTitle}.xlsx`, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      setExcelFile(file);
+
+      const result = await api.uploadAttendanceExcel(file);
+      setExcelPreviewRecords(result.records);
+      setExcelStats({
+        totalRows: result.totalRows,
+        presentCount: result.presentCount,
+        absentCount: result.absentCount,
+        parentMatchedCount: result.parentMatchedCount,
+        parentMissingCount: result.parentMissingCount,
+      });
+
+      const depts = Array.from(new Set(result.records.map((r) => r.department).filter(Boolean)));
+      if (depts.length === 1 && depts[0]) {
+        setExcelDept(depts[0]);
+      }
+
+      showToast(
+        'success',
+        `Imported ${result.totalRows} attendance rows from Google Sheet "${spreadsheetName}" (${result.presentCount} Present, ${result.absentCount} Absent).`
       );
     } catch (err: any) {
       showToast('error', formatErrorMessage(err));
@@ -965,25 +1010,76 @@ export const AttendanceManagement: React.FC<AttendanceManagementProps> = ({
               </div>
             </div>
 
-            {/* Drag and Drop Zone */}
-            <div className="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-lg p-8 text-center bg-slate-950/50 transition-all">
-              <input
-                id="excel-file-upload-input"
-                type="file"
-                accept=".xlsx, .xls, .csv"
-                onChange={handleExcelFileChange}
-                className="hidden"
-              />
-              <label htmlFor="excel-file-upload-input" className="cursor-pointer block">
-                <UploadCloud className="w-12 h-12 text-blue-400 mx-auto mb-3" />
-                <span className="text-sm font-bold uppercase text-white block">
-                  {excelFile ? excelFile.name : 'Click to Browse or Drag & Drop Excel File'}
-                </span>
-                <span className="text-xs text-slate-500 block mt-1">
-                  Required columns: <strong>Register Number</strong>, <strong>Attendance Status</strong> (PRESENT/ABSENT). Student names & Parent phones are auto-resolved from MongoDB!
-                </span>
-              </label>
+            {/* Source Switcher: Local File vs Google Sheets */}
+            <div className="flex border-b border-slate-800 pb-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setExcelUploadSource('file')}
+                className={`px-3 py-1.5 rounded text-xs font-bold uppercase transition-all flex items-center gap-1.5 cursor-pointer ${
+                  excelUploadSource === 'file'
+                    ? 'bg-blue-600 text-white shadow'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <UploadCloud className="w-3.5 h-3.5" />
+                <span>Upload Local File (.xlsx)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setExcelUploadSource('sheets')}
+                className={`px-3 py-1.5 rounded text-xs font-bold uppercase transition-all flex items-center gap-1.5 cursor-pointer ${
+                  excelUploadSource === 'sheets'
+                    ? 'bg-emerald-600 text-white shadow'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Import from Google Sheets</span>
+              </button>
             </div>
+
+            {/* Source 1: Local File Drag and Drop */}
+            {excelUploadSource === 'file' && (
+              <div className="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-lg p-8 text-center bg-slate-950/50 transition-all">
+                <input
+                  id="excel-file-upload-input"
+                  type="file"
+                  accept=".xlsx, .xls, .csv"
+                  onChange={handleExcelFileChange}
+                  className="hidden"
+                />
+                <label htmlFor="excel-file-upload-input" className="cursor-pointer block">
+                  <UploadCloud className="w-12 h-12 text-blue-400 mx-auto mb-3" />
+                  <span className="text-sm font-bold uppercase text-white block">
+                    {excelFile ? excelFile.name : 'Click to Browse or Drag & Drop Excel File'}
+                  </span>
+                  <span className="text-xs text-slate-500 block mt-1">
+                    Required columns: <strong>Register Number</strong>, <strong>Attendance Status</strong> (PRESENT/ABSENT). Student names & Parent phones are auto-resolved from MongoDB!
+                  </span>
+                </label>
+              </div>
+            )}
+
+            {/* Source 2: Google Sheets Picker */}
+            {excelUploadSource === 'sheets' && (
+              <div className="p-4 bg-slate-950/80 border border-slate-800 rounded-lg space-y-3">
+                <div className="flex items-center justify-between text-xs pb-1">
+                  <span className="font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                    <FileSpreadsheet className="w-4 h-4" />
+                    Select Google Sheet from Drive
+                  </span>
+                  <span className="text-[11px] text-slate-400">
+                    Reads columns: Register Number, Status
+                  </span>
+                </div>
+
+                <GoogleSheetsPicker
+                  onDataLoaded={handleGoogleSheetAttendanceLoaded}
+                  onError={(msg) => showToast('error', msg)}
+                />
+              </div>
+            )}
           </div>
 
           {/* Excel Preview Table */}
@@ -1282,10 +1378,20 @@ export const AttendanceManagement: React.FC<AttendanceManagementProps> = ({
                           <button
                             id={`btn-export-excel-${session.id}`}
                             onClick={() => handleExportSessionToExcel(session)}
-                            title="Export to Excel"
-                            className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded transition-all"
+                            title="Export to Excel (.xlsx)"
+                            className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded transition-all cursor-pointer"
                           >
                             <Download className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            id={`btn-export-sheets-${session.id}`}
+                            onClick={() => setExportingGoogleSheetsSession(session)}
+                            title="Export session attendance to Google Sheets in Drive"
+                            className="p-1.5 bg-emerald-950/60 hover:bg-emerald-900 text-emerald-400 hover:text-emerald-300 rounded border border-emerald-700/50 transition-all flex items-center gap-1.5 text-xs font-bold cursor-pointer"
+                          >
+                            <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                            <span className="hidden sm:inline">Google Sheets</span>
                           </button>
 
                           {(isAdmin || (isHod && session.department === userDept)) && (
@@ -1656,6 +1762,15 @@ export const AttendanceManagement: React.FC<AttendanceManagementProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Google Sheets Export Modal */}
+      {exportingGoogleSheetsSession && (
+        <AttendanceGoogleSheetsExportModal
+          session={exportingGoogleSheetsSession}
+          isOpen={Boolean(exportingGoogleSheetsSession)}
+          onClose={() => setExportingGoogleSheetsSession(null)}
+        />
       )}
     </div>
   );

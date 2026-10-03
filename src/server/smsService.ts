@@ -65,13 +65,6 @@ function loadApiKeyPool(): string[] {
     pool.push(process.env.FAST2SMS_API_KEY.trim());
   }
 
-  // Default fallbacks if no keys provided
-  if (pool.length === 0) {
-    pool.push("rnfEAtkN21a3NBtU3LbAPBsIwnmRahHWDn5XiiLWcLBGOtulL9N1Osbu6v8v");
-    pool.push("K3L21a3NBtU3LbAPBsIwnmRahHWDn5XiiLWcLBGOtulL9N1Osbu6v8v_KEY2");
-    pool.push("PBsIwnmRahHWDn5XiiLWcLBGOtulL9N1Osbu6v8v_KEY3");
-  }
-
   // Deduplicate keys
   return Array.from(new Set(pool));
 }
@@ -153,6 +146,19 @@ export async function sendSMS(phone: string | string[], message: string): Promis
     return {
       success: false,
       error: 'Invalid recipient phone number. Fast2SMS requires 10-digit Indian mobile numbers.',
+    };
+  }
+
+  // Refresh pool in case environment variables or dynamic keys were added
+  if (API_KEY_POOL.length === 0) {
+    API_KEY_POOL = loadApiKeyPool();
+  }
+
+  if (API_KEY_POOL.length === 0) {
+    console.error('[Fast2SMS Error]: No Fast2SMS API key configured.');
+    return {
+      success: false,
+      error: 'Fast2SMS API key is not configured. Please provide FAST2SMS_API_KEY in .env or Gateway Settings.',
     };
   }
 

@@ -14,7 +14,10 @@ import { sendSMS, getSmsApiKeyPoolStatus, rotateToNextKey } from './src/server/s
 import { evaluateSubjectGrade, evaluateInternalMark } from './src/utils/gradeEvaluator.js';
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  limits: { fileSize: 25 * 1024 * 1024 }, // 25 MB max limit
+});
 
 const JWT_SECRET = process.env.JWT_SECRET || 'VSB_ENGINEERING_COLLEGE_SECRET_KEY_2026';
 
@@ -2356,7 +2359,7 @@ app.get('/api/gemini/status', (req, res) => {
   return res.json({
     configured: isConfigured,
     keyName: 'GEMINI_API_KEY',
-    model: 'gemini-3.6-flash',
+    model: 'gemini-3.8-flash',
   });
 });
 
@@ -2370,9 +2373,9 @@ app.post('/api/gemini/generate', async (req, res) => {
     // Lazy load Gemini client using process.env.GEMINI_API_KEY
     const ai = getGeminiClient();
 
-    // Call Gemini 3.6 Flash model
+    // Call Gemini 3.8 Flash model
     const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
+      model: 'gemini-3.8-flash',
       contents: prompt.trim(),
       config: systemInstruction
         ? { systemInstruction: systemInstruction.trim() }
@@ -2441,6 +2444,7 @@ app.get('/api/download/source-code', async (req, res) => {
           item === 'dist' ||
           item === '.cache' ||
           item === 'data' ||
+          (item.startsWith('.env') && item !== '.env.example') ||
           item.endsWith('.log')
         ) {
           continue;

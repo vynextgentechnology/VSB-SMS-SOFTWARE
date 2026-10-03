@@ -17,7 +17,10 @@ import {
   Check,
   FileSpreadsheet,
   Eye,
+  ExternalLink,
 } from 'lucide-react';
+import { GoogleSheetsPicker } from './GoogleSheetsPicker';
+import { StudentGoogleSheetsExportModal } from './StudentGoogleSheetsExportModal';
 
 interface StudentManagementProps {
   students: Student[];
@@ -138,9 +141,12 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
     }
   };
 
-  // Excel Preview state
+  // Excel & Google Sheets Preview state
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [excelFile, setExcelFile] = useState<File | null>(null);
+  const [previewSourceName, setPreviewSourceName] = useState<string>('');
+  const [isGoogleSheetsImportOpen, setIsGoogleSheetsImportOpen] = useState(false);
+  const [isGoogleSheetsExportOpen, setIsGoogleSheetsExportOpen] = useState(false);
   const [previewRecords, setPreviewRecords] = useState<
     Array<{
       sNo: number;
@@ -179,6 +185,112 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
     XLSX.writeFile(wb, 'VSBEC_Student_Enrollment_Template.xlsx');
   };
 
+  const parseRawStudentRows = (rawRows: any[][], defaultDept: string) => {
+    if (!rawRows || rawRows.length < 2) {
+      throw new Error('Spreadsheet contains no data rows.');
+    }
+
+    let headerRowIdx = -1;
+    for (let i = 0; i < Math.min(10, rawRows.length); i++) {
+      if (rawRows[i] && rawRows[i].some((cell: any) => cell !== null && cell !== undefined && String(cell).trim().length > 0)) {
+        headerRowIdx = i;
+        break;
+      }
+    }
+
+    if (headerRowIdx === -1) {
+      throw new Error('Could not locate header row in spreadsheet.');
+    }
+
+    const headers = rawRows[headerRowIdx].map((h: any) => (h !== null && h !== undefined ? String(h).trim() : ''));
+
+    let nameIdx = -1;
+    let regNoIdx = -1;
+    let deptIdx = -1;
+    let phoneIdx = -1;
+    let marksIdx = -1;
+
+    headers.forEach((h, idx) => {
+      const clean = h.toUpperCase().replace(/[^A-Z0-9\s_]/g, '').trim();
+      if (/^(REGISTER|REG|REGISTRATION|REGISTER NO|REG NO|REGISTER NUMBER|STUDENT ID|ROLL NO)$/.test(clean) || clean.includes('REGISTER') || clean.includes('REG NO')) {
+        regNoIdx = idx;
+      } else if (/^(NAME|STUDENT NAME|STUDENT_NAME|FULL NAME)$/.test(clean) || clean.includes('NAME')) {
+        nameIdx = idx;
+      } else if (/^(DEPARTMENT|DEPT|BRANCH|DEPT CODE)$/.test(clean) || clean.includes('DEPT') || clean.includes('BRANCH')) {
+        deptIdx = idx;
+      } else if (/^(MOBILE|PHONE|PHONE NUMBER|CONTACT|MOBILE NO|PARENT MOBILE|PARENT PHONE)$/.test(clean) || clean.includes('MOBILE') || clean.includes('PHONE')) {
+        phoneIdx = idx;
+      } else if (/^(MARKS|MARK|SCORE|RESULT|TOTAL MARKS|GRADE)$/.test(clean) || clean.includes('MARK') || clean.includes('RESULT')) {
+        marksIdx = idx;
+      }
+    });
+
+    if (nameIdx === -1 && headers.length > 0) nameIdx = 0;
+    if (regNoIdx === -1 && headers.length > 1) regNoIdx = 1;
+    if (deptIdx === -1 && headers.length > 2) deptIdx = 2;
+    if (phoneIdx === -1 && headers.length > 3) phoneIdx = 3;
+
+    const records: Array<{
+      sNo: number;
+      name: string;
+      registerNumber: string;
+      department: string;
+      phoneNumber: string;
+      marks?: string;
+      isValid: boolean;
+      reason?: string;
+    }> = [];
+
+    for (let r = headerRowIdx + 1; r < rawRows.length; r++) {
+      const row = rawRows[r];
+      if (!row || row.length === 0) continue;
+
+      const name = nameIdx >= 0 && row[nameIdx] !== undefined ? String(row[nameIdx]).trim() : '';
+      const registerNumber = regNoIdx >= 0 && row[regNoIdx] !== undefined ? String(row[regNoIdx]).trim() : '';
+      const department = deptIdx >= 0 && row[deptIdx] !== undefined ? String(row[deptIdx]).trim().toUpperCase() : defaultDept;
+      const phoneNumber = phoneIdx >= 0 && row[phoneIdx] !== undefined ? String(row[phoneIdx]).trim().replace(/[^0-9+]/g, '') : '';
+      const marks = marksIdx >= 0 && row[marksIdx] !== undefined ? String(row[marksIdx]).trim() : '';
+
+      if (!name && !registerNumber && !phoneNumber) continue;
+
+      const isValid = Boolean(name && registerNumber && phoneNumber);
+      const missingFields: string[] = [];
+      if (!registerNumber) missingFields.push('Reg No');
+      if (!name) missingFields.push('Name');
+      if (!phoneNumber) missingFields.push('Phone');
+
+      records.push({
+        sNo: records.length + 1,
+        name: name || 'N/A',
+        registerNumber: registerNumber || 'N/A',
+        department: department || defaultDept,
+        phoneNumber: phoneNumber || 'N/A',
+        marks,
+        isValid,
+        reason: missingFields.length > 0 ? `Missing: ${missingFields.join(', ')}` : undefined,
+      });
+    }
+
+    if (records.length === 0) {
+      throw new Error('No readable student records found in file. Expected headers: Register Number, Student Name, Department, Parent Phone Number.');
+    }
+
+    return records;
+  };
+
+  const handleGoogleSheetDataLoaded = (rows: any[][], sheetTitle: string, spreadsheetName: string) => {
+    try {
+      const records = parseRawStudentRows(rows, userDept);
+      setPreviewRecords(records);
+      setPreviewSourceName(`${spreadsheetName} • Sheet: ${sheetTitle}`);
+      setExcelFile(null);
+      setIsGoogleSheetsImportOpen(false);
+      setIsPreviewModalOpen(true);
+    } catch (err: any) {
+      setError(err.message || 'Failed to parse student records from Google Sheet.');
+    }
+  };
+
   const handleExcelFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -201,96 +313,9 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
       const worksheet = workbook.Sheets[sheetName];
       const rawRows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
 
-      if (!rawRows || rawRows.length < 2) {
-        throw new Error('Excel file contains no data rows.');
-      }
-
-      let headerRowIdx = -1;
-      for (let i = 0; i < Math.min(10, rawRows.length); i++) {
-        if (rawRows[i] && rawRows[i].some((cell: any) => cell !== null && cell !== undefined && String(cell).trim().length > 0)) {
-          headerRowIdx = i;
-          break;
-        }
-      }
-
-      if (headerRowIdx === -1) {
-        throw new Error('Could not locate header row in Excel file.');
-      }
-
-      const headers = rawRows[headerRowIdx].map((h: any) => (h !== null && h !== undefined ? String(h).trim() : ''));
-
-      let nameIdx = -1;
-      let regNoIdx = -1;
-      let deptIdx = -1;
-      let phoneIdx = -1;
-      let marksIdx = -1;
-
-      headers.forEach((h, idx) => {
-        const clean = h.toUpperCase().replace(/[^A-Z0-9\s_]/g, '').trim();
-        if (/^(REGISTER|REG|REGISTRATION|REGISTER NO|REG NO|REGISTER NUMBER|STUDENT ID|ROLL NO)$/.test(clean) || clean.includes('REGISTER') || clean.includes('REG NO')) {
-          regNoIdx = idx;
-        } else if (/^(NAME|STUDENT NAME|STUDENT_NAME|FULL NAME)$/.test(clean) || clean.includes('NAME')) {
-          nameIdx = idx;
-        } else if (/^(DEPARTMENT|DEPT|BRANCH|DEPT CODE)$/.test(clean) || clean.includes('DEPT') || clean.includes('BRANCH')) {
-          deptIdx = idx;
-        } else if (/^(MOBILE|PHONE|PHONE NUMBER|CONTACT|MOBILE NO|PARENT MOBILE|PARENT PHONE)$/.test(clean) || clean.includes('MOBILE') || clean.includes('PHONE')) {
-          phoneIdx = idx;
-        } else if (/^(MARKS|MARK|SCORE|RESULT|TOTAL MARKS|GRADE)$/.test(clean) || clean.includes('MARK') || clean.includes('RESULT')) {
-          marksIdx = idx;
-        }
-      });
-
-      if (nameIdx === -1 && headers.length > 0) nameIdx = 0;
-      if (regNoIdx === -1 && headers.length > 1) regNoIdx = 1;
-      if (deptIdx === -1 && headers.length > 2) deptIdx = 2;
-      if (phoneIdx === -1 && headers.length > 3) phoneIdx = 3;
-
-      const records: Array<{
-        sNo: number;
-        name: string;
-        registerNumber: string;
-        department: string;
-        phoneNumber: string;
-        marks?: string;
-        isValid: boolean;
-        reason?: string;
-      }> = [];
-
-      for (let r = headerRowIdx + 1; r < rawRows.length; r++) {
-        const row = rawRows[r];
-        if (!row || row.length === 0) continue;
-
-        const name = nameIdx >= 0 && row[nameIdx] !== undefined ? String(row[nameIdx]).trim() : '';
-        const registerNumber = regNoIdx >= 0 && row[regNoIdx] !== undefined ? String(row[regNoIdx]).trim() : '';
-        const department = deptIdx >= 0 && row[deptIdx] !== undefined ? String(row[deptIdx]).trim().toUpperCase() : userDept;
-        const phoneNumber = phoneIdx >= 0 && row[phoneIdx] !== undefined ? String(row[phoneIdx]).trim().replace(/[^0-9+]/g, '') : '';
-        const marks = marksIdx >= 0 && row[marksIdx] !== undefined ? String(row[marksIdx]).trim() : '';
-
-        if (!name && !registerNumber && !phoneNumber) continue;
-
-        const isValid = Boolean(name && registerNumber && phoneNumber);
-        const missingFields: string[] = [];
-        if (!registerNumber) missingFields.push('Reg No');
-        if (!name) missingFields.push('Name');
-        if (!phoneNumber) missingFields.push('Phone');
-
-        records.push({
-          sNo: records.length + 1,
-          name: name || 'N/A',
-          registerNumber: registerNumber || 'N/A',
-          department: department || userDept,
-          phoneNumber: phoneNumber || 'N/A',
-          marks,
-          isValid,
-          reason: missingFields.length > 0 ? `Missing: ${missingFields.join(', ')}` : undefined,
-        });
-      }
-
-      if (records.length === 0) {
-        throw new Error('No readable student records found in file. Expected headers: Register Number, Student Name, Department, Parent Phone Number.');
-      }
-
+      const records = parseRawStudentRows(rawRows, userDept);
       setExcelFile(file);
+      setPreviewSourceName(file.name);
       setPreviewRecords(records);
       setIsPreviewModalOpen(true);
     } catch (err: any) {
@@ -305,7 +330,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
   };
 
   const confirmUploadExcelToServer = async () => {
-    if (!excelFile && previewRecords.length === 0) return;
+    if (previewRecords.length === 0) return;
     setExcelUploadLoading(true);
     setError(null);
 
@@ -435,7 +460,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
 
           <label className="cursor-pointer px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-sm shadow-sm text-xs flex items-center gap-2 transition-all uppercase tracking-wider">
             <Upload className="w-4 h-4" />
-            <span>Upload Excel (.xlsx)</span>
+            <span>Upload Excel</span>
             <input
               type="file"
               accept=".xlsx, .xls, .csv"
@@ -443,6 +468,29 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
               className="hidden"
             />
           </label>
+
+          {/* Google Sheets Import */}
+          <button
+            type="button"
+            onClick={() => setIsGoogleSheetsImportOpen(true)}
+            className="px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-850 border border-emerald-300 font-black rounded-sm shadow-xs text-xs flex items-center gap-2 transition-all uppercase tracking-wider cursor-pointer"
+            title="Import student records from Google Sheets in Google Drive"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+            <span>Google Sheets Import</span>
+          </button>
+
+          {/* Export to Google Sheets */}
+          <button
+            type="button"
+            onClick={() => setIsGoogleSheetsExportOpen(true)}
+            disabled={filteredStudents.length === 0}
+            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold rounded-sm text-xs flex items-center gap-2 transition-all uppercase tracking-wider cursor-pointer disabled:opacity-50"
+            title="Export filtered student records to a new Google Spreadsheet"
+          >
+            <ExternalLink className="w-4 h-4 text-emerald-600" />
+            <span>Export to Sheets</span>
+          </button>
 
           <button
             id="student-batch-import-btn"
@@ -790,8 +838,8 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
         </div>
       )}
 
-      {/* Excel Import Preview Modal */}
-      {isPreviewModalOpen && excelFile && (
+      {/* Excel & Google Sheets Import Preview Modal */}
+      {isPreviewModalOpen && previewRecords.length > 0 && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 animate-in fade-in duration-200">
           <div className="bg-white border border-slate-300 w-full max-w-4xl max-h-[90vh] rounded-sm shadow-2xl flex flex-col overflow-hidden">
             {/* Modal Header */}
@@ -800,10 +848,10 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
                 <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
                 <div>
                   <h3 className="text-xs font-black uppercase tracking-widest text-emerald-400">
-                    Excel Enrollment Import Preview
+                    Student Enrollment Import Preview
                   </h3>
                   <p className="text-[11px] text-slate-400 font-mono">
-                    File: <span className="text-white font-bold">{excelFile.name}</span> ({previewRecords.length} records parsed)
+                    Source: <span className="text-white font-bold">{previewSourceName || excelFile?.name || 'Spreadsheet'}</span> ({previewRecords.length} records parsed)
                   </p>
                 </div>
               </div>
@@ -823,6 +871,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
                   onClick={() => {
                     setIsPreviewModalOpen(false);
                     setExcelFile(null);
+                    setPreviewSourceName('');
                     setPreviewRecords([]);
                   }}
                   className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs uppercase tracking-wider rounded-sm transition-all"
@@ -1125,6 +1174,68 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({
           </div>
         </div>
       )}
+
+      {/* GOOGLE SHEETS IMPORT MODAL */}
+      {isGoogleSheetsImportOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white border border-slate-300 w-full max-w-3xl rounded-sm shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="px-5 py-4 bg-[#0f172a] text-white flex items-center justify-between border-b border-amber-500/40">
+              <div className="flex items-center space-x-2.5">
+                <div className="p-1.5 bg-emerald-600/30 rounded border border-emerald-500/40 text-emerald-400">
+                  <FileSpreadsheet className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-sm uppercase tracking-wider text-white">
+                    Import Students from Google Sheets
+                  </h3>
+                  <p className="text-[10px] text-amber-300 font-bold uppercase tracking-widest">
+                    Google Workspace & Drive Integration
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsGoogleSheetsImportOpen(false)}
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-4">
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-sm text-xs text-slate-600">
+                <strong className="text-slate-900 font-bold uppercase block text-[11px] mb-0.5">
+                  Spreadsheet Format Guidelines:
+                </strong>
+                Ensure your sheet tab contains columns for <strong>Register Number</strong>, <strong>Student Name</strong>, <strong>Department</strong>, and <strong>Parent Phone Number</strong>.
+              </div>
+
+              <GoogleSheetsPicker
+                onDataLoaded={handleGoogleSheetDataLoaded}
+                onError={(err) => setError(err)}
+              />
+            </div>
+
+            <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsGoogleSheetsImportOpen(false)}
+                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs uppercase tracking-wider rounded-sm cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* GOOGLE SHEETS EXPORT MODAL */}
+      <StudentGoogleSheetsExportModal
+        students={filteredStudents}
+        departmentFilter={selectedDept}
+        isOpen={isGoogleSheetsExportOpen}
+        onClose={() => setIsGoogleSheetsExportOpen(false)}
+      />
 
     </div>
   );
