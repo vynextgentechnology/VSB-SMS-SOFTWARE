@@ -14,6 +14,7 @@ import {
   Sparkles,
   ClipboardList,
   Calendar,
+  GraduationCap,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -62,6 +63,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: Users,
       badge: studentCount > 0 ? studentCount : null,
       roles: ['super_admin', 'admin', 'hod', 'staff'],
+    },
+    {
+      id: 'year_promotion',
+      label: 'Year Promotion',
+      icon: GraduationCap,
+      badge: 'Annual',
+      badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+      roles: ['super_admin', 'admin'],
     },
     {
       id: 'staff',
@@ -127,16 +136,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div>
         {/* Brand Header */}
         <div className="p-6 border-b border-slate-800">
-          <div className="text-blue-400 text-xs font-black tracking-widest uppercase mb-1">
-            VY NEXTGEN
+          <div className="text-amber-400 text-xs font-black tracking-widest uppercase mb-1">
+            VSB ENGINEERING COLLEGE
           </div>
-          <div className="text-white text-xl font-bold leading-tight uppercase tracking-tight">
-            COLLEGE SMS
+          <div className="text-white text-lg font-black leading-tight uppercase tracking-tight">
+            SMS SYSTEM
+          </div>
+          <div className="text-[10px] text-slate-400 font-semibold mt-0.5">
+            Powered by VY NEXTGEN TECHNOLOGY
           </div>
           {user && (
             <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px]">
-              <span className="text-slate-400 font-bold uppercase truncate max-w-[130px]">{user.name}</span>
-              <span className={`px-2 py-0.5 font-black uppercase rounded-xs ${
+              <span className="text-slate-300 font-bold uppercase truncate max-w-[130px]">{user.name}</span>
+              <span className={`px-2 py-0.5 font-black uppercase rounded text-[10px] ${
                 user.role === 'SUPER_ADMIN'
                   ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
                   : user.role === 'admin'

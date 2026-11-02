@@ -25,6 +25,12 @@ import {
   AttendanceSession,
   AttendanceRecord,
   AttendanceStatus,
+  AcademicYear,
+  StudentModificationHistory,
+  AcademicPromotionHistory,
+  PromotedStudentRecord,
+  StaffAssignment,
+  ACADEMIC_YEARS,
 } from '../types.js';
 import { evaluateSubjectGrade, evaluateInternalMark } from '../utils/gradeEvaluator.js';
 import { INITIAL_API_KEYS } from '../config/apiKeys.js';
@@ -36,10 +42,32 @@ import { UserModel } from '../models/User.js';
 import { DepartmentModel } from '../models/Department.js';
 import { StaffModel } from '../models/Staff.js';
 import { AttendanceModel } from '../models/Attendance.js';
+import { StudentModificationHistoryModel } from '../models/StudentModificationHistory.js';
+import { AcademicPromotionHistoryModel } from '../models/AcademicPromotionHistory.js';
+import { StaffAssignmentModel } from '../models/StaffAssignment.js';
+import { AcademicYearModel } from '../models/AcademicYear.js';
 
 const isVercel = Boolean(process.env.VERCEL || process.env.NOW_REGION);
 const DATA_DIR = isVercel ? '/tmp/data' : path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DATA_DIR, 'sms_system.json');
+
+export const VALID_ACADEMIC_PROGRESSION: Record<string, string> = {
+  '1st Year': '2nd Year',
+  '2nd Year': '3rd Year',
+  '3rd Year': '4th Year',
+  '4th Year': 'Alumni',
+};
+
+export function normalizeAcademicYear(val?: string, defaultYear = '1st Year'): string {
+  if (!val) return defaultYear;
+  const s = String(val).trim().toUpperCase();
+  if (s.includes('1') || s.startsWith('FIRST') || s === 'I' || s === 'I YEAR') return '1st Year';
+  if (s.includes('2') || s.startsWith('SECOND') || s === 'II' || s === 'II YEAR') return '2nd Year';
+  if (s.includes('3') || s.startsWith('THIRD') || s === 'III' || s === 'III YEAR') return '3rd Year';
+  if (s.includes('4') || s.startsWith('FOURTH') || s.startsWith('FINAL') || s === 'IV' || s === 'IV YEAR') return '4th Year';
+  if (s.includes('ALUMN') || s.includes('GRAD')) return 'Alumni';
+  return defaultYear;
+}
 
 interface DatabaseSchema {
   users: Array<User & { passwordHash?: string; rawPassword?: string }>;
@@ -55,6 +83,9 @@ interface DatabaseSchema {
   activityLogs: ActivityLog[];
   loginLogs: LoginLog[];
   apiKeys: ApiKey[];
+  studentModificationHistories: StudentModificationHistory[];
+  academicPromotionHistories: AcademicPromotionHistory[];
+  staffAssignments: StaffAssignment[];
 }
 
 const defaultDepartments: Department[] = [
@@ -368,11 +399,37 @@ class Database {
       if (fs.existsSync(DB_FILE)) {
         const fileContent = fs.readFileSync(DB_FILE, 'utf-8');
         const parsed = JSON.parse(fileContent);
+
+        const loadedStudents: Student[] = (parsed.students || []).map((s: any) => ({
+          ...s,
+          academicYear: normalizeAcademicYear(s.academicYear || s.year || '1st Year'),
+          year: normalizeAcademicYear(s.academicYear || s.year || '1st Year'),
+          parentMobile: s.parentMobile || s.phoneNumber || '',
+          phoneNumber: s.parentMobile || s.phoneNumber || '',
+          studentMobile: s.studentMobile || '',
+          email: s.email || '',
+          gender: s.gender || '',
+        }));
+
+        const loadedStaff: Staff[] = (parsed.staff || []).map((st: any) => ({
+          ...st,
+          assignedYears: Array.isArray(st.assignedYears) && st.assignedYears.length > 0 ? st.assignedYears : ['1st Year'],
+          assignedDepartments: Array.isArray(st.assignedDepartments) && st.assignedDepartments.length > 0 ? st.assignedDepartments : [st.department || 'CSE'],
+          status: st.status || 'active',
+        }));
+
+        const loadedUsers = (parsed.users || []).map((u: any) => ({
+          ...u,
+          assignedYears: Array.isArray(u.assignedYears) ? u.assignedYears : undefined,
+          assignedDepartments: Array.isArray(u.assignedDepartments) ? u.assignedDepartments : undefined,
+          status: u.status || 'active',
+        }));
+
         return {
-          users: parsed.users || [],
+          users: loadedUsers,
           parentEnrollments: parsed.parentEnrollments || [],
-          students: parsed.students || [],
-          staff: parsed.staff || [],
+          students: loadedStudents,
+          staff: loadedStaff,
           departments: parsed.departments && parsed.departments.length > 0 ? parsed.departments : defaultDepartments,
           smsLogs: parsed.smsLogs || [],
           examBatches: parsed.examBatches || [],
@@ -382,6 +439,9 @@ class Database {
           activityLogs: parsed.activityLogs || [],
           loginLogs: parsed.loginLogs || [],
           apiKeys: parsed.apiKeys && parsed.apiKeys.length > 0 ? parsed.apiKeys : INITIAL_API_KEYS,
+          studentModificationHistories: parsed.studentModificationHistories || [],
+          academicPromotionHistories: parsed.academicPromotionHistories || [],
+          staffAssignments: parsed.staffAssignments || [],
         };
       }
     } catch (err) {
@@ -402,6 +462,9 @@ class Database {
       activityLogs: [],
       loginLogs: [],
       apiKeys: INITIAL_API_KEYS,
+      studentModificationHistories: [],
+      academicPromotionHistories: [],
+      staffAssignments: [],
     };
   }
 
@@ -797,11 +860,15 @@ class Database {
         name: data.studentName,
         registerNumber: regNoUpper,
         department: 'General',
+        academicYear: '1st Year',
+        year: '1st Year',
         phoneNumber: data.parentPhoneNumber,
+        parentMobile: data.parentPhoneNumber,
         createdAt: new Date().toISOString(),
       });
     } else {
       existingStudent.phoneNumber = data.parentPhoneNumber;
+      existingStudent.parentMobile = data.parentPhoneNumber;
       if (data.studentName) existingStudent.name = data.studentName;
     }
 
@@ -867,11 +934,15 @@ class Database {
           name: p.studentName,
           registerNumber: regNoUpper,
           department: 'General',
+          academicYear: '1st Year',
+          year: '1st Year',
           phoneNumber: p.parentPhoneNumber,
+          parentMobile: p.parentPhoneNumber,
           createdAt: new Date().toISOString(),
         });
       } else {
         existingStudent.phoneNumber = p.parentPhoneNumber;
+        existingStudent.parentMobile = p.parentPhoneNumber;
       }
 
       addedCount++;
@@ -941,6 +1012,9 @@ class Database {
       name: string;
       role: UserRole;
       department?: string;
+      assignedYears?: (AcademicYear | string)[];
+      assignedDepartments?: string[];
+      status?: 'active' | 'inactive';
       phoneNumber?: string;
       email?: string;
       rawPassword?: string;
@@ -1000,6 +1074,9 @@ class Database {
       name: userData.name.trim(),
       role: userData.role,
       department: (userData.department || 'General').trim(),
+      assignedYears: userData.assignedYears || ['1st Year'],
+      assignedDepartments: userData.assignedDepartments || [userData.department || 'General'],
+      status: userData.status || 'active',
       phoneNumber: (userData.phoneNumber || '').trim(),
       email: (userData.email || '').trim(),
       rawPassword: pass,
@@ -1021,6 +1098,9 @@ class Database {
               name: newUserObj.name,
               role: newUserObj.role,
               department: newUserObj.department,
+              assignedYears: newUserObj.assignedYears,
+              assignedDepartments: newUserObj.assignedDepartments,
+              status: newUserObj.status,
               phoneNumber: newUserObj.phoneNumber,
               email: newUserObj.email,
               passwordHash,
@@ -1488,28 +1568,66 @@ class Database {
       if (isMongoDBConnected() && StudentModel) {
         const docs = await (StudentModel as any).find({}).sort({ createdAt: -1 }).lean();
         if (Array.isArray(docs)) {
-          const mongoStudents: Student[] = docs.map((d: any) => ({
-            id: d._id ? d._id.toString() : `std-${d.registerNumber}`,
-            name: d.name,
-            registerNumber: d.registerNumber,
-            department: d.department,
-            phoneNumber: d.phoneNumber,
-            createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
-          }));
+          if (docs.length > 0) {
+            const mongoStudents: Student[] = docs.map((d: any) => ({
+              id: d._id ? d._id.toString() : `std-${d.registerNumber}`,
+              name: d.name,
+              registerNumber: d.registerNumber,
+              department: d.department,
+              academicYear: normalizeAcademicYear(d.academicYear || d.year || '1st Year'),
+              year: normalizeAcademicYear(d.academicYear || d.year || '1st Year'),
+              section: d.section || '',
+              phoneNumber: d.parentMobile || d.phoneNumber || '',
+              parentMobile: d.parentMobile || d.phoneNumber || '',
+              studentMobile: d.studentMobile || '',
+              email: d.email || '',
+              gender: d.gender || '',
+              createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
+              updatedAt: d.updatedAt ? new Date(d.updatedAt).toISOString() : undefined,
+            }));
 
-          // MongoDB is the single source of truth - synchronize state
-          this.data.students = mongoStudents;
-          this.save();
-          return mongoStudents;
+            // MongoDB is the active source of truth - synchronize state
+            this.data.students = mongoStudents;
+            this.save();
+            return mongoStudents;
+          } else if (this.data.students && this.data.students.length > 0) {
+            // Local store has student records (e.g., added recently), ensure they are persisted to MongoDB
+            for (const std of this.data.students) {
+              const cleanReg = std.registerNumber.trim().toUpperCase();
+              await (StudentModel as any).findOneAndUpdate(
+                { registerNumber: cleanReg },
+                {
+                  $set: {
+                    name: std.name,
+                    registerNumber: cleanReg,
+                    department: std.department,
+                    academicYear: std.academicYear,
+                    year: std.year,
+                    section: std.section || '',
+                    phoneNumber: std.parentMobile || std.phoneNumber,
+                    parentMobile: std.parentMobile || std.phoneNumber,
+                    studentMobile: std.studentMobile || '',
+                    email: std.email || '',
+                    gender: std.gender || '',
+                  },
+                },
+                { upsert: true }
+              ).catch((syncErr: any) => console.warn('[Mongo Student Sync Error]:', syncErr));
+            }
+            return this.data.students;
+          } else {
+            // Both are empty
+            return [];
+          }
         }
       }
     } catch (err) {
       console.error('[MongoDB getStudentsAsync Error]:', err);
     }
-    return this.data.students;
+    return this.data.students || [];
   }
 
-  public addStudent(studentData: Omit<Student, 'id' | 'createdAt'>, user: string): Student {
+  public addStudent(studentData: Partial<Student> & { name: string; registerNumber: string; department: string }, user: string): Student {
     const cleanReg = studentData.registerNumber.trim().toUpperCase();
     const existing = this.data.students.find(
       (s) => s.registerNumber.toUpperCase() === cleanReg
@@ -1519,12 +1637,21 @@ class Database {
       throw new Error(`Student with Register Number ${studentData.registerNumber} already exists`);
     }
 
+    const academicYear = normalizeAcademicYear(studentData.academicYear || studentData.year || '1st Year');
+    const primaryPhone = (studentData.parentMobile || studentData.phoneNumber || '').trim();
+
     const newStudent: Student = {
-      ...studentData,
       name: studentData.name.trim(),
       registerNumber: cleanReg,
       department: sanitizeDepartmentCode(studentData.department),
-      phoneNumber: studentData.phoneNumber.trim(),
+      academicYear,
+      year: academicYear,
+      section: (studentData.section || '').trim(),
+      phoneNumber: primaryPhone,
+      parentMobile: primaryPhone,
+      studentMobile: (studentData.studentMobile || '').trim(),
+      email: (studentData.email || '').trim().toLowerCase(),
+      gender: (studentData.gender || '').trim(),
       id: `std-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       createdAt: new Date().toISOString(),
     };
@@ -1533,14 +1660,14 @@ class Database {
     this.addActivity(
       'student',
       'Student Added',
-      `Added student ${newStudent.name} (${newStudent.registerNumber}) - Dept: ${newStudent.department}`,
+      `Added student ${newStudent.name} (${newStudent.registerNumber}) - Dept: ${newStudent.department}, Year: ${newStudent.academicYear}`,
       user
     );
     this.save();
     return newStudent;
   }
 
-  public async addStudentAsync(studentData: Omit<Student, 'id' | 'createdAt'>, user: string): Promise<Student> {
+  public async addStudentAsync(studentData: Partial<Student> & { name: string; registerNumber: string; department: string }, user: string): Promise<Student> {
     const cleanReg = studentData.registerNumber.trim().toUpperCase();
     
     // Check if exists in MongoDB or local memory
@@ -1572,7 +1699,14 @@ class Database {
               name: newStudent.name,
               registerNumber: newStudent.registerNumber,
               department: newStudent.department,
+              academicYear: newStudent.academicYear,
+              year: newStudent.year,
+              section: newStudent.section,
               phoneNumber: newStudent.phoneNumber,
+              parentMobile: newStudent.parentMobile,
+              studentMobile: newStudent.studentMobile,
+              email: newStudent.email,
+              gender: newStudent.gender,
               createdAt: new Date(),
             },
           },
@@ -1589,7 +1723,23 @@ class Database {
     return newStudent;
   }
 
-  public updateStudent(id: string, updates: Partial<Omit<Student, 'id' | 'createdAt'>>, user: string): Student {
+  public recordStudentModification(historyData: Omit<StudentModificationHistory, 'id' | 'timestamp'>) {
+    if (!this.data.studentModificationHistories) {
+      this.data.studentModificationHistories = [];
+    }
+    const historyItem: StudentModificationHistory = {
+      ...historyData,
+      id: `mod-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      timestamp: new Date().toISOString(),
+    };
+    this.data.studentModificationHistories.unshift(historyItem);
+    if (this.data.studentModificationHistories.length > 500) {
+      this.data.studentModificationHistories = this.data.studentModificationHistories.slice(0, 500);
+    }
+    return historyItem;
+  }
+
+  public updateStudent(id: string, updates: Partial<Student>, user: string, userName?: string, userRole?: string): Student {
     const cleanId = id.trim();
     const index = this.data.students.findIndex((s) => s.id === cleanId || s.registerNumber.toUpperCase() === cleanId.toUpperCase());
     if (index === -1) throw new Error('Student not found');
@@ -1603,13 +1753,71 @@ class Database {
       if (conflict) throw new Error(`Register number ${updates.registerNumber} already assigned to another student`);
     }
 
+    // Audit diff tracking
+    const modifierId = user || 'VSBEC';
+    const modifierName = userName || (this.getUserByUserId(modifierId)?.name || modifierId);
+    const modifierRole = userRole || (this.getUserByUserId(modifierId)?.role || 'staff');
+
+    const trackFields: Array<keyof Student> = [
+      'name',
+      'registerNumber',
+      'department',
+      'academicYear',
+      'parentMobile',
+      'studentMobile',
+      'email',
+      'gender',
+      'section',
+    ];
+
+    for (const field of trackFields) {
+      if (updates[field] !== undefined) {
+        const oldVal = String(currentStudent[field] || '').trim();
+        const newVal = String(updates[field] || '').trim();
+        if (oldVal !== newVal) {
+          this.recordStudentModification({
+            studentId: currentStudent.id,
+            registerNumber: currentStudent.registerNumber,
+            studentName: currentStudent.name,
+            department: currentStudent.department,
+            academicYear: currentStudent.academicYear || '1st Year',
+            fieldName: field as string,
+            previousValue: oldVal,
+            updatedValue: newVal,
+            reason: updates.parentMobile !== undefined && field === 'parentMobile' ? 'Parent Contact Update' : 'Student Record Edit',
+            modifiedBy: modifierId,
+            modifiedByName: modifierName,
+            modifiedByRole: modifierRole,
+          });
+        }
+      }
+    }
+
+    const academicYear = updates.academicYear || updates.year
+      ? normalizeAcademicYear(updates.academicYear || updates.year)
+      : currentStudent.academicYear;
+
+    const primaryPhone = updates.parentMobile !== undefined
+      ? updates.parentMobile.trim()
+      : updates.phoneNumber !== undefined
+      ? updates.phoneNumber.trim()
+      : currentStudent.phoneNumber;
+
     this.data.students[index] = {
       ...this.data.students[index],
       ...updates,
+      academicYear,
+      year: academicYear,
+      phoneNumber: primaryPhone,
+      parentMobile: primaryPhone,
       ...(updates.registerNumber ? { registerNumber: updates.registerNumber.trim().toUpperCase() } : {}),
       ...(updates.name ? { name: updates.name.trim() } : {}),
       ...(updates.department ? { department: sanitizeDepartmentCode(updates.department) } : {}),
-      ...(updates.phoneNumber ? { phoneNumber: updates.phoneNumber.trim() } : {}),
+      ...(updates.studentMobile !== undefined ? { studentMobile: updates.studentMobile.trim() } : {}),
+      ...(updates.email !== undefined ? { email: updates.email.trim().toLowerCase() } : {}),
+      ...(updates.gender !== undefined ? { gender: updates.gender.trim() } : {}),
+      ...(updates.section !== undefined ? { section: updates.section.trim() } : {}),
+      updatedAt: new Date().toISOString(),
     };
 
     this.addActivity(
@@ -1622,13 +1830,19 @@ class Database {
     return this.data.students[index];
   }
 
-  public async updateStudentAsync(id: string, updates: Partial<Omit<Student, 'id' | 'createdAt'>>, user: string): Promise<Student> {
+  public async updateStudentAsync(
+    id: string,
+    updates: Partial<Student>,
+    user: string,
+    userName?: string,
+    userRole?: string
+  ): Promise<Student> {
     const cleanId = id.trim();
     const index = this.data.students.findIndex((s) => s.id === cleanId || s.registerNumber.toUpperCase() === cleanId.toUpperCase());
     if (index === -1) throw new Error('Student not found');
     const oldReg = this.data.students[index].registerNumber;
 
-    const updated = this.updateStudent(id, updates, user);
+    const updated = this.updateStudent(id, updates, user, userName, userRole);
 
     try {
       await connectToMongoDB();
@@ -1647,17 +1861,64 @@ class Database {
               name: updated.name,
               registerNumber: updated.registerNumber,
               department: updated.department,
+              academicYear: updated.academicYear,
+              year: updated.year,
+              section: updated.section,
               phoneNumber: updated.phoneNumber,
+              parentMobile: updated.parentMobile,
+              studentMobile: updated.studentMobile,
+              email: updated.email,
+              gender: updated.gender,
+              updatedAt: new Date(),
             },
           },
           { upsert: true, new: true }
         );
+
+        // Sync recent student modification histories to MongoDB
+        if (StudentModificationHistoryModel && this.data.studentModificationHistories?.length > 0) {
+          const recentLogs = this.data.studentModificationHistories.slice(0, 5);
+          for (const log of recentLogs) {
+            await (StudentModificationHistoryModel as any).findOneAndUpdate(
+              { id: log.id },
+              { $set: { ...log, timestamp: new Date(log.timestamp) } },
+              { upsert: true }
+            ).catch(() => {});
+          }
+        }
       }
     } catch (mongoErr) {
       console.error('[MongoDB Update Student Async Error]:', mongoErr);
     }
 
     return updated;
+  }
+
+  public getStudentModificationHistories(filter?: {
+    registerNumber?: string;
+    department?: string;
+    academicYear?: string;
+    modifiedBy?: string;
+  }): StudentModificationHistory[] {
+    let list = this.data.studentModificationHistories || [];
+    if (filter) {
+      if (filter.registerNumber) {
+        const reg = filter.registerNumber.toUpperCase();
+        list = list.filter((h) => h.registerNumber.toUpperCase().includes(reg));
+      }
+      if (filter.department && filter.department !== 'ALL') {
+        const dept = filter.department.toUpperCase();
+        list = list.filter((h) => h.department.toUpperCase() === dept);
+      }
+      if (filter.academicYear && filter.academicYear !== 'ALL') {
+        list = list.filter((h) => h.academicYear === filter.academicYear);
+      }
+      if (filter.modifiedBy) {
+        const mod = filter.modifiedBy.toUpperCase();
+        list = list.filter((h) => h.modifiedBy.toUpperCase().includes(mod) || h.modifiedByName.toUpperCase().includes(mod));
+      }
+    }
+    return list;
   }
 
   public deleteStudent(id: string, user: string): boolean {
@@ -1741,7 +2002,14 @@ class Database {
               name: foundDoc.name,
               registerNumber: foundDoc.registerNumber,
               department: foundDoc.department,
-              phoneNumber: foundDoc.phoneNumber,
+              academicYear: normalizeAcademicYear(foundDoc.academicYear || foundDoc.year || '1st Year'),
+              year: normalizeAcademicYear(foundDoc.academicYear || foundDoc.year || '1st Year'),
+              phoneNumber: foundDoc.parentMobile || foundDoc.phoneNumber || '',
+              parentMobile: foundDoc.parentMobile || foundDoc.phoneNumber || '',
+              studentMobile: foundDoc.studentMobile || '',
+              email: foundDoc.email || '',
+              gender: foundDoc.gender || '',
+              section: foundDoc.section || '',
               createdAt: foundDoc.createdAt ? new Date(foundDoc.createdAt).toISOString() : new Date().toISOString(),
             };
           }
@@ -1803,7 +2071,10 @@ class Database {
           name: cleanId,
           registerNumber: cleanReg,
           department: 'GENERAL',
+          academicYear: '1st Year',
+          year: '1st Year',
           phoneNumber: '',
+          parentMobile: '',
           createdAt: new Date().toISOString(),
         },
       };
@@ -1812,7 +2083,44 @@ class Database {
     return { success: false, error: `Student with identifier "${cleanId}" not found in database.` };
   }
 
-  public importStudentsBatch(students: Omit<Student, 'id' | 'createdAt'>[], user: string) {
+  public async deleteAllStudentsAsync(user: string): Promise<{ success: boolean; deletedCount: number }> {
+    const deletedCount = this.data.students ? this.data.students.length : 0;
+
+    // 1. Clear in-memory student records
+    this.data.students = [];
+
+    // 2. Persist synchronously to local disk store
+    this.save();
+
+    // 3. Delete all records from MongoDB collection if connected
+    let mongoDeleted = 0;
+    try {
+      await connectToMongoDB();
+      if (isMongoDBConnected() && StudentModel) {
+        const deleteRes = await (StudentModel as any).deleteMany({});
+        mongoDeleted = deleteRes?.deletedCount || 0;
+        console.log(`[MongoDB deleteAllStudentsAsync]: Permanently wiped ${mongoDeleted} student record(s) from MongoDB.`);
+      }
+    } catch (err: any) {
+      console.error('[MongoDB deleteAllStudentsAsync Error]:', err);
+    }
+
+    // 4. Record audit activity
+    this.addActivity(
+      'student',
+      'All Students Permanently Deleted',
+      `Permanently cleared all student records (${deletedCount} local records, ${mongoDeleted} MongoDB records) by ${user}`,
+      user
+    );
+    this.save();
+
+    return {
+      success: true,
+      deletedCount: Math.max(deletedCount, mongoDeleted),
+    };
+  }
+
+  public importStudentsBatch(students: Array<Partial<Student> & { name: string; registerNumber: string; department: string }>, user: string) {
     let addedCount = 0;
     let skippedCount = 0;
     let updatedCount = 0;
@@ -1821,27 +2129,43 @@ class Database {
       const cleanReg = std.registerNumber.trim().toUpperCase();
       if (!cleanReg) continue;
 
+      const academicYear = normalizeAcademicYear(std.academicYear || (std as any).year || '1st Year');
+      const primaryPhone = (std.parentMobile || std.phoneNumber || '').trim();
+
       const existingIdx = this.data.students.findIndex(
         (s) => s.registerNumber.trim().toUpperCase() === cleanReg
       );
 
       if (existingIdx !== -1) {
-        // Update existing student details
         this.data.students[existingIdx] = {
           ...this.data.students[existingIdx],
           name: std.name.trim() || this.data.students[existingIdx].name,
-          department: (std.department || this.data.students[existingIdx].department).trim().toUpperCase(),
-          phoneNumber: std.phoneNumber.trim() || this.data.students[existingIdx].phoneNumber,
+          department: sanitizeDepartmentCode(std.department || this.data.students[existingIdx].department),
+          academicYear,
+          year: academicYear,
+          phoneNumber: primaryPhone || this.data.students[existingIdx].phoneNumber,
+          parentMobile: primaryPhone || this.data.students[existingIdx].parentMobile,
+          studentMobile: (std.studentMobile || this.data.students[existingIdx].studentMobile || '').trim(),
+          email: (std.email || this.data.students[existingIdx].email || '').trim().toLowerCase(),
+          gender: (std.gender || this.data.students[existingIdx].gender || '').trim(),
+          section: (std.section || this.data.students[existingIdx].section || '').trim(),
+          updatedAt: new Date().toISOString(),
         };
         updatedCount++;
         skippedCount++;
       } else {
         const newStudent: Student = {
-          ...std,
-          registerNumber: cleanReg,
           name: std.name.trim(),
-          department: (std.department || 'CSE').trim().toUpperCase(),
-          phoneNumber: std.phoneNumber.trim(),
+          registerNumber: cleanReg,
+          department: sanitizeDepartmentCode(std.department || 'CSE'),
+          academicYear,
+          year: academicYear,
+          phoneNumber: primaryPhone,
+          parentMobile: primaryPhone,
+          studentMobile: (std.studentMobile || '').trim(),
+          email: (std.email || '').trim().toLowerCase(),
+          gender: (std.gender || '').trim(),
+          section: (std.section || '').trim(),
           id: `std-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
           createdAt: new Date().toISOString(),
         };
@@ -1858,40 +2182,10 @@ class Database {
     );
     this.save();
 
-    // Async background sync to MongoDB if connected
-    if (isMongoDBConnected() && StudentModel) {
-      (async () => {
-        try {
-          for (const std of students) {
-            const cleanReg = std.registerNumber.trim().toUpperCase();
-            if (cleanReg) {
-              await (StudentModel as any).findOneAndUpdate(
-                { registerNumber: cleanReg },
-                {
-                  $set: {
-                    name: std.name.trim(),
-                    registerNumber: cleanReg,
-                    department: (std.department || 'CSE').trim().toUpperCase(),
-                    phoneNumber: std.phoneNumber.trim(),
-                  },
-                  $setOnInsert: {
-                    createdAt: new Date(),
-                  },
-                },
-                { upsert: true, new: true }
-              );
-            }
-          }
-        } catch (mongoErr) {
-          console.error('[MongoDB Student Batch Sync Error]:', mongoErr);
-        }
-      })();
-    }
-
     return { addedCount, skippedCount, updatedCount, total: this.data.students.length };
   }
 
-  public async importStudentsBatchAsync(students: Omit<Student, 'id' | 'createdAt'>[], user: string) {
+  public async importStudentsBatchAsync(students: Array<Partial<Student> & { name: string; registerNumber: string; department: string }>, user: string) {
     let addedCount = 0;
     let skippedCount = 0;
     let updatedCount = 0;
@@ -1899,6 +2193,9 @@ class Database {
     for (const std of students) {
       const cleanReg = std.registerNumber.trim().toUpperCase();
       if (!cleanReg) continue;
+
+      const academicYear = normalizeAcademicYear(std.academicYear || (std as any).year || '1st Year');
+      const primaryPhone = (std.parentMobile || std.phoneNumber || '').trim();
 
       const existingIdx = this.data.students.findIndex(
         (s) => s.registerNumber.trim().toUpperCase() === cleanReg
@@ -1908,18 +2205,32 @@ class Database {
         this.data.students[existingIdx] = {
           ...this.data.students[existingIdx],
           name: std.name.trim() || this.data.students[existingIdx].name,
-          department: (std.department || this.data.students[existingIdx].department).trim().toUpperCase(),
-          phoneNumber: std.phoneNumber.trim() || this.data.students[existingIdx].phoneNumber,
+          department: sanitizeDepartmentCode(std.department || this.data.students[existingIdx].department),
+          academicYear,
+          year: academicYear,
+          phoneNumber: primaryPhone || this.data.students[existingIdx].phoneNumber,
+          parentMobile: primaryPhone || this.data.students[existingIdx].parentMobile,
+          studentMobile: (std.studentMobile || this.data.students[existingIdx].studentMobile || '').trim(),
+          email: (std.email || this.data.students[existingIdx].email || '').trim().toLowerCase(),
+          gender: (std.gender || this.data.students[existingIdx].gender || '').trim(),
+          section: (std.section || this.data.students[existingIdx].section || '').trim(),
+          updatedAt: new Date().toISOString(),
         };
         updatedCount++;
         skippedCount++;
       } else {
         const newStudent: Student = {
-          ...std,
-          registerNumber: cleanReg,
           name: std.name.trim(),
-          department: (std.department || 'CSE').trim().toUpperCase(),
-          phoneNumber: std.phoneNumber.trim(),
+          registerNumber: cleanReg,
+          department: sanitizeDepartmentCode(std.department || 'CSE'),
+          academicYear,
+          year: academicYear,
+          phoneNumber: primaryPhone,
+          parentMobile: primaryPhone,
+          studentMobile: (std.studentMobile || '').trim(),
+          email: (std.email || '').trim().toLowerCase(),
+          gender: (std.gender || '').trim(),
+          section: (std.section || '').trim(),
           id: `std-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
           createdAt: new Date().toISOString(),
         };
@@ -1942,14 +2253,24 @@ class Database {
         for (const std of students) {
           const cleanReg = std.registerNumber.trim().toUpperCase();
           if (cleanReg) {
+            const academicYear = normalizeAcademicYear(std.academicYear || (std as any).year || '1st Year');
+            const primaryPhone = (std.parentMobile || std.phoneNumber || '').trim();
             await (StudentModel as any).findOneAndUpdate(
               { registerNumber: cleanReg },
               {
                 $set: {
                   name: std.name.trim(),
                   registerNumber: cleanReg,
-                  department: (std.department || 'CSE').trim().toUpperCase(),
-                  phoneNumber: std.phoneNumber.trim(),
+                  department: sanitizeDepartmentCode(std.department || 'CSE'),
+                  academicYear,
+                  year: academicYear,
+                  phoneNumber: primaryPhone,
+                  parentMobile: primaryPhone,
+                  studentMobile: (std.studentMobile || '').trim(),
+                  email: (std.email || '').trim().toLowerCase(),
+                  gender: (std.gender || '').trim(),
+                  section: (std.section || '').trim(),
+                  updatedAt: new Date(),
                 },
                 $setOnInsert: {
                   createdAt: new Date(),
@@ -2201,8 +2522,12 @@ class Database {
             id: d.id || d._id?.toString() || `stf-${d.staffId}`,
             staffId: d.staffId.toUpperCase(),
             name: d.name,
+            email: d.email || '',
             department: d.department,
+            assignedYears: Array.isArray(d.assignedYears) && d.assignedYears.length > 0 ? d.assignedYears : ['1st Year'],
+            assignedDepartments: Array.isArray(d.assignedDepartments) && d.assignedDepartments.length > 0 ? d.assignedDepartments : [d.department || 'CSE'],
             phoneNumber: d.phoneNumber,
+            status: d.status || 'active',
             permissions: d.permissions || ['send_sms', 'view_reports'],
             createdAt: d.createdAt ? new Date(d.createdAt).toISOString() : new Date().toISOString(),
           }));
@@ -2216,24 +2541,40 @@ class Database {
     return this.data.staff;
   }
 
-  public async addStaffAsync(staffData: Omit<Staff, 'id' | 'createdAt'>, user: string): Promise<Staff> {
+  public async addStaffAsync(
+    staffData: Omit<Staff, 'id' | 'createdAt'> & { rawPassword?: string },
+    user: string
+  ): Promise<Staff> {
     const cleanStaffId = staffData.staffId.trim().toUpperCase();
     const existing = this.data.staff.find(
       (s) => s.staffId.toUpperCase() === cleanStaffId
     );
     if (existing) throw new Error(`Staff ID ${cleanStaffId} already exists`);
 
+    const assignedYears = Array.isArray(staffData.assignedYears) && staffData.assignedYears.length > 0
+      ? staffData.assignedYears.map((y) => normalizeAcademicYear(y))
+      : ['1st Year'];
+
+    const assignedDepartments = Array.isArray(staffData.assignedDepartments) && staffData.assignedDepartments.length > 0
+      ? staffData.assignedDepartments.map((d) => sanitizeDepartmentCode(d))
+      : [sanitizeDepartmentCode(staffData.department || 'CSE')];
+
     const newStaff: Staff = {
       ...staffData,
       staffId: cleanStaffId,
       name: staffData.name.trim(),
+      email: (staffData.email || '').trim().toLowerCase(),
       department: (staffData.department || 'General').trim(),
+      assignedYears,
+      assignedDepartments,
       phoneNumber: staffData.phoneNumber.trim(),
+      status: staffData.status || 'active',
+      permissions: staffData.permissions || ['send_sms', 'view_reports'],
       id: `stf-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       createdAt: new Date().toISOString(),
     };
 
-    // Save to StaffModel
+    // Save to StaffModel in MongoDB
     try {
       await connectToMongoDB();
       if (isMongoDBConnected() && StaffModel) {
@@ -2244,8 +2585,12 @@ class Database {
               id: newStaff.id,
               staffId: cleanStaffId,
               name: newStaff.name,
+              email: newStaff.email,
               department: newStaff.department,
+              assignedYears: newStaff.assignedYears,
+              assignedDepartments: newStaff.assignedDepartments,
               phoneNumber: newStaff.phoneNumber,
+              status: newStaff.status,
               permissions: newStaff.permissions,
               createdAt: new Date(newStaff.createdAt),
             },
@@ -2263,14 +2608,18 @@ class Database {
     this.data.staff.unshift(newStaff);
 
     // Create user login account for staff
-    const staffPass = 'VSB' + cleanStaffId;
+    const staffPass = (staffData.rawPassword && staffData.rawPassword.trim()) ? staffData.rawPassword.trim() : 'VSB' + cleanStaffId;
     await this.addUserAsync(
       {
         userId: cleanStaffId,
         name: newStaff.name,
         role: 'staff',
         department: newStaff.department,
+        assignedYears: newStaff.assignedYears,
+        assignedDepartments: newStaff.assignedDepartments,
         phoneNumber: newStaff.phoneNumber,
+        email: newStaff.email,
+        status: newStaff.status,
         rawPassword: staffPass,
         permissions: newStaff.permissions,
       },
@@ -2280,22 +2629,37 @@ class Database {
     this.addActivity(
       'staff',
       'Staff Account Created',
-      `Created staff account for ${newStaff.name} (${newStaff.staffId})`,
+      `Created staff account for ${newStaff.name} (${newStaff.staffId}) - Years: ${newStaff.assignedYears.join(', ')}, Depts: ${newStaff.assignedDepartments.join(', ')}`,
       user
     );
     this.save();
     return newStaff;
   }
 
-  public addStaff(staffData: Omit<Staff, 'id' | 'createdAt'>, user: string): Staff {
+  public addStaff(staffData: Omit<Staff, 'id' | 'createdAt'> & { rawPassword?: string }, user: string): Staff {
+    const cleanStaffId = staffData.staffId.trim().toUpperCase();
     const existing = this.data.staff.find(
-      (s) => s.staffId.toUpperCase() === staffData.staffId.toUpperCase()
+      (s) => s.staffId.toUpperCase() === cleanStaffId
     );
-    if (existing) throw new Error(`Staff ID ${staffData.staffId} already exists`);
+    if (existing) throw new Error(`Staff ID ${cleanStaffId} already exists`);
+
+    const assignedYears = Array.isArray(staffData.assignedYears) && staffData.assignedYears.length > 0
+      ? staffData.assignedYears.map((y) => normalizeAcademicYear(y))
+      : ['1st Year'];
+
+    const assignedDepartments = Array.isArray(staffData.assignedDepartments) && staffData.assignedDepartments.length > 0
+      ? staffData.assignedDepartments.map((d) => sanitizeDepartmentCode(d))
+      : [sanitizeDepartmentCode(staffData.department || 'CSE')];
 
     const newStaff: Staff = {
       ...staffData,
+      staffId: cleanStaffId,
+      name: staffData.name.trim(),
+      email: (staffData.email || '').trim().toLowerCase(),
       department: sanitizeDepartmentCode(staffData.department),
+      assignedYears,
+      assignedDepartments,
+      status: staffData.status || 'active',
       id: `stf-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       createdAt: new Date().toISOString(),
     };
@@ -2303,14 +2667,18 @@ class Database {
     this.data.staff.unshift(newStaff);
 
     // Create user login account for staff
-    const staffPass = 'VSB' + newStaff.staffId;
+    const staffPass = (staffData.rawPassword && staffData.rawPassword.trim()) ? staffData.rawPassword.trim() : 'VSB' + cleanStaffId;
     this.data.users.push({
       id: newStaff.id,
       userId: newStaff.staffId,
       name: newStaff.name,
       role: 'staff',
       department: newStaff.department,
+      assignedYears: newStaff.assignedYears,
+      assignedDepartments: newStaff.assignedDepartments,
       phoneNumber: newStaff.phoneNumber,
+      email: newStaff.email,
+      status: newStaff.status,
       rawPassword: staffPass,
       passwordHash: bcrypt.hashSync(staffPass, 10),
       permissions: newStaff.permissions,
@@ -2329,7 +2697,7 @@ class Database {
 
   public async updateStaffAsync(
     id: string,
-    updates: Partial<Omit<Staff, 'id' | 'createdAt'>>,
+    updates: Partial<Staff> & { rawPassword?: string },
     user: string
   ): Promise<Staff> {
     const cleanId = (id || '').trim();
@@ -2339,6 +2707,13 @@ class Database {
     if (updates.department) {
       updates.department = sanitizeDepartmentCode(updates.department);
     }
+    if (updates.assignedYears) {
+      updates.assignedYears = updates.assignedYears.map((y) => normalizeAcademicYear(y));
+    }
+    if (updates.assignedDepartments) {
+      updates.assignedDepartments = updates.assignedDepartments.map((d) => sanitizeDepartmentCode(d));
+    }
+
     const oldStaffId = this.data.staff[index].staffId;
     this.data.staff[index] = { ...this.data.staff[index], ...updates };
     const currentStaff = this.data.staff[index];
@@ -2361,8 +2736,12 @@ class Database {
             $set: {
               name: currentStaff.name,
               staffId: currentStaff.staffId,
+              email: currentStaff.email,
               department: currentStaff.department,
+              assignedYears: currentStaff.assignedYears,
+              assignedDepartments: currentStaff.assignedDepartments,
               phoneNumber: currentStaff.phoneNumber,
+              status: currentStaff.status,
               permissions: currentStaff.permissions,
             },
           },
@@ -2375,23 +2754,648 @@ class Database {
 
     // Update associated user record
     try {
-      await this.updateUserAsync(
-        oldStaffId,
-        {
-          name: currentStaff.name,
-          department: currentStaff.department,
-          phoneNumber: currentStaff.phoneNumber,
-          permissions: currentStaff.permissions,
-        },
-        user
-      );
+      const userUpdates: any = {
+        name: currentStaff.name,
+        department: currentStaff.department,
+        assignedYears: currentStaff.assignedYears,
+        assignedDepartments: currentStaff.assignedDepartments,
+        phoneNumber: currentStaff.phoneNumber,
+        email: currentStaff.email,
+        status: currentStaff.status,
+        permissions: currentStaff.permissions,
+      };
+
+      if (updates.rawPassword && updates.rawPassword.trim()) {
+        userUpdates.rawPassword = updates.rawPassword.trim();
+        userUpdates.passwordHash = bcrypt.hashSync(updates.rawPassword.trim(), 10);
+      }
+
+      await this.updateUserAsync(oldStaffId, userUpdates, user);
     } catch (userErr) {
       console.warn('[Staff User Sync Warning]:', userErr);
     }
 
-    this.addActivity('staff', 'Staff Updated', `Updated staff ${currentStaff.name}`, user);
+    this.addActivity('staff', 'Staff Updated', `Updated staff ${currentStaff.name} (${currentStaff.staffId})`, user);
     this.save();
     return currentStaff;
+  }
+
+  public async resetStaffPasswordAsync(staffId: string, newPassword: string, user: string): Promise<boolean> {
+    const cleanId = (staffId || '').trim().toUpperCase();
+    const staff = this.data.staff.find((s) => s.staffId.toUpperCase() === cleanId);
+    if (!staff) throw new Error(`Staff with ID ${cleanId} not found`);
+
+    const trimmedPass = (newPassword || '').trim();
+    if (!trimmedPass) throw new Error('Password cannot be empty');
+
+    const hashed = bcrypt.hashSync(trimmedPass, 10);
+
+    const userIdx = this.data.users.findIndex((u) => u.userId.toUpperCase() === cleanId);
+    if (userIdx !== -1) {
+      this.data.users[userIdx].rawPassword = trimmedPass;
+      this.data.users[userIdx].passwordHash = hashed;
+    }
+
+    try {
+      await connectToMongoDB();
+      if (isMongoDBConnected() && UserModel) {
+        await (UserModel as any).findOneAndUpdate(
+          { userId: cleanId },
+          {
+            $set: {
+              rawPassword: trimmedPass,
+              passwordHash: hashed,
+            },
+          }
+        );
+      }
+    } catch (err) {
+      console.error('[MongoDB resetStaffPassword Error]:', err);
+    }
+
+    this.addActivity('auth', 'Staff Password Reset', `Reset password for staff member ${staff.name} (${cleanId})`, user);
+    this.save();
+    return true;
+  }
+
+  public async toggleStaffStatusAsync(staffId: string, user: string): Promise<Staff> {
+    const cleanId = (staffId || '').trim().toUpperCase();
+    const staff = this.data.staff.find((s) => s.staffId.toUpperCase() === cleanId);
+    if (!staff) throw new Error(`Staff with ID ${cleanId} not found`);
+
+    const newStatus = staff.status === 'inactive' ? 'active' : 'inactive';
+    return await this.updateStaffAsync(cleanId, { status: newStatus }, user);
+  }
+
+  // --- Staff Authorization Helper ---
+  public canUserAccessStudent(userObj: any, student: Student): boolean {
+    if (!userObj) return false;
+    const role = (userObj.role || 'staff').toLowerCase();
+    if (role === 'super_admin' || role === 'admin' || userObj.userId?.toUpperCase() === 'VYNEXTGEN') {
+      return true;
+    }
+
+    if (role === 'hod') {
+      const userDept = (userObj.department || '').toUpperCase();
+      return student.department.toUpperCase() === userDept;
+    }
+
+    // Role is staff
+    const assignedYears = Array.isArray(userObj.assignedYears) && userObj.assignedYears.length > 0
+      ? userObj.assignedYears.map((y: string) => normalizeAcademicYear(y))
+      : ['1st Year'];
+
+    const assignedDepts = Array.isArray(userObj.assignedDepartments) && userObj.assignedDepartments.length > 0
+      ? userObj.assignedDepartments.map((d: string) => sanitizeDepartmentCode(d).toUpperCase())
+      : [(userObj.department || 'CSE').toUpperCase()];
+
+    const studentYear = normalizeAcademicYear(student.academicYear || student.year);
+    const studentDept = student.department.toUpperCase();
+
+    const matchesYear = assignedYears.includes('ALL') || assignedYears.includes(studentYear);
+    const matchesDept = assignedDepts.includes('ALL') || assignedDepts.includes(studentDept);
+
+    return matchesYear && matchesDept;
+  }
+
+  // --- Academic Year Promotion Methods ---
+  public async previewAcademicYearPromotion(filters?: {
+    year?: string;
+    department?: string;
+  }): Promise<{
+    eligibleTotal: number;
+    yearBreakdown: Record<string, number>;
+    transitions: Array<{
+      fromYear: string;
+      toYear: string;
+      department: string;
+      count: number;
+    }>;
+    students: Array<{
+      id: string;
+      name: string;
+      registerNumber: string;
+      department: string;
+      currentYear: string;
+      nextYear: string;
+      parentMobile: string;
+      studentMobile: string;
+      email: string;
+      isEligible: boolean;
+      ineligibleReason?: string;
+    }>;
+  }> {
+    // Ensure data is freshly synced from MongoDB
+    await this.getStudentsAsync();
+
+    const transitionsMap: Record<string, number> = {};
+    const yearBreakdown: Record<string, number> = {
+      '1st Year': 0,
+      '2nd Year': 0,
+      '3rd Year': 0,
+      '4th Year': 0,
+      'Alumni': 0,
+      'Graduated': 0,
+    };
+
+    let eligibleTotal = 0;
+    const studentList: Array<{
+      id: string;
+      name: string;
+      registerNumber: string;
+      department: string;
+      currentYear: string;
+      nextYear: string;
+      parentMobile: string;
+      studentMobile: string;
+      email: string;
+      isEligible: boolean;
+      ineligibleReason?: string;
+    }> = [];
+
+    const filterYear = filters?.year && filters.year !== 'All' ? normalizeAcademicYear(filters.year) : null;
+    const filterDept = filters?.department && filters.department !== 'All' ? sanitizeDepartmentCode(filters.department).toUpperCase() : null;
+
+    for (const student of this.data.students) {
+      const currentYear = normalizeAcademicYear(student.academicYear || student.year);
+      if (yearBreakdown[currentYear] !== undefined) {
+        yearBreakdown[currentYear]++;
+      }
+
+      let nextYear = '';
+      let isEligible = true;
+      let ineligibleReason: string | undefined;
+
+      if (currentYear === '1st Year') nextYear = '2nd Year';
+      else if (currentYear === '2nd Year') nextYear = '3rd Year';
+      else if (currentYear === '3rd Year') nextYear = '4th Year';
+      else if (currentYear === '4th Year') nextYear = 'Alumni';
+      else {
+        isEligible = false;
+        ineligibleReason = 'Student is already Alumni / Graduated';
+      }
+
+      // Check filters
+      if (filterYear && currentYear !== filterYear) {
+        continue;
+      }
+      if (filterDept && sanitizeDepartmentCode(student.department).toUpperCase() !== filterDept) {
+        continue;
+      }
+
+      if (isEligible) {
+        eligibleTotal++;
+        const dept = student.department || 'CSE';
+        const key = `${currentYear}__${nextYear}__${dept}`;
+        transitionsMap[key] = (transitionsMap[key] || 0) + 1;
+      }
+
+      studentList.push({
+        id: student.id,
+        name: student.name,
+        registerNumber: student.registerNumber,
+        department: student.department,
+        currentYear,
+        nextYear: nextYear || 'N/A',
+        parentMobile: student.parentMobile || student.phoneNumber || '',
+        studentMobile: student.studentMobile || '',
+        email: student.email || '',
+        isEligible,
+        ineligibleReason,
+      });
+    }
+
+    const transitions = Object.entries(transitionsMap).map(([key, count]) => {
+      const [fromYear, toYear, department] = key.split('__');
+      return { fromYear, toYear, department, count };
+    });
+
+    return {
+      eligibleTotal,
+      yearBreakdown,
+      transitions,
+      students: studentList,
+    };
+  }
+
+  public async executeAcademicYearPromotionAsync(
+    options: {
+      selectedYears?: string[];
+      selectedDepartments?: string[];
+      studentRegisterNumbers?: string[];
+      studentIds?: string[];
+      students?: Array<{ id?: string; registerNumber?: string; fromYear?: string; toYear?: string }>;
+      academicSession?: string;
+      notes?: string;
+    },
+    user: string,
+    userName: string
+  ): Promise<{
+    success: boolean;
+    totalPromoted: number;
+    successfulCount: number;
+    failedCount: number;
+    promotedStudents: PromotedStudentRecord[];
+    failedStudents: Array<{ registerNumber: string; studentName: string; reason: string }>;
+    details: Array<{ fromYear: string; toYear: string; department: string; count: number }>;
+  }> {
+    // 1. Ensure students are freshly synced from MongoDB
+    await this.getStudentsAsync();
+
+    const sessionName = (options.academicSession || '').trim() || `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
+
+    // Extract target register numbers from various payload shapes
+    const targetRegisterNumbers = new Set<string>();
+    const explicitRequestedToYearMap = new Map<string, string>();
+
+    if (Array.isArray(options.studentRegisterNumbers) && options.studentRegisterNumbers.length > 0) {
+      options.studentRegisterNumbers.forEach((r) => targetRegisterNumbers.add(r.trim().toUpperCase()));
+    }
+
+    if (Array.isArray(options.studentIds) && options.studentIds.length > 0) {
+      for (const id of options.studentIds) {
+        const found = this.data.students.find((s) => s.id === id || s.registerNumber.toUpperCase() === id.toUpperCase());
+        if (found) {
+          targetRegisterNumbers.add(found.registerNumber.trim().toUpperCase());
+        }
+      }
+    }
+
+    if (Array.isArray(options.students) && options.students.length > 0) {
+      for (const item of options.students) {
+        const reg = (item.registerNumber || item.id || '').trim().toUpperCase();
+        if (reg) {
+          targetRegisterNumbers.add(reg);
+          if (item.toYear) {
+            explicitRequestedToYearMap.set(reg, normalizeAcademicYear(item.toYear));
+          }
+        }
+      }
+    }
+
+    const hasExplicitTargets = targetRegisterNumbers.size > 0;
+
+    const selectedYears = options.selectedYears && options.selectedYears.length > 0
+      ? options.selectedYears.map((y) => normalizeAcademicYear(y))
+      : ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+
+    const selectedDepts = options.selectedDepartments && options.selectedDepartments.length > 0
+      ? options.selectedDepartments.map((d) => sanitizeDepartmentCode(d).toUpperCase())
+      : [];
+
+    // 2. Query MongoDB for existing promotions in this session to prevent duplicate history records
+    const alreadyPromotedInThisSession = new Set<string>();
+
+    // Check in-memory history
+    if (Array.isArray(this.data.academicPromotionHistories)) {
+      for (const hist of this.data.academicPromotionHistories) {
+        if (hist.academicSession === sessionName) {
+          if (Array.isArray(hist.studentRecords)) {
+            for (const rec of hist.studentRecords) {
+              if (rec.registerNumber && rec.status === 'SUCCESS') {
+                alreadyPromotedInThisSession.add(rec.registerNumber.trim().toUpperCase());
+              }
+            }
+          }
+          if (Array.isArray(hist.promotions)) {
+            for (const p of hist.promotions) {
+              if (Array.isArray(p.registerNumbers)) {
+                p.registerNumbers.forEach((r) => alreadyPromotedInThisSession.add(r.trim().toUpperCase()));
+              }
+            }
+          }
+        }
+      }
+    }
+
+    try {
+      await connectToMongoDB();
+      if (isMongoDBConnected() && AcademicPromotionHistoryModel) {
+        const sessionHistories = await (AcademicPromotionHistoryModel as any).find({
+          academicSession: sessionName,
+        }).lean();
+        for (const hist of sessionHistories) {
+          if (Array.isArray(hist.studentRecords)) {
+            for (const rec of hist.studentRecords) {
+              if (rec.registerNumber && rec.status === 'SUCCESS') {
+                alreadyPromotedInThisSession.add(rec.registerNumber.trim().toUpperCase());
+              }
+            }
+          }
+          if (Array.isArray(hist.promotions)) {
+            for (const p of hist.promotions) {
+              if (Array.isArray(p.registerNumbers)) {
+                p.registerNumbers.forEach((r) => alreadyPromotedInThisSession.add(r.trim().toUpperCase()));
+              }
+            }
+          }
+        }
+      }
+    } catch (checkErr) {
+      console.warn('[MongoDB Promotion Deduplication Check Error]:', checkErr);
+    }
+
+    const promotedStudents: PromotedStudentRecord[] = [];
+    const failedStudents: Array<{ registerNumber: string; studentName: string; reason: string }> = [];
+    const transitionsLog: Record<string, { count: number; registerNumbers: string[] }> = {};
+    const processedInCurrentBatch = new Set<string>();
+
+    // Process in descending academic year order (4th -> Alumni first, then 3rd -> 4th, 2nd -> 3rd, 1st -> 2nd)
+    // to strictly prevent accidental double promotion within a single batch run
+    const orderedSourceYears = ['4th Year', '3rd Year', '2nd Year', '1st Year'];
+
+    for (const sourceYear of orderedSourceYears) {
+      const standardTargetYear = VALID_ACADEMIC_PROGRESSION[sourceYear] || 'Alumni';
+
+      for (const student of this.data.students) {
+        const cleanReg = student.registerNumber.trim().toUpperCase();
+
+        // If specific register numbers were requested, filter
+        if (hasExplicitTargets && !targetRegisterNumbers.has(cleanReg)) {
+          continue;
+        }
+
+        // Avoid double promotion in the same batch
+        if (processedInCurrentBatch.has(cleanReg)) {
+          continue;
+        }
+
+        const studentYear = normalizeAcademicYear(student.academicYear || student.year);
+        if (studentYear !== sourceYear) {
+          continue;
+        }
+
+        // Check department filter
+        if (selectedDepts.length > 0 && !selectedDepts.includes(sanitizeDepartmentCode(student.department).toUpperCase())) {
+          continue;
+        }
+
+        // Check year filter (when no explicit register numbers given)
+        if (!hasExplicitTargets && !selectedYears.includes(sourceYear)) {
+          continue;
+        }
+
+        // Deduplication check: Has this student already been promoted in this academic session?
+        if (alreadyPromotedInThisSession.has(cleanReg)) {
+          failedStudents.push({
+            registerNumber: student.registerNumber,
+            studentName: student.name,
+            reason: `Student ${cleanReg} has already been promoted for session ${sessionName}. Duplicate promotion prevented.`,
+          });
+          continue;
+        }
+
+        // Validation: cannot promote students already in Alumni/Graduated
+        if (studentYear === 'Alumni' || studentYear === 'Graduated') {
+          failedStudents.push({
+            registerNumber: student.registerNumber,
+            studentName: student.name,
+            reason: `Student ${student.name} (${cleanReg}) is already an Alumni / Graduated and cannot be promoted further.`,
+          });
+          continue;
+        }
+
+        // Validation: Validate requested progression
+        const requestedTarget = explicitRequestedToYearMap.get(cleanReg);
+        if (requestedTarget && requestedTarget !== standardTargetYear) {
+          failedStudents.push({
+            registerNumber: student.registerNumber,
+            studentName: student.name,
+            reason: `Invalid progression: ${sourceYear} can only be promoted to ${standardTargetYear}, not ${requestedTarget}.`,
+          });
+          continue;
+        }
+
+        const oldYear = student.academicYear || sourceYear;
+        const targetYear = standardTargetYear;
+
+        student.academicYear = targetYear;
+        student.year = targetYear;
+        student.updatedAt = new Date().toISOString();
+
+        processedInCurrentBatch.add(cleanReg);
+        alreadyPromotedInThisSession.add(cleanReg);
+
+        const record: PromotedStudentRecord = {
+          studentName: student.name,
+          registerNumber: student.registerNumber,
+          department: student.department,
+          fromYear: sourceYear,
+          toYear: targetYear,
+          promotedBy: user,
+          promotedByName: userName,
+          promotionDate: new Date().toISOString(),
+          status: 'SUCCESS',
+        };
+        promotedStudents.push(record);
+
+        const key = `${sourceYear}__${targetYear}__${student.department}`;
+        if (!transitionsLog[key]) {
+          transitionsLog[key] = { count: 0, registerNumbers: [] };
+        }
+        transitionsLog[key].count++;
+        transitionsLog[key].registerNumbers.push(student.registerNumber);
+
+        // Record modification audit trail for student record
+        this.recordStudentModification({
+          studentId: student.id,
+          registerNumber: student.registerNumber,
+          studentName: student.name,
+          department: student.department,
+          academicYear: targetYear,
+          fieldName: 'academicYear',
+          previousValue: oldYear,
+          updatedValue: targetYear,
+          reason: `Annual Year Promotion: ${sourceYear} -> ${targetYear}`,
+          modifiedBy: user,
+          modifiedByName: userName,
+          modifiedByRole: 'ADMIN',
+        });
+      }
+    }
+
+    // Check for any requested students that were not found
+    if (hasExplicitTargets) {
+      for (const reg of targetRegisterNumbers) {
+        if (!processedInCurrentBatch.has(reg)) {
+          const alreadyFailed = failedStudents.some((f) => f.registerNumber.toUpperCase() === reg);
+          if (!alreadyFailed) {
+            const found = this.data.students.find((s) => s.registerNumber.toUpperCase() === reg);
+            if (!found) {
+              failedStudents.push({
+                registerNumber: reg,
+                studentName: 'Unknown',
+                reason: 'Student register number not found in college database',
+              });
+            } else if (alreadyPromotedInThisSession.has(reg)) {
+              failedStudents.push({
+                registerNumber: reg,
+                studentName: found.name,
+                reason: `Student ${found.name} (${reg}) has already been promoted for session ${sessionName}. Duplicate promotion prevented.`,
+              });
+            } else if (found.academicYear === 'Alumni' || found.academicYear === 'Graduated') {
+              failedStudents.push({
+                registerNumber: reg,
+                studentName: found.name,
+                reason: `Cannot promote student ${found.name} (${reg}) who is already in Alumni / Graduated status.`,
+              });
+            } else {
+              failedStudents.push({
+                registerNumber: reg,
+                studentName: found.name,
+                reason: `Student ${found.name} (${reg}) currently in ${found.academicYear} does not match requested progression filters.`,
+              });
+            }
+          }
+        }
+      }
+    }
+
+    const details = Object.entries(transitionsLog).map(([key, data]) => {
+      const [fromYear, toYear, department] = key.split('__');
+      return { fromYear, toYear, department, count: data.count, registerNumbers: data.registerNumbers };
+    });
+
+    const totalPromoted = promotedStudents.length;
+
+    const promotionHistoryRecord: AcademicPromotionHistory = {
+      id: `promo-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      academicSession: sessionName,
+      promotedBy: user,
+      promotedByName: userName,
+      totalStudentsPromoted: totalPromoted,
+      promotions: details,
+      studentRecords: promotedStudents,
+      notes: options.notes || `Annual Academic Promotion executed for ${totalPromoted} students`,
+      timestamp: new Date().toISOString(),
+    };
+
+    if (totalPromoted > 0) {
+      if (!this.data.academicPromotionHistories) {
+        this.data.academicPromotionHistories = [];
+      }
+      this.data.academicPromotionHistories.unshift(promotionHistoryRecord);
+
+      this.addActivity(
+        'student',
+        'Year Promotion Executed',
+        `Promoted ${totalPromoted} students to next academic year (${promotionHistoryRecord.academicSession})`,
+        user
+      );
+      this.save();
+    }
+
+    // Persist directly to MongoDB using transactions where supported
+    if (totalPromoted > 0) {
+      try {
+        await connectToMongoDB();
+        if (isMongoDBConnected() && mongoose.connection.readyState === 1 && StudentModel) {
+          let session: mongoose.ClientSession | null = null;
+          let transactionStarted = false;
+
+          try {
+            session = await mongoose.startSession();
+            session.startTransaction();
+            transactionStarted = true;
+          } catch (sessionErr: any) {
+            // MongoDB standalone environment
+            session = null;
+            transactionStarted = false;
+          }
+
+          try {
+            for (const det of details) {
+              if (det.registerNumbers && det.registerNumbers.length > 0) {
+                const query = { registerNumber: { $in: det.registerNumbers } };
+                const update = {
+                  $set: {
+                    academicYear: det.toYear,
+                    year: det.toYear,
+                    updatedAt: new Date(),
+                  },
+                };
+                if (session && transactionStarted) {
+                  await (StudentModel as any).updateMany(query, update, { session });
+                } else {
+                  await (StudentModel as any).updateMany(query, update);
+                }
+              }
+            }
+
+            if (AcademicPromotionHistoryModel) {
+              const historyPayload = {
+                ...promotionHistoryRecord,
+                timestamp: new Date(promotionHistoryRecord.timestamp),
+              };
+              if (session && transactionStarted) {
+                await (AcademicPromotionHistoryModel as any).create([historyPayload], { session });
+              } else {
+                await (AcademicPromotionHistoryModel as any).create(historyPayload);
+              }
+            }
+
+            if (session && transactionStarted) {
+              await session.commitTransaction();
+            }
+          } catch (txErr) {
+            if (session && transactionStarted) {
+              await session.abortTransaction();
+            }
+            throw txErr;
+          } finally {
+            if (session) {
+              session.endSession();
+            }
+          }
+
+          // Re-sync students from MongoDB to guarantee consistent state across sessions
+          await this.getStudentsAsync();
+        }
+      } catch (err) {
+        console.error('[MongoDB Promotion Transaction Sync Error]:', err);
+      }
+    }
+
+    return {
+      success: true,
+      totalPromoted,
+      successfulCount: totalPromoted,
+      failedCount: failedStudents.length,
+      promotedStudents,
+      failedStudents,
+      details,
+    };
+  }
+
+  public async getAcademicPromotionHistoryAsync(): Promise<AcademicPromotionHistory[]> {
+    try {
+      await connectToMongoDB();
+      if (isMongoDBConnected() && AcademicPromotionHistoryModel) {
+        const docs = await (AcademicPromotionHistoryModel as any).find({}).sort({ timestamp: -1 }).lean();
+        if (Array.isArray(docs) && docs.length > 0) {
+          const list: AcademicPromotionHistory[] = docs.map((d: any) => ({
+            id: d.id || d._id.toString(),
+            academicSession: d.academicSession,
+            promotedBy: d.promotedBy,
+            promotedByName: d.promotedByName || d.promotedBy,
+            totalStudentsPromoted: d.totalStudentsPromoted || 0,
+            promotions: d.promotions || [],
+            studentRecords: d.studentRecords || [],
+            notes: d.notes || '',
+            timestamp: d.timestamp ? new Date(d.timestamp).toISOString() : new Date().toISOString(),
+          }));
+          this.data.academicPromotionHistories = list;
+          return list;
+        }
+      }
+    } catch (err) {
+      console.error('[MongoDB getAcademicPromotionHistoryAsync Error]:', err);
+    }
+    return this.data.academicPromotionHistories || [];
+  }
+
+  public getAcademicPromotionHistory(): AcademicPromotionHistory[] {
+    return this.data.academicPromotionHistories || [];
   }
 
   public updateStaff(id: string, updates: Partial<Omit<Staff, 'id' | 'createdAt'>>, user: string): Staff {
@@ -3412,30 +4416,94 @@ class Database {
   }
 
   // --- Dashboard Analytics ---
-  public getDashboardStats(userRole?: string) {
-    const totalParentsEnrolled = (this.data.parentEnrollments || []).length;
-    const totalStudents = this.data.students.length;
-    const totalSmsSent = this.data.smsLogs.filter((l) => l.status === 'Sent' || l.status === 'Delivered').length;
-    const failedSmsCount = this.data.smsLogs.filter((l) => l.status === 'Failed').length;
-    const totalStaff = this.data.staff.length + this.data.users.filter((u) => u.role === 'hod' || u.role === 'staff').length;
+  public getDashboardStats(userRole?: string, requestingUser?: any) {
+    const roleUpper = (userRole || requestingUser?.role || 'staff').toUpperCase();
+    const isSuperOrAdmin = roleUpper === 'SUPER_ADMIN' || roleUpper === 'ADMIN';
+    const isHod = roleUpper === 'HOD';
+    const isStaff = roleUpper === 'STAFF';
 
-    let unmatchedRecordsCount = 0;
-    this.data.examBatches.forEach((batch) => {
-      unmatchedRecordsCount += batch.results.filter((r) => r.matchedParent === false).length;
+    // Staff or HOD scope filtering
+    let scopedStudents = this.data.students || [];
+    let scopedSmsLogs = this.data.smsLogs || [];
+
+    if (isStaff && requestingUser) {
+      const assignedYears = Array.isArray(requestingUser.assignedYears) && requestingUser.assignedYears.length > 0
+        ? requestingUser.assignedYears.map((y: string) => normalizeAcademicYear(y))
+        : ['1st Year'];
+      const assignedDepts = Array.isArray(requestingUser.assignedDepartments) && requestingUser.assignedDepartments.length > 0
+        ? requestingUser.assignedDepartments.map((d: string) => sanitizeDepartmentCode(d).toUpperCase())
+        : [(requestingUser.department || 'CSE').toUpperCase()];
+
+      scopedStudents = scopedStudents.filter((s) => {
+        const sy = normalizeAcademicYear(s.academicYear || s.year);
+        const sd = (s.department || '').toUpperCase();
+        return (assignedYears.includes('ALL') || assignedYears.includes(sy)) &&
+               (assignedDepts.includes('ALL') || assignedDepts.includes(sd));
+      });
+
+      scopedSmsLogs = scopedSmsLogs.filter((l) => {
+        const ld = (l.department || '').toUpperCase();
+        return assignedDepts.includes('ALL') || assignedDepts.includes(ld);
+      });
+    } else if (isHod && requestingUser) {
+      const hodDept = (requestingUser.department || 'CSE').toUpperCase();
+      scopedStudents = scopedStudents.filter((s) => (s.department || '').toUpperCase() === hodDept);
+      scopedSmsLogs = scopedSmsLogs.filter((l) => (l.department || '').toUpperCase() === hodDept);
+    }
+
+    const totalStudents = scopedStudents.length;
+    const successfulSmsCount = scopedSmsLogs.filter((l) => l.status === 'Sent' || l.status === 'Delivered').length;
+    const failedSmsCount = scopedSmsLogs.filter((l) => l.status === 'Failed').length;
+    const totalSmsSent = successfulSmsCount + failedSmsCount;
+    const totalStaff = this.data.staff.length;
+    const totalDepartments = (this.data.departments || defaultDepartments).length;
+    const totalParentsEnrolled = (this.data.parentEnrollments || []).length;
+
+    // Year-wise student count breakdown
+    const yearBreakdown: Record<string, number> = {
+      '1st Year': 0,
+      '2nd Year': 0,
+      '3rd Year': 0,
+      '4th Year': 0,
+      'Graduated': 0,
+    };
+    scopedStudents.forEach((s) => {
+      const y = normalizeAcademicYear(s.academicYear || s.year);
+      if (yearBreakdown[y] !== undefined) {
+        yearBreakdown[y]++;
+      } else {
+        yearBreakdown[y] = 1;
+      }
     });
 
     // Department breakdown
-    const deptMap: Record<string, { studentCount: number; smsSentCount: number }> = {};
-
-    this.data.students.forEach((s) => {
-      const dept = s.department || 'General';
-      if (!deptMap[dept]) deptMap[dept] = { studentCount: 0, smsSentCount: 0 };
-      deptMap[dept].studentCount++;
+    const deptMap: Record<string, { studentCount: number; smsSentCount: number; yearCounts: Record<string, number> }> = {};
+    const deptsList = this.data.departments && this.data.departments.length > 0 ? this.data.departments : defaultDepartments;
+    deptsList.forEach((d) => {
+      deptMap[d.code] = {
+        studentCount: 0,
+        smsSentCount: 0,
+        yearCounts: { '1st Year': 0, '2nd Year': 0, '3rd Year': 0, '4th Year': 0 },
+      };
     });
 
-    this.data.smsLogs.forEach((l) => {
+    scopedStudents.forEach((s) => {
+      const dept = s.department || 'General';
+      if (!deptMap[dept]) {
+        deptMap[dept] = { studentCount: 0, smsSentCount: 0, yearCounts: { '1st Year': 0, '2nd Year': 0, '3rd Year': 0, '4th Year': 0 } };
+      }
+      deptMap[dept].studentCount++;
+      const y = normalizeAcademicYear(s.academicYear || s.year);
+      if (deptMap[dept].yearCounts && deptMap[dept].yearCounts[y] !== undefined) {
+        deptMap[dept].yearCounts[y]++;
+      }
+    });
+
+    scopedSmsLogs.forEach((l) => {
       const dept = l.department || 'General';
-      if (!deptMap[dept]) deptMap[dept] = { studentCount: 0, smsSentCount: 0 };
+      if (!deptMap[dept]) {
+        deptMap[dept] = { studentCount: 0, smsSentCount: 0, yearCounts: { '1st Year': 0, '2nd Year': 0, '3rd Year': 0, '4th Year': 0 } };
+      }
       if (l.status === 'Sent' || l.status === 'Delivered') {
         deptMap[dept].smsSentCount++;
       }
@@ -3446,9 +4514,14 @@ class Database {
       ...stats,
     }));
 
-    // Monthly/Daily SMS trend
+    let unmatchedRecordsCount = 0;
+    this.data.examBatches.forEach((batch) => {
+      unmatchedRecordsCount += batch.results.filter((r) => r.matchedParent === false).length;
+    });
+
+    // Trend
     const dateMap: Record<string, { sent: number; failed: number }> = {};
-    this.data.smsLogs.forEach((l) => {
+    scopedSmsLogs.forEach((l) => {
       const dateKey = l.sentAt ? l.sentAt.split('T')[0] : new Date().toISOString().split('T')[0];
       if (!dateMap[dateKey]) dateMap[dateKey] = { sent: 0, failed: 0 };
       if (l.status === 'Failed') {
@@ -3467,9 +4540,16 @@ class Database {
       totalParentsEnrolled,
       totalStudents,
       totalStaff,
+      totalDepartments,
       totalSmsSent,
+      successfulSmsCount,
       failedSmsCount,
       unmatchedRecordsCount,
+      yearBreakdown,
+      staffAssignedScope: isStaff && requestingUser ? {
+        years: requestingUser.assignedYears || ['1st Year'],
+        departments: requestingUser.assignedDepartments || [requestingUser.department || 'CSE'],
+      } : undefined,
       departmentBreakdown,
       monthlySmsTrend,
     };

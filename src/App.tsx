@@ -19,6 +19,7 @@ import { ResultSmsSystem } from './components/ResultSmsSystem';
 import { SmsReportSystem } from './components/SmsReportSystem';
 import { TemplateManager } from './components/TemplateManager';
 import { SettingsView } from './components/SettingsView';
+import { YearPromotion } from './components/YearPromotion';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -40,6 +41,7 @@ export default function App() {
 
   // Navigation state passed to SMS compose
   const [preSelectedStudent, setPreSelectedStudent] = useState<Student | null>(null);
+  const [studentFilterYear, setStudentFilterYear] = useState<string>('ALL');
 
   useEffect(() => {
     async function initAuth() {
@@ -229,7 +231,10 @@ export default function App() {
                 <Dashboard
                   stats={stats}
                   user={currentUser}
-                  onNavigate={(tab) => {
+                  onNavigate={(tab, filterOptions) => {
+                    if (filterOptions?.academicYear) {
+                      setStudentFilterYear(filterOptions.academicYear);
+                    }
                     if (tab !== 'sms_send') setPreSelectedStudent(null);
                     setActiveTab(tab);
                   }}
@@ -274,8 +279,22 @@ export default function App() {
                   students={students}
                   departments={departments}
                   currentUser={currentUser}
+                  initialAcademicYear={studentFilterYear}
                   onRefresh={refreshData}
                   onSendSmsToStudent={handleSendSmsToStudent}
+                  onNavigateToPromotion={() => setActiveTab('year_promotion')}
+                />
+              )}
+
+              {activeTab === 'year_promotion' && (
+                <YearPromotion
+                  currentUser={currentUser}
+                  departments={departments}
+                  onRefresh={refreshData}
+                  onNavigateToStudents={(year) => {
+                    if (year) setStudentFilterYear(year);
+                    setActiveTab('students');
+                  }}
                 />
               )}
 

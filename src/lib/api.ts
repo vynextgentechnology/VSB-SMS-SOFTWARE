@@ -309,6 +309,78 @@ export const api = {
     }
     return data;
   },
+  getStudentsFiltered: (params: { academicYear?: string; department?: string; search?: string }): Promise<Student[]> => {
+    const searchParams = new URLSearchParams();
+    if (params.academicYear && params.academicYear !== 'ALL') searchParams.append('academicYear', params.academicYear);
+    if (params.department && params.department !== 'ALL') searchParams.append('department', params.department);
+    if (params.search) searchParams.append('search', params.search);
+    const qs = searchParams.toString();
+    return request<Student[]>(`/api/students${qs ? `?${qs}` : ''}`);
+  },
+  previewStudentsExcel: async (file: File, params?: { academicYear?: string; department?: string }): Promise<{
+    success: boolean;
+    headers: string[];
+    totalCount: number;
+    validCount: number;
+    invalidCount: number;
+    duplicateCountInFile: number;
+    duplicateCountInDb: number;
+    rows: any[];
+    validRows: any[];
+    invalidRows: any[];
+    duplicateRegNosInFile: string[];
+    duplicatesInDb: string[];
+  }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const qs = new URLSearchParams();
+    if (params?.academicYear) qs.append('academicYear', params.academicYear);
+    if (params?.department) qs.append('department', params.department);
+
+    const headers: Record<string, string> = {
+      'x-user-id': currentUserId,
+    };
+    if (currentToken) headers['Authorization'] = `Bearer ${currentToken}`;
+
+    const url = `${baseUrl}/api/students/preview-excel${qs.toString() ? `?${qs.toString()}` : ''}`;
+    const res = await fetchWithRetry(url, { method: 'POST', headers, body: formData });
+    const text = await res.text();
+    const data = JSON.parse(text);
+    if (!res.ok) throw new Error(data.error || 'Failed to preview Excel file');
+    return data;
+  },
+  getStudentAuditHistory: (params?: { registerNumber?: string; department?: string; academicYear?: string }): Promise<any[]> => {
+    const qs = new URLSearchParams();
+    if (params?.registerNumber) qs.append('registerNumber', params.registerNumber);
+    if (params?.department) qs.append('department', params.department);
+    if (params?.academicYear) qs.append('academicYear', params.academicYear);
+    return request<any[]>(`/api/students/audit-history${qs.toString() ? `?${qs.toString()}` : ''}`);
+  },
+  getPromotionPreview: (params?: { year?: string; department?: string }): Promise<any> => {
+    const qs = new URLSearchParams();
+    if (params?.year && params.year !== 'All') qs.append('year', params.year);
+    if (params?.department && params.department !== 'All') qs.append('department', params.department);
+    return request<any>(`/api/promotion/preview${qs.toString() ? `?${qs.toString()}` : ''}`);
+  },
+  executePromotion: (payload: {
+    selectedYears?: string[];
+    selectedDepartments?: string[];
+    studentRegisterNumbers?: string[];
+    studentIds?: string[];
+    students?: any[];
+    academicSession?: string;
+    notes?: string;
+  }): Promise<any> =>
+    request('/api/students/promote', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  promoteStudents: (payload: any): Promise<any> =>
+    request('/api/students/promote', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  getPromotionHistory: (): Promise<any[]> => request<any[]>('/api/promotion/history'),
   updateStudent: (id: string, updates: Partial<Student>): Promise<Student> =>
     request<Student>(`/api/students/${id}`, {
       method: 'PUT',
@@ -316,6 +388,8 @@ export const api = {
     }),
   deleteStudent: (id: string): Promise<{ success: boolean }> =>
     request(`/api/students/${id}`, { method: 'DELETE' }),
+  deleteAllStudents: (): Promise<{ success: boolean; message: string; deletedCount: number }> =>
+    request('/api/students/all', { method: 'DELETE' }),
 
   // Departments
   getDepartments: (): Promise<Department[]> => request<Department[]>('/api/departments'),
@@ -346,6 +420,13 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify(updates),
     }),
+  resetStaffPassword: (staffId: string, newPassword: string): Promise<{ success: boolean; message: string }> =>
+    request(`/api/staff/${staffId}/reset-password`, {
+      method: 'POST',
+      body: JSON.stringify({ newPassword }),
+    }),
+  toggleStaffStatus: (staffId: string): Promise<{ success: boolean; staff: Staff }> =>
+    request(`/api/staff/${staffId}/toggle-status`, { method: 'PATCH' }),
   deleteStaff: (id: string): Promise<{ success: boolean }> =>
     request(`/api/staff/${id}`, { method: 'DELETE' }),
 

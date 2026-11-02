@@ -18,7 +18,8 @@
         "view_reports",
         "manage_parents"
       ],
-      "createdAt": "2026-08-15T07:14:39.791Z"
+      "createdAt": "2026-08-15T07:14:39.791Z",
+      "status": "active"
     },
     {
       "id": "usr-super-admin-01",
@@ -37,7 +38,8 @@
         "manage_settings",
         "manage_parents"
       ],
-      "createdAt": "2026-08-15T07:02:49.735Z"
+      "createdAt": "2026-08-15T07:02:49.735Z",
+      "status": "active"
     },
     {
       "id": "usr-admin-1",
@@ -57,7 +59,8 @@
       "department": "ADMIN",
       "phoneNumber": "",
       "email": "",
-      "passwordHash": ""
+      "passwordHash": "",
+      "status": "active"
     },
     {
       "id": "stf-1786097390445-rblya",
@@ -71,516 +74,12 @@
         "send_sms",
         "upload_results"
       ],
-      "createdAt": "2026-08-07T10:09:50.445Z"
+      "createdAt": "2026-08-07T10:09:50.445Z",
+      "status": "active"
     }
   ],
   "parentEnrollments": [],
-  "students": [
-    {
-      "name": "Test Student Antigravity",
-      "registerNumber": "921321104999",
-      "department": "CSE",
-      "phoneNumber": "9876543210",
-      "id": "std-1791017359162-gud6p",
-      "createdAt": "2026-10-03T08:49:19.162Z"
-    },
-    {
-      "registerNumber": "922524148117",
-      "name": "VALIULLAH",
-      "phoneNumber": "+917092483276",
-      "department": "CSE(AIML)",
-      "id": "std-1786070186130-kvzti",
-      "createdAt": "2026-08-07T02:36:26.130Z"
-    },
-    {
-      "name": "MOHANA PRIYA G",
-      "registerNumber": "922524148063",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+917871254655",
-      "id": "std-1786532199893-8eu7o",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "MUHAMMAD NASAR",
-      "registerNumber": "922524148064",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919994687503",
-      "id": "std-1786532199893-toyiz",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "MUKILA K",
-      "registerNumber": "922524148065",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+916374855308",
-      "id": "std-1786532199893-7krch",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "MUKILAN K",
-      "registerNumber": "922524148066",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919751872112",
-      "id": "std-1786532199893-2806b",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "MURALIKARTHICK A",
-      "registerNumber": "922524148067",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+917620817193",
-      "id": "std-1786532199893-l5dog",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "NAGULAN K",
-      "registerNumber": "922524148068",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919787413247",
-      "id": "std-1786532199893-8nhp1",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "NANDHITHA PT",
-      "registerNumber": "922524148069",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919942135141",
-      "id": "std-1786532199893-kl9m6",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "NARENDHRA PRAS",
-      "registerNumber": "922524148070",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919688875559",
-      "id": "std-1786532199893-weqii",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "NARMADHA   A",
-      "registerNumber": "922524148071",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919942423165",
-      "id": "std-1786532199893-14q3d",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "NAVEEN S",
-      "registerNumber": "922524148072",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+917548827109",
-      "id": "std-1786532199893-hd3ha",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "NETHRA K",
-      "registerNumber": "922524148073",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919443407312",
-      "id": "std-1786532199893-n9uk2",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "POOJA SRI M",
-      "registerNumber": "922524148074",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919150922072",
-      "id": "std-1786532199893-uo50y",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "PRASANTH R",
-      "registerNumber": "922524148075",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+918883312075",
-      "id": "std-1786532199893-l33sz",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "PRAVIN T",
-      "registerNumber": "922524148076",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919965419555",
-      "id": "std-1786532199893-owg2y",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "PRITHIV T",
-      "registerNumber": "922524148078",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919442681683",
-      "id": "std-1786532199893-954mz",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "PRIYADHARSHAN B",
-      "registerNumber": "922524148079",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919842690379",
-      "id": "std-1786532199893-nhep8",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "PRIYADHARSHINI R",
-      "registerNumber": "922524148080",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919715717487",
-      "id": "std-1786532199893-w9aiw",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "RAKSHANA S",
-      "registerNumber": "922524148081",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919080407060",
-      "id": "std-1786532199893-jkoel",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "RANJANI V",
-      "registerNumber": "922524148082",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919080747978",
-      "id": "std-1786532199893-g8l2x",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "RATHIKA S",
-      "registerNumber": "922524148084",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919894021963",
-      "id": "std-1786532199893-23ysf",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "RATHINA KIRUTHIK",
-      "registerNumber": "922524148085",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+918608323481",
-      "id": "std-1786532199893-utq41",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "RISHI ADITHYA V. V",
-      "registerNumber": "922524148086",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919443621362",
-      "id": "std-1786532199893-rl05i",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "RISHIDEV S",
-      "registerNumber": "922524148087",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+918489075401",
-      "id": "std-1786532199893-vomdh",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "RITHAN S",
-      "registerNumber": "922524148088",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919976496022",
-      "id": "std-1786532199893-0wq5g",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "RITHIKA S",
-      "registerNumber": "922524148089",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919842849200",
-      "id": "std-1786532199893-jbhjh",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "RITHIKASRI P",
-      "registerNumber": "922524148090",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919894026438",
-      "id": "std-1786532199893-s81af",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "RITHIKAA J",
-      "registerNumber": "922524148091",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919786022876",
-      "id": "std-1786532199893-fpr3m",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "RITIKA V",
-      "registerNumber": "922524148092",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919566730099",
-      "id": "std-1786532199893-h9p0x",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "ROHAN C R",
-      "registerNumber": "922524148093",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919388453507",
-      "id": "std-1786532199893-bbgqn",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "SABARISH S",
-      "registerNumber": "922524148094",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919843824012",
-      "id": "std-1786532199893-9rge0",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "SADHANAA R",
-      "registerNumber": "922524148095",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+918754038877",
-      "id": "std-1786532199893-z84nu",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "SAMIKSHA N",
-      "registerNumber": "922524148096",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919791204222",
-      "id": "std-1786532199893-peaf1",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "SANDHIYA P",
-      "registerNumber": "922524148097",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919486115261",
-      "id": "std-1786532199893-2p941",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "SANTHOSH.S",
-      "registerNumber": "922524148098",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919994452882",
-      "id": "std-1786532199893-q7ylf",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "SATHIYA PRIYA L",
-      "registerNumber": "922524148099",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919442681060",
-      "id": "std-1786532199893-xx8vl",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "SELVA GANAPATHY",
-      "registerNumber": "922524148100",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+918015049743",
-      "id": "std-1786532199893-1hp85",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "SELVA JEYAKRISHN",
-      "registerNumber": "922524148101",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919385926257",
-      "id": "std-1786532199893-64omj",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "SHANTHOSH KANN",
-      "registerNumber": "922524148102",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919788230275",
-      "id": "std-1786532199893-i1bi9",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "SHIVNESH KUMAR",
-      "registerNumber": "922524148103",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919500500336",
-      "id": "std-1786532199893-u8lt5",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "SHRI PRAJITH S",
-      "registerNumber": "922524148104",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+918300005191",
-      "id": "std-1786532199893-k2n52",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "SIVASATHYA K",
-      "registerNumber": "922524148105",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919942723685",
-      "id": "std-1786532199893-ib8o0",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "SRI VISHNU V",
-      "registerNumber": "922524148106",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919443593907",
-      "id": "std-1786532199893-o3fov",
-      "createdAt": "2026-08-12T10:56:39.893Z"
-    },
-    {
-      "name": "SRIVARSHAN. M",
-      "registerNumber": "922524148107",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919865417776",
-      "id": "std-1786532199894-c18fy",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "name": "SUBASH P",
-      "registerNumber": "922524148108",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919844813944",
-      "id": "std-1786532199894-owxs5",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "name": "SUDHAN D",
-      "registerNumber": "922524148109",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919751413152",
-      "id": "std-1786532199894-kywlk",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "name": "SUJEETH S",
-      "registerNumber": "922524148110",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919942413211",
-      "id": "std-1786532199894-qt6z6",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "name": "SUJITH P S",
-      "registerNumber": "922524148111",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919095773507",
-      "id": "std-1786532199894-bb9ht",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "name": "SUPIKSHA C",
-      "registerNumber": "922524148112",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919362999888",
-      "id": "std-1786532199894-ebrzm",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "name": "TAMILARASAN M",
-      "registerNumber": "922524148113",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919952895003",
-      "id": "std-1786532199894-nxxif",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "name": "THANGALAKSHMI A",
-      "registerNumber": "922524148114",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919995999752",
-      "id": "std-1786532199894-7np2s",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "name": "THARUNIKA P",
-      "registerNumber": "922524148115",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919087498767",
-      "id": "std-1786532199894-z49zb",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "name": "VAISNAVA S",
-      "registerNumber": "922524148116",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919865125123",
-      "id": "std-1786532199894-446gr",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "name": "VARUN SANKAR M",
-      "registerNumber": "922524148118",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919629324665",
-      "id": "std-1786532199894-3yivx",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "name": "VELMURUGAN B",
-      "registerNumber": "922524148119",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+916281286751",
-      "id": "std-1786532199894-an0kb",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "name": "VENGADESWARAN",
-      "registerNumber": "922524148120",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919750627465",
-      "id": "std-1786532199894-myyid",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "name": "VIJAYRAM.J",
-      "registerNumber": "922524148121",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919500737480",
-      "id": "std-1786532199894-keg5n",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "name": "VISHNU B",
-      "registerNumber": "922524148122",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+918760439110",
-      "id": "std-1786532199894-l9ohc",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "name": "YASWANTH V",
-      "registerNumber": "922524148123",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919346045673",
-      "id": "std-1786532199894-3j421",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "name": "YESWANTH S M",
-      "registerNumber": "922524148124",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919629802883",
-      "id": "std-1786532199894-dyqdu",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "name": "YOGALAKSHMI S",
-      "registerNumber": "922524148125",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919629802883",
-      "id": "std-1786532199894-3p93u",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "name": "YUVAN SHANKAR R",
-      "registerNumber": "922524148126",
-      "department": "CSE(AIML)",
-      "phoneNumber": "+919751322018",
-      "id": "std-1786532199894-107rf",
-      "createdAt": "2026-08-12T10:56:39.894Z"
-    }
-  ],
+  "students": [],
   "staff": [
     {
       "name": "VALIULLAH",
@@ -592,7 +91,14 @@
         "upload_results"
       ],
       "id": "stf-1786097390445-rblya",
-      "createdAt": "2026-08-07T10:09:50.445Z"
+      "createdAt": "2026-08-07T10:09:50.445Z",
+      "assignedYears": [
+        "1st Year"
+      ],
+      "assignedDepartments": [
+        "CSE(AIML)"
+      ],
+      "status": "active"
     }
   ],
   "departments": [
@@ -4994,6 +4500,126 @@
   },
   "activityLogs": [
     {
+      "id": "act-1793589852620-jj4cn",
+      "action": "All Students Permanently Deleted",
+      "details": "Permanently cleared all student records (1 local records, 0 MongoDB records) by VSBEC",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-11-02T03:24:12.620Z"
+    },
+    {
+      "id": "act-1793589825416-keky6",
+      "action": "Student Added",
+      "details": "Added student S. Rajesh Kumar (921323104001) - Dept: CSE, Year: 1st Year",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-11-02T03:23:45.416Z"
+    },
+    {
+      "id": "act-1793589808653-qwm1r",
+      "action": "All Students Permanently Deleted",
+      "details": "Permanently cleared all student records (67 local records, 0 MongoDB records) by VSBEC",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-11-02T03:23:28.653Z"
+    },
+    {
+      "id": "act-1793469338930-u236w",
+      "action": "Year Promotion Executed",
+      "details": "Promoted 1 students to next academic year (2026-2027)",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-10-31T17:55:38.930Z"
+    },
+    {
+      "id": "act-1793469338912-kdcil",
+      "action": "Student Added",
+      "details": "Added student Standard Student 003 (260003) - Dept: CSE(AIML), Year: 1st Year",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-10-31T17:55:38.912Z"
+    },
+    {
+      "id": "act-1793469244148-67noe",
+      "action": "Year Promotion Executed",
+      "details": "Promoted 1 students to next academic year (2026-2027)",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-10-31T17:54:04.148Z"
+    },
+    {
+      "id": "act-1793469238954-g69sz",
+      "action": "Year Promotion Executed",
+      "details": "Promoted 1 students to next academic year (2026-2027)",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-10-31T17:53:58.954Z"
+    },
+    {
+      "id": "act-1793469233237-tj7uq",
+      "action": "Year Promotion Executed",
+      "details": "Promoted 1 students to next academic year (2026-2027)",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-10-31T17:53:53.237Z"
+    },
+    {
+      "id": "act-1793469227470-mje9h",
+      "action": "Student Added",
+      "details": "Added student Jump Student 002 (260002) - Dept: CSE, Year: 1st Year",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-10-31T17:53:47.470Z"
+    },
+    {
+      "id": "act-1793469120682-4wj29",
+      "action": "Year Promotion Executed",
+      "details": "Promoted 1 students to next academic year (2026-2027)",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-10-31T17:52:00.682Z"
+    },
+    {
+      "id": "act-1793469120654-txkoq",
+      "action": "Student Added",
+      "details": "Added student Final Year Student 401 (260401) - Dept: CSE(AIML), Year: 4th Year",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-10-31T17:52:00.654Z"
+    },
+    {
+      "id": "act-1793468546523-e0i4f",
+      "action": "Year Promotion Executed",
+      "details": "Promoted 0 students to next academic year (2026-2027)",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-10-31T17:42:26.523Z"
+    },
+    {
+      "id": "act-1793468524107-gtmbi",
+      "action": "Year Promotion Executed",
+      "details": "Promoted 1 students to next academic year (2026-2027)",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-10-31T17:42:04.107Z"
+    },
+    {
+      "id": "act-1793468498816-ndcvc",
+      "action": "Year Promotion Executed",
+      "details": "Promoted 1 students to next academic year (2026-2027)",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-10-31T17:41:38.816Z"
+    },
+    {
+      "id": "act-1793468478841-2rcsd",
+      "action": "Student Added",
+      "details": "Added student Test Student 001 (260001) - Dept: CSE(AIML), Year: 1st Year",
+      "user": "VSBEC",
+      "type": "student",
+      "timestamp": "2026-10-31T17:41:18.841Z"
+    },
+    {
       "id": "act-1791017415561-n2zyq",
       "action": "Student Deleted",
       "details": "Deleted student Test Student Antigravity Updated (921321104888)",
@@ -5672,126 +5298,6 @@
       "user": "ADMIN1",
       "type": "student",
       "timestamp": "2026-08-12T15:32:18.003Z"
-    },
-    {
-      "id": "act-1786548734776-12rqe",
-      "action": "Department Updated",
-      "details": "Updated department CSE",
-      "user": "VSBEC",
-      "type": "settings",
-      "timestamp": "2026-08-12T15:32:14.776Z"
-    },
-    {
-      "id": "act-1786548645107-xk50j",
-      "action": "Student Added",
-      "details": "Added student Delete Test Student (999988887777) - Dept: CSE",
-      "user": "ADMIN1",
-      "type": "student",
-      "timestamp": "2026-08-12T15:30:45.107Z"
-    },
-    {
-      "id": "act-1786548288978-povxg",
-      "action": "User Account Deleted",
-      "details": "Deleted user System Admin (ADMIN1)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-12T15:24:48.978Z"
-    },
-    {
-      "id": "act-1786548246324-9sv6b",
-      "action": "User Login",
-      "details": "Logged in as System Administrator (VY NEXTGEN) (ADMIN)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-12T15:24:06.324Z"
-    },
-    {
-      "id": "act-1786548237555-suwjg",
-      "action": "User Logout",
-      "details": "Logged out (VSBEC)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-12T15:23:57.555Z"
-    },
-    {
-      "id": "act-1786532521297-8ilak",
-      "action": "User Login",
-      "details": "Logged in as System Admin (ADMIN)",
-      "user": "ADMIN1",
-      "type": "auth",
-      "timestamp": "2026-08-12T11:02:01.297Z"
-    },
-    {
-      "id": "act-1786532515142-zr3fc",
-      "action": "User Login",
-      "details": "Logged in as System Admin (ADMIN)",
-      "user": "ADMIN1",
-      "type": "auth",
-      "timestamp": "2026-08-12T11:01:55.142Z"
-    },
-    {
-      "id": "act-1786532515042-m7evu",
-      "action": "Initial Admin Setup",
-      "details": "Registered Admin account (ADMIN1)",
-      "user": "ADMIN1",
-      "type": "auth",
-      "timestamp": "2026-08-12T11:01:55.042Z"
-    },
-    {
-      "id": "act-1786532321366-p8fw9",
-      "action": "User Login",
-      "details": "Logged in as System Administrator (VY NEXTGEN) (ADMIN)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:58:41.366Z"
-    },
-    {
-      "id": "act-1786532318707-h8wz0",
-      "action": "User Logout",
-      "details": "Logged out (Vali1278)",
-      "user": "Vali1278",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:58:38.707Z"
-    },
-    {
-      "id": "act-1786532243058-gjc12",
-      "action": "User Login",
-      "details": "Logged in as VALIULLAH (STAFF)",
-      "user": "Vali1278",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:57:23.058Z"
-    },
-    {
-      "id": "act-1786532233241-2ad65",
-      "action": "User Logout",
-      "details": "Logged out (VSBEC)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:57:13.241Z"
-    },
-    {
-      "id": "act-1786532199894-jkqhu",
-      "action": "Batch Import Students",
-      "details": "Batch imported 61 students (1 updated)",
-      "user": "VSBEC",
-      "type": "student",
-      "timestamp": "2026-08-12T10:56:39.894Z"
-    },
-    {
-      "id": "act-1786532182915-me6c3",
-      "action": "User Login",
-      "details": "Logged in as System Administrator (VY NEXTGEN) (ADMIN)",
-      "user": "VSBEC",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:56:22.915Z"
-    },
-    {
-      "id": "act-1786529696216-mqt55",
-      "action": "User Login",
-      "details": "Logged in as VALIULLAH (STAFF)",
-      "user": "Vali1278",
-      "type": "auth",
-      "timestamp": "2026-08-12T10:14:56.216Z"
     }
   ],
   "loginLogs": [
@@ -6243,5 +5749,364 @@
       "lastUsedAt": "2026-08-08T22:25:00.000Z",
       "description": "Official API key used by VSBEC Mobile Staff Application for result validation."
     }
-  ]
+  ],
+  "studentModificationHistories": [
+    {
+      "studentId": "std-1793469338912-5bosi",
+      "registerNumber": "260003",
+      "studentName": "Standard Student 003",
+      "department": "CSE(AIML)",
+      "academicYear": "2nd Year",
+      "fieldName": "academicYear",
+      "previousValue": "1st Year",
+      "updatedValue": "2nd Year",
+      "reason": "Annual Year Promotion: 1st Year -> 2nd Year",
+      "modifiedBy": "VSBEC",
+      "modifiedByName": "VSBEC",
+      "modifiedByRole": "ADMIN",
+      "id": "mod-1793469338930-3onqg",
+      "timestamp": "2026-10-31T17:55:38.930Z"
+    },
+    {
+      "studentId": "std-1793469227470-0rlgk",
+      "registerNumber": "260002",
+      "studentName": "Jump Student 002",
+      "department": "CSE",
+      "academicYear": "4th Year",
+      "fieldName": "academicYear",
+      "previousValue": "3rd Year",
+      "updatedValue": "4th Year",
+      "reason": "Annual Year Promotion: 3rd Year -> 4th Year",
+      "modifiedBy": "VSBEC",
+      "modifiedByName": "VSBEC",
+      "modifiedByRole": "ADMIN",
+      "id": "mod-1793469244148-ix4kh",
+      "timestamp": "2026-10-31T17:54:04.148Z"
+    },
+    {
+      "studentId": "std-1793469227470-0rlgk",
+      "registerNumber": "260002",
+      "studentName": "Jump Student 002",
+      "department": "CSE",
+      "academicYear": "3rd Year",
+      "fieldName": "academicYear",
+      "previousValue": "2nd Year",
+      "updatedValue": "3rd Year",
+      "reason": "Annual Year Promotion: 2nd Year -> 3rd Year",
+      "modifiedBy": "VSBEC",
+      "modifiedByName": "VSBEC",
+      "modifiedByRole": "ADMIN",
+      "id": "mod-1793469238954-lhzos",
+      "timestamp": "2026-10-31T17:53:58.954Z"
+    },
+    {
+      "studentId": "std-1793469227470-0rlgk",
+      "registerNumber": "260002",
+      "studentName": "Jump Student 002",
+      "department": "CSE",
+      "academicYear": "2nd Year",
+      "fieldName": "academicYear",
+      "previousValue": "1st Year",
+      "updatedValue": "2nd Year",
+      "reason": "Annual Year Promotion: 1st Year -> 2nd Year",
+      "modifiedBy": "VSBEC",
+      "modifiedByName": "VSBEC",
+      "modifiedByRole": "ADMIN",
+      "id": "mod-1793469233236-gll4d",
+      "timestamp": "2026-10-31T17:53:53.236Z"
+    },
+    {
+      "studentId": "std-1793469120654-vlr6m",
+      "registerNumber": "260401",
+      "studentName": "Final Year Student 401",
+      "department": "CSE(AIML)",
+      "academicYear": "Alumni",
+      "fieldName": "academicYear",
+      "previousValue": "4th Year",
+      "updatedValue": "Alumni",
+      "reason": "Annual Year Promotion: 4th Year -> Alumni",
+      "modifiedBy": "VSBEC",
+      "modifiedByName": "VSBEC",
+      "modifiedByRole": "ADMIN",
+      "id": "mod-1793469120681-a81zh",
+      "timestamp": "2026-10-31T17:52:00.681Z"
+    },
+    {
+      "studentId": "std-1793468478841-bj5or",
+      "registerNumber": "260001",
+      "studentName": "Test Student 001",
+      "department": "CSE(AIML)",
+      "academicYear": "3rd Year",
+      "fieldName": "academicYear",
+      "previousValue": "2nd Year",
+      "updatedValue": "3rd Year",
+      "reason": "Annual Year Promotion: 2nd Year -> 3rd Year",
+      "modifiedBy": "VSBEC",
+      "modifiedByName": "VSBEC",
+      "modifiedByRole": "ADMIN",
+      "id": "mod-1793468524107-2q4nc",
+      "timestamp": "2026-10-31T17:42:04.107Z"
+    },
+    {
+      "studentId": "std-1793468478841-bj5or",
+      "registerNumber": "260001",
+      "studentName": "Test Student 001",
+      "department": "CSE(AIML)",
+      "academicYear": "2nd Year",
+      "fieldName": "academicYear",
+      "previousValue": "1st Year",
+      "updatedValue": "2nd Year",
+      "reason": "Annual Year Promotion: 1st Year -> 2nd Year",
+      "modifiedBy": "VSBEC",
+      "modifiedByName": "VSBEC",
+      "modifiedByRole": "ADMIN",
+      "id": "mod-1793468498815-zyky9",
+      "timestamp": "2026-10-31T17:41:38.815Z"
+    }
+  ],
+  "academicPromotionHistories": [
+    {
+      "id": "promo-1793469338930-5bcof",
+      "academicSession": "2026-2027",
+      "promotedBy": "VSBEC",
+      "promotedByName": "VSBEC",
+      "totalStudentsPromoted": 1,
+      "promotions": [
+        {
+          "fromYear": "1st Year",
+          "toYear": "2nd Year",
+          "department": "CSE(AIML)",
+          "count": 1,
+          "registerNumbers": [
+            "260003"
+          ]
+        }
+      ],
+      "studentRecords": [
+        {
+          "studentName": "Standard Student 003",
+          "registerNumber": "260003",
+          "department": "CSE(AIML)",
+          "fromYear": "1st Year",
+          "toYear": "2nd Year",
+          "promotedBy": "VSBEC",
+          "promotedByName": "VSBEC",
+          "promotionDate": "2026-10-31T17:55:38.930Z",
+          "status": "SUCCESS"
+        }
+      ],
+      "notes": "Academic Year Promotion executed by Administrator",
+      "timestamp": "2026-10-31T17:55:38.930Z"
+    },
+    {
+      "id": "promo-1793469244148-yvbfq",
+      "academicSession": "2026-2027",
+      "promotedBy": "VSBEC",
+      "promotedByName": "VSBEC",
+      "totalStudentsPromoted": 1,
+      "promotions": [
+        {
+          "fromYear": "3rd Year",
+          "toYear": "4th Year",
+          "department": "CSE",
+          "count": 1,
+          "registerNumbers": [
+            "260002"
+          ]
+        }
+      ],
+      "studentRecords": [
+        {
+          "studentName": "Jump Student 002",
+          "registerNumber": "260002",
+          "department": "CSE",
+          "fromYear": "3rd Year",
+          "toYear": "4th Year",
+          "promotedBy": "VSBEC",
+          "promotedByName": "VSBEC",
+          "promotionDate": "2026-10-31T17:54:04.148Z",
+          "status": "SUCCESS"
+        }
+      ],
+      "notes": "Academic Year Promotion executed by Administrator",
+      "timestamp": "2026-10-31T17:54:04.148Z"
+    },
+    {
+      "id": "promo-1793469238954-orp90",
+      "academicSession": "2026-2027",
+      "promotedBy": "VSBEC",
+      "promotedByName": "VSBEC",
+      "totalStudentsPromoted": 1,
+      "promotions": [
+        {
+          "fromYear": "2nd Year",
+          "toYear": "3rd Year",
+          "department": "CSE",
+          "count": 1,
+          "registerNumbers": [
+            "260002"
+          ]
+        }
+      ],
+      "studentRecords": [
+        {
+          "studentName": "Jump Student 002",
+          "registerNumber": "260002",
+          "department": "CSE",
+          "fromYear": "2nd Year",
+          "toYear": "3rd Year",
+          "promotedBy": "VSBEC",
+          "promotedByName": "VSBEC",
+          "promotionDate": "2026-10-31T17:53:58.954Z",
+          "status": "SUCCESS"
+        }
+      ],
+      "notes": "Academic Year Promotion executed by Administrator",
+      "timestamp": "2026-10-31T17:53:58.954Z"
+    },
+    {
+      "id": "promo-1793469233236-c68b3",
+      "academicSession": "2026-2027",
+      "promotedBy": "VSBEC",
+      "promotedByName": "VSBEC",
+      "totalStudentsPromoted": 1,
+      "promotions": [
+        {
+          "fromYear": "1st Year",
+          "toYear": "2nd Year",
+          "department": "CSE",
+          "count": 1,
+          "registerNumbers": [
+            "260002"
+          ]
+        }
+      ],
+      "studentRecords": [
+        {
+          "studentName": "Jump Student 002",
+          "registerNumber": "260002",
+          "department": "CSE",
+          "fromYear": "1st Year",
+          "toYear": "2nd Year",
+          "promotedBy": "VSBEC",
+          "promotedByName": "VSBEC",
+          "promotionDate": "2026-10-31T17:53:53.236Z",
+          "status": "SUCCESS"
+        }
+      ],
+      "notes": "Academic Year Promotion executed by Administrator",
+      "timestamp": "2026-10-31T17:53:53.236Z"
+    },
+    {
+      "id": "promo-1793469120682-anu21",
+      "academicSession": "2026-2027",
+      "promotedBy": "VSBEC",
+      "promotedByName": "VSBEC",
+      "totalStudentsPromoted": 1,
+      "promotions": [
+        {
+          "fromYear": "4th Year",
+          "toYear": "Alumni",
+          "department": "CSE(AIML)",
+          "count": 1,
+          "registerNumbers": [
+            "260401"
+          ]
+        }
+      ],
+      "studentRecords": [
+        {
+          "studentName": "Final Year Student 401",
+          "registerNumber": "260401",
+          "department": "CSE(AIML)",
+          "fromYear": "4th Year",
+          "toYear": "Alumni",
+          "promotedBy": "VSBEC",
+          "promotedByName": "VSBEC",
+          "promotionDate": "2026-10-31T17:52:00.681Z",
+          "status": "SUCCESS"
+        }
+      ],
+      "notes": "Testing 4th Year -> Alumni Promotion",
+      "timestamp": "2026-10-31T17:52:00.682Z"
+    },
+    {
+      "id": "promo-1793468546523-vt4ge",
+      "academicSession": "2026-2027",
+      "promotedBy": "VSBEC",
+      "promotedByName": "VSBEC",
+      "totalStudentsPromoted": 0,
+      "promotions": [],
+      "studentRecords": [],
+      "notes": "Annual Academic Promotion executed for 0 students",
+      "timestamp": "2026-10-31T17:42:26.523Z"
+    },
+    {
+      "id": "promo-1793468524107-6slin",
+      "academicSession": "2026-2027",
+      "promotedBy": "VSBEC",
+      "promotedByName": "VSBEC",
+      "totalStudentsPromoted": 1,
+      "promotions": [
+        {
+          "fromYear": "2nd Year",
+          "toYear": "3rd Year",
+          "department": "CSE(AIML)",
+          "count": 1,
+          "registerNumbers": [
+            "260001"
+          ]
+        }
+      ],
+      "studentRecords": [
+        {
+          "studentName": "Test Student 001",
+          "registerNumber": "260001",
+          "department": "CSE(AIML)",
+          "fromYear": "2nd Year",
+          "toYear": "3rd Year",
+          "promotedBy": "VSBEC",
+          "promotedByName": "VSBEC",
+          "promotionDate": "2026-10-31T17:42:04.106Z",
+          "status": "SUCCESS"
+        }
+      ],
+      "notes": "Testing 2nd Year to 3rd Year Promotion",
+      "timestamp": "2026-10-31T17:42:04.107Z"
+    },
+    {
+      "id": "promo-1793468498815-52yme",
+      "academicSession": "2026-2027",
+      "promotedBy": "VSBEC",
+      "promotedByName": "VSBEC",
+      "totalStudentsPromoted": 1,
+      "promotions": [
+        {
+          "fromYear": "1st Year",
+          "toYear": "2nd Year",
+          "department": "CSE(AIML)",
+          "count": 1,
+          "registerNumbers": [
+            "260001"
+          ]
+        }
+      ],
+      "studentRecords": [
+        {
+          "studentName": "Test Student 001",
+          "registerNumber": "260001",
+          "department": "CSE(AIML)",
+          "fromYear": "1st Year",
+          "toYear": "2nd Year",
+          "promotedBy": "VSBEC",
+          "promotedByName": "VSBEC",
+          "promotionDate": "2026-10-31T17:41:38.815Z",
+          "status": "SUCCESS"
+        }
+      ],
+      "notes": "Testing 1st Year to 2nd Year Promotion",
+      "timestamp": "2026-10-31T17:41:38.815Z"
+    }
+  ],
+  "staffAssignments": []
 }

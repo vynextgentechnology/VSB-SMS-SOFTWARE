@@ -1,5 +1,9 @@
 export type UserRole = 'SUPER_ADMIN' | 'admin' | 'hod' | 'staff';
 
+export type AcademicYear = '1st Year' | '2nd Year' | '3rd Year' | '4th Year' | 'Graduated' | 'Alumni';
+
+export const ACADEMIC_YEARS: AcademicYear[] = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+
 export type Permission = 'send_sms' | 'upload_results' | 'manage_students' | 'manage_staff' | 'view_reports' | 'manage_settings' | 'manage_parents' | 'manage_attendance';
 
 export interface User {
@@ -8,7 +12,11 @@ export interface User {
   name: string;
   role: UserRole;
   department?: string;
+  assignedYears?: string[];
+  assignedDepartments?: string[];
   phoneNumber?: string;
+  email?: string;
+  status?: 'active' | 'inactive';
   permissions: Permission[];
   createdAt: string;
 }
@@ -20,6 +28,7 @@ export interface ParentEnrollment {
   studentName: string;
   registerNumber: string;
   department?: string;
+  academicYear?: string;
   createdAt: string;
 }
 
@@ -28,20 +37,89 @@ export interface Student {
   name: string;
   registerNumber: string;
   department: string;
-  year?: string;
+  academicYear: string; // '1st Year' | '2nd Year' | '3rd Year' | '4th Year' | 'Graduated'
+  year?: string; // backwards compatibility alias
   section?: string;
-  phoneNumber: string;
+  phoneNumber: string; // primary parent mobile for backwards compatibility
+  parentMobile?: string;
+  studentMobile?: string;
+  email?: string;
+  gender?: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface Staff {
   id: string;
   staffId: string;
   name: string;
+  email?: string;
   department: string;
+  assignedYears: string[]; // e.g. ['1st Year', '2nd Year']
+  assignedDepartments: string[]; // e.g. ['AIML', 'CSE']
   phoneNumber: string;
+  status: 'active' | 'inactive';
   permissions: Permission[];
   createdAt: string;
+}
+
+export interface StaffAssignment {
+  id: string;
+  staffId: string;
+  staffName: string;
+  department: string;
+  academicYear: string;
+  assignedBy: string;
+  assignedAt: string;
+  status: 'active' | 'inactive';
+}
+
+export interface StudentModificationHistory {
+  id: string;
+  studentId?: string;
+  registerNumber: string;
+  studentName: string;
+  department: string;
+  academicYear: string;
+  fieldName: string;
+  previousValue: string;
+  updatedValue: string;
+  reason?: string;
+  modifiedBy: string;
+  modifiedByName: string;
+  modifiedByRole: string;
+  timestamp: string;
+}
+
+export interface PromotedStudentRecord {
+  studentName: string;
+  registerNumber: string;
+  department: string;
+  fromYear: string;
+  toYear: string;
+  promotedBy: string;
+  promotedByName?: string;
+  promotionDate: string;
+  status: 'SUCCESS' | 'FAILED';
+  errorReason?: string;
+}
+
+export interface AcademicPromotionHistory {
+  id: string;
+  academicSession: string;
+  promotedBy: string;
+  promotedByName: string;
+  totalStudentsPromoted: number;
+  promotions: Array<{
+    fromYear: string;
+    toYear: string;
+    department: string;
+    count: number;
+    registerNumbers?: string[];
+  }>;
+  studentRecords?: PromotedStudentRecord[];
+  timestamp: string;
+  notes?: string;
 }
 
 export type MessageType = 'Exam Result' | 'Attendance Alert' | 'General Notification' | 'Custom';
@@ -185,11 +263,18 @@ export interface DashboardStats {
   totalParentsEnrolled: number;
   totalStudents: number;
   totalStaff: number;
+  totalDepartments?: number;
   totalSmsSent: number;
+  successfulSmsCount?: number;
   failedSmsCount: number;
   unmatchedRecordsCount: number;
+  yearBreakdown?: Record<string, number>; // e.g. { '1st Year': 120, '2nd Year': 110, ... }
+  staffAssignedScope?: {
+    years: string[];
+    departments: string[];
+  };
   recentActivity?: ActivityLog[];
-  departmentBreakdown: { department: string; studentCount: number; smsSentCount: number }[];
+  departmentBreakdown: { department: string; studentCount: number; smsSentCount: number; yearCounts?: Record<string, number> }[];
   monthlySmsTrend: { date: string; sent: number; failed: number }[];
 }
 

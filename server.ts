@@ -8,7 +8,7 @@ import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
 import { GoogleGenAI } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
-import { db } from './src/server/db.js';
+import { db, normalizeAcademicYear } from './src/server/db.js';
 import { getMongoDBConnectionDetails } from './src/server/mongo.js';
 import { sendSMS, getSmsApiKeyPoolStatus, rotateToNextKey } from './src/server/smsService.js';
 import { evaluateSubjectGrade, evaluateInternalMark } from './src/utils/gradeEvaluator.js';
@@ -225,14 +225,24 @@ app.get('/api/reports/login-history', (req, res) => {
   }
 });
 
-app.get('/api/reports/students', (req, res) => {
+app.get('/api/reports/students', async (req, res) => {
   try {
-    const students = db.getStudents();
-    const headers = ['Register Number', 'Student Name', 'Department', 'Parent Phone Number', 'Enrolled Date'];
-    const rows = students.map(s => [s.registerNumber, s.name, s.department, s.phoneNumber, new Date(s.createdAt).toLocaleString()]);
+    const students = await db.getStudentsAsync();
+    const headers = ['Register Number', 'Student Name', 'Academic Year', 'Department', 'Parent Mobile Number', 'Student Mobile Number', 'Email', 'Gender', 'Enrolled Date'];
+    const rows = students.map(s => [
+      s.registerNumber,
+      s.name,
+      s.academicYear || s.year || '1st Year',
+      s.department,
+      s.parentMobile || s.phoneNumber || '',
+      s.studentMobile || '',
+      s.email || '',
+      s.gender || '',
+      new Date(s.createdAt).toLocaleString()
+    ]);
     const csvContent = [headers.join(','), ...rows.map(r => r.map(c => `"${c}"`).join(','))].join('\n');
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename="student_records_report.csv"');
+    res.setHeader('Content-Disposition', 'attachment; filename="vsb_student_records_report.csv"');
     return res.send(csvContent);
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
@@ -253,21 +263,58 @@ app.get('/api/reports/sms-logs', (req, res) => {
   }
 });
 
-// Dashboard Stats
-app.get('/api/dashboard/stats', (req, res) => {
+// Dashboard Stats (Year-Wise & Department-Wise with Staff Scope Filtering)
+app.get('/api/dashboard/stats', async (req, res) => {
   try {
     const role = (req as any).userRole || '';
-    const stats = db.getDashboardStats(role);
+    const userId = (req as any).currentUser || '';
+    const dbUser = (await db.getUserByUserIdAsync(userId)) || db.getUserByUserId(userId);
+    const stats = db.getDashboardStats(role, dbUser || undefined);
     return res.json(stats);
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
 });
 
-// Student Management
+// Student Management (Year-Wise, Department-Wise & Scope-Enforced)
 app.get('/api/students', async (req, res) => {
   try {
-    const students = await db.getStudentsAsync();
+    let students = await db.getStudentsAsync();
+    const currentUserId = (req as any).currentUser || '';
+    const userRole = ((req as any).userRole || '').toUpperCase();
+    const dbUser = (await db.getUserByUserIdAsync(currentUserId)) || db.getUserByUserId(currentUserId);
+
+    // Enforce Staff/HOD assigned scopes
+    if ((userRole === 'STAFF' || userRole === 'HOD') && dbUser) {
+      students = students.filter(s => db.canUserAccessStudent(dbUser, s));
+    }
+
+    // Filter by academic year
+    const { academicYear, year, department, search } = req.query as any;
+    const filterYear = academicYear || year;
+    if (filterYear && filterYear !== 'ALL' && filterYear !== 'All Years') {
+      const targetYearNorm = normalizeAcademicYear(filterYear);
+      students = students.filter(s => normalizeAcademicYear(s.academicYear || s.year) === targetYearNorm);
+    }
+
+    // Filter by department
+    if (department && department !== 'ALL' && department !== 'All Departments') {
+      const targetDept = department.toString().trim().toUpperCase();
+      students = students.filter(s => (s.department || '').toUpperCase() === targetDept);
+    }
+
+    // Filter by search query
+    if (search && search.toString().trim()) {
+      const q = search.toString().trim().toUpperCase();
+      students = students.filter(s =>
+        s.name.toUpperCase().includes(q) ||
+        s.registerNumber.toUpperCase().includes(q) ||
+        (s.parentMobile && s.parentMobile.includes(q)) ||
+        (s.phoneNumber && s.phoneNumber.includes(q)) ||
+        (s.studentMobile && s.studentMobile.includes(q))
+      );
+    }
+
     return res.json(students);
   } catch (err: any) {
     return res.status(500).json({ success: false, message: err.message || 'Failed to fetch students' });
@@ -276,13 +323,61 @@ app.get('/api/students', async (req, res) => {
 
 app.post('/api/students', async (req, res) => {
   try {
-    const { name, registerNumber, department, phoneNumber } = req.body;
-    if (!name || !registerNumber || !department || !phoneNumber) {
-      return res.status(400).json({ success: false, message: 'Name, Register Number, Department, and Phone Number are required' });
+    const {
+      name,
+      registerNumber,
+      department,
+      academicYear,
+      year,
+      section,
+      phoneNumber,
+      parentMobile,
+      studentMobile,
+      email,
+      gender
+    } = req.body;
+
+    const primaryPhone = parentMobile || phoneNumber;
+    if (!name || !registerNumber || !department || !primaryPhone) {
+      return res.status(400).json({
+        success: false,
+        message: 'Student Name, Register Number, Department, and Parent Mobile Number are required'
+      });
+    }
+
+    const normYear = normalizeAcademicYear(academicYear || year || '1st Year');
+    const currentUserId = (req as any).currentUser || '';
+    const userRole = ((req as any).userRole || '').toUpperCase();
+    const dbUser = (await db.getUserByUserIdAsync(currentUserId)) || db.getUserByUserId(currentUserId);
+
+    // Permission check for Staff
+    if (userRole === 'STAFF' && dbUser) {
+      const allowed = db.canUserAccessStudent(dbUser, {
+        department,
+        academicYear: normYear,
+      } as any);
+      if (!allowed) {
+        return res.status(403).json({
+          success: false,
+          message: `Access Denied: Your staff account can only manage assigned academic years and departments.`
+        });
+      }
     }
 
     const newStudent = await db.addStudentAsync(
-      { name, registerNumber, department, phoneNumber },
+      {
+        name,
+        registerNumber,
+        department,
+        academicYear: normYear,
+        year: normYear,
+        section: section || '',
+        phoneNumber: primaryPhone,
+        parentMobile: primaryPhone,
+        studentMobile: studentMobile || '',
+        email: email || '',
+        gender: gender || '',
+      },
       (req as any).currentUser
     );
     return res.status(201).json(newStudent);
@@ -309,21 +404,30 @@ app.post(['/api/students/bulk-import', '/api/students/batch'], async (req, res) 
       });
     }
 
-    const validStudents: Array<{ name: string; registerNumber: string; department: string; phoneNumber: string }> = [];
+    const validStudents: Array<any> = [];
     let invalidCount = 0;
 
     rawStudents.forEach((std: any) => {
       const name = (std.name || std.studentName || '').toString().trim();
       const registerNumber = (std.registerNumber || std.regNo || std.registerNo || '').toString().trim().toUpperCase();
       const department = (std.department || std.dept || 'CSE').toString().trim().toUpperCase();
-      const phoneNumber = (std.phoneNumber || std.phone || std.mobile || std.parentPhone || std.parentPhoneNumber || '').toString().trim().replace(/\D/g, '');
+      const parentMobile = (std.parentMobile || std.phoneNumber || std.phone || std.mobile || '').toString().trim().replace(/\D/g, '').slice(-10);
+      const studentMobile = (std.studentMobile || '').toString().trim().replace(/\D/g, '').slice(-10);
+      const academicYear = normalizeAcademicYear(std.academicYear || std.year || req.body?.targetAcademicYear || '1st Year');
 
-      if (name && registerNumber && phoneNumber) {
+      if (name && registerNumber && parentMobile.length === 10) {
         validStudents.push({
           name,
           registerNumber,
           department: department || 'CSE',
-          phoneNumber,
+          academicYear,
+          year: academicYear,
+          section: std.section || '',
+          phoneNumber: parentMobile,
+          parentMobile,
+          studentMobile,
+          email: std.email || '',
+          gender: std.gender || '',
         });
       } else {
         invalidCount++;
@@ -333,7 +437,7 @@ app.post(['/api/students/bulk-import', '/api/students/batch'], async (req, res) 
     if (validStudents.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'No valid student records found in payload. Each record must include Name, Register Number, and Parent Phone Number.',
+        message: 'No valid student records found in payload. Each record must include Name, Register Number, and a 10-digit Parent Mobile Number.',
         error: 'Validation failed for all student records',
         total: rawStudents.length,
         created: 0,
@@ -352,7 +456,7 @@ app.post(['/api/students/bulk-import', '/api/students/batch'], async (req, res) 
 
     return res.json({
       success: true,
-      message: `Student enrollment imported successfully! ${validStudents.length} records processed (${created} created, ${updated} updated${invalidCount > 0 ? `, ${invalidCount} skipped` : ''}).`,
+      message: `Student enrollment processed! ${validStudents.length} records handled (${created} created, ${updated} updated${invalidCount > 0 ? `, ${invalidCount} invalid skipped` : ''}).`,
       total: rawStudents.length,
       created,
       updated,
@@ -371,48 +475,30 @@ app.post(['/api/students/bulk-import', '/api/students/batch'], async (req, res) 
   }
 });
 
-app.post('/api/students/upload-excel', upload.single('file'), async (req, res) => {
+// Excel Preview Endpoint (Validates records and checks duplicates before importing)
+app.post('/api/students/preview-excel', upload.single('file'), async (req, res) => {
   try {
-    console.log('[Excel Upload API] Received file upload request...');
-
     if (!req.file) {
-      console.error('[Excel Upload Error] No file attached in request');
-      return res.status(400).json({ error: 'No Excel file selected. Please choose a valid .xlsx or .xls spreadsheet file.' });
+      return res.status(400).json({ error: 'No Excel file selected. Please choose a valid .xlsx, .xls, or .csv file.' });
     }
 
     const origName = req.file.originalname || '';
-    console.log(`[Excel Upload API] File name: "${origName}", Size: ${req.file.size} bytes, MimeType: ${req.file.mimetype}`);
-
     if (!origName.match(/\.(xlsx|xls|csv)$/i)) {
-      console.error(`[Excel Upload Error] Invalid file format: ${origName}`);
-      return res.status(400).json({
-        error: 'Unsupported file format. Please upload a Microsoft Excel spreadsheet (.xlsx or .xls).'
-      });
+      return res.status(400).json({ error: 'Unsupported file format. Please upload .xlsx, .xls, or .csv.' });
     }
 
-    let workbook;
-    try {
-      workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
-    } catch (parseErr: any) {
-      console.error('[Excel Upload Error] Failed to parse workbook:', parseErr);
-      return res.status(400).json({
-        error: `Failed to read Excel file: ${parseErr.message || 'File may be corrupted or password protected.'}`
-      });
-    }
-
+    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
     if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
       return res.status(400).json({ error: 'Excel file contains no worksheet sheets.' });
     }
 
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
     const rawRows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
 
     if (!rawRows || rawRows.length === 0) {
-      return res.status(400).json({ error: 'Excel worksheet is completely empty.' });
+      return res.status(400).json({ error: 'Worksheet is completely empty.' });
     }
 
-    // Locate header row
     let headerRowIdx = -1;
     for (let i = 0; i < Math.min(10, rawRows.length); i++) {
       if (rawRows[i] && rawRows[i].some((cell: any) => cell !== null && cell !== undefined && String(cell).trim().length > 0)) {
@@ -426,54 +512,243 @@ app.post('/api/students/upload-excel', upload.single('file'), async (req, res) =
     }
 
     const headers = rawRows[headerRowIdx].map((h: any) => (h !== null && h !== undefined ? String(h).trim() : ''));
-    console.log(`[Excel Upload API] Detected headers at row ${headerRowIdx + 1}:`, headers);
-
     let nameIdx = -1;
     let regNoIdx = -1;
     let deptIdx = -1;
-    let phoneIdx = -1;
-    let marksIdx = -1;
+    let parentPhoneIdx = -1;
+    let studentPhoneIdx = -1;
+    let yearIdx = -1;
+    let emailIdx = -1;
+    let genderIdx = -1;
+    let sectionIdx = -1;
 
     headers.forEach((h, idx) => {
       const clean = h.toUpperCase().replace(/[^A-Z0-9\s_]/g, '').trim();
       if (/^(REGISTER|REG|REGISTRATION|REGISTER NO|REG NO|REGISTER NUMBER|STUDENT ID|ROLL NO|REG_NO)$/.test(clean) || clean.includes('REGISTER') || clean.includes('REG NO') || clean.includes('ROLL')) {
-        regNoIdx = idx;
-      } else if (/^(NAME|STUDENT NAME|STUDENT_NAME|FULL NAME)$/.test(clean) || clean.includes('NAME')) {
-        nameIdx = idx;
+        if (regNoIdx === -1) regNoIdx = idx;
+      } else if (/^(NAME|STUDENT NAME|STUDENT_NAME|FULL NAME)$/.test(clean) || clean.includes('STUDENT NAME') || clean === 'NAME') {
+        if (nameIdx === -1) nameIdx = idx;
       } else if (/^(DEPARTMENT|DEPT|BRANCH|DEPT CODE|STREAM)$/.test(clean) || clean.includes('DEPT') || clean.includes('BRANCH')) {
-        deptIdx = idx;
-      } else if (/^(MOBILE|PHONE|PHONE NUMBER|CONTACT|MOBILE NO|PARENT MOBILE|PARENT PHONE|GUARDIAN PHONE)$/.test(clean) || clean.includes('MOBILE') || clean.includes('PHONE')) {
-        phoneIdx = idx;
-      } else if (/^(MARKS|MARK|SCORE|RESULT|TOTAL MARKS|GRADE)$/.test(clean) || clean.includes('MARK') || clean.includes('RESULT') || clean.includes('SCORE')) {
-        marksIdx = idx;
+        if (deptIdx === -1) deptIdx = idx;
+      } else if (/^(PARENT MOBILE|PARENT PHONE|PARENT_PHONE|GUARDIAN PHONE|FATHER MOBILE|MOTHER MOBILE)$/.test(clean) || clean.includes('PARENT')) {
+        if (parentPhoneIdx === -1) parentPhoneIdx = idx;
+      } else if (/^(STUDENT MOBILE|STUDENT PHONE|STUDENT_PHONE|OWN MOBILE|CANDIDATE PHONE)$/.test(clean) || clean.includes('STUDENT MOBILE') || clean.includes('STUDENT PHONE')) {
+        if (studentPhoneIdx === -1) studentPhoneIdx = idx;
+      } else if (/^(MOBILE|PHONE|PHONE NUMBER|CONTACT|MOBILE NO)$/.test(clean) || clean.includes('MOBILE') || clean.includes('PHONE')) {
+        if (parentPhoneIdx === -1) parentPhoneIdx = idx;
+      } else if (/^(YEAR|ACADEMIC YEAR|ACADEMIC_YEAR|CLASS|CURRENT YEAR)$/.test(clean) || clean.includes('YEAR')) {
+        if (yearIdx === -1) yearIdx = idx;
+      } else if (/^(EMAIL|E-MAIL|MAIL|STUDENT EMAIL)$/.test(clean) || clean.includes('EMAIL') || clean.includes('MAIL')) {
+        if (emailIdx === -1) emailIdx = idx;
+      } else if (/^(GENDER|SEX)$/.test(clean)) {
+        if (genderIdx === -1) genderIdx = idx;
+      } else if (/^(SECTION|SEC)$/.test(clean)) {
+        if (sectionIdx === -1) sectionIdx = idx;
       }
     });
 
-    // Smart index fallbacks
     if (nameIdx === -1 && headers.length > 0) nameIdx = 0;
     if (regNoIdx === -1 && headers.length > 1) regNoIdx = 1;
     if (deptIdx === -1 && headers.length > 2) deptIdx = 2;
-    if (phoneIdx === -1 && headers.length > 3) phoneIdx = 3;
+    if (parentPhoneIdx === -1 && headers.length > 3) parentPhoneIdx = 3;
 
-    const parsedStudents: Array<{ name: string; registerNumber: string; department: string; phoneNumber: string; marks?: string }> = [];
-    const validationErrors: string[] = [];
+    const existingStudents = await db.getStudentsAsync();
+    const existingRegMap = new Set(existingStudents.map(s => s.registerNumber.toUpperCase()));
+
+    const fallbackYear = normalizeAcademicYear(req.query?.academicYear || req.body?.academicYear || '1st Year');
+    const fallbackDept = (req.query?.department || req.body?.department || 'CSE').toString().toUpperCase();
+
+    const previewRows: any[] = [];
+    const validRows: any[] = [];
+    const invalidRows: any[] = [];
+    const seenRegNosInFile = new Set<string>();
+    const duplicateRegNosInFile = new Set<string>();
+    const duplicatesInDb: string[] = [];
 
     for (let r = headerRowIdx + 1; r < rawRows.length; r++) {
       const row = rawRows[r];
       if (!row || row.length === 0) continue;
 
       const name = nameIdx >= 0 && row[nameIdx] !== undefined ? String(row[nameIdx]).trim() : '';
-      const registerNumber = regNoIdx >= 0 && row[regNoIdx] !== undefined ? String(row[regNoIdx]).trim() : '';
-      const department = deptIdx >= 0 && row[deptIdx] !== undefined ? String(row[deptIdx]).trim().toUpperCase() : 'CSE';
-      const phoneNumber = phoneIdx >= 0 && row[phoneIdx] !== undefined ? String(row[phoneIdx]).trim().replace(/[^0-9+]/g, '') : '';
-      const marks = marksIdx >= 0 && row[marksIdx] !== undefined ? String(row[marksIdx]).trim() : '';
+      const registerNumber = regNoIdx >= 0 && row[regNoIdx] !== undefined ? String(row[regNoIdx]).trim().toUpperCase() : '';
+      const department = deptIdx >= 0 && row[deptIdx] !== undefined ? String(row[deptIdx]).trim().toUpperCase() : fallbackDept;
+      const rawParentPhone = parentPhoneIdx >= 0 && row[parentPhoneIdx] !== undefined ? String(row[parentPhoneIdx]).trim().replace(/\D/g, '') : '';
+      const parentMobile = rawParentPhone.slice(-10);
+      const studentMobile = studentPhoneIdx >= 0 && row[studentPhoneIdx] !== undefined ? String(row[studentPhoneIdx]).trim().replace(/\D/g, '').slice(-10) : '';
+      const academicYear = yearIdx >= 0 && row[yearIdx] !== undefined && String(row[yearIdx]).trim()
+        ? normalizeAcademicYear(String(row[yearIdx]).trim())
+        : fallbackYear;
+      const email = emailIdx >= 0 && row[emailIdx] !== undefined ? String(row[emailIdx]).trim() : '';
+      const gender = genderIdx >= 0 && row[genderIdx] !== undefined ? String(row[genderIdx]).trim() : '';
+      const section = sectionIdx >= 0 && row[sectionIdx] !== undefined ? String(row[sectionIdx]).trim() : '';
 
-      // Skip totally blank rows
-      if (!name && !registerNumber && !phoneNumber) {
-        continue;
+      if (!name && !registerNumber && !parentMobile) continue;
+
+      const errors: string[] = [];
+      if (!name) errors.push('Missing Name');
+      if (!registerNumber) errors.push('Missing Register Number');
+      if (!parentMobile || parentMobile.length !== 10) errors.push('Invalid Parent Mobile (Must be 10 digits)');
+      
+      if (registerNumber) {
+        if (seenRegNosInFile.has(registerNumber)) {
+          duplicateRegNosInFile.add(registerNumber);
+          errors.push('Duplicate Register Number in this file');
+        } else {
+          seenRegNosInFile.add(registerNumber);
+        }
+        if (existingRegMap.has(registerNumber)) {
+          duplicatesInDb.push(registerNumber);
+        }
       }
 
-      // Check required fields
+      const isValid = errors.length === 0;
+      const rowItem = {
+        rowNumber: r + 1,
+        name,
+        registerNumber,
+        department: department || fallbackDept,
+        academicYear,
+        parentMobile,
+        studentMobile,
+        email,
+        gender,
+        section,
+        isValid,
+        errors,
+        existsInDb: existingRegMap.has(registerNumber),
+      };
+
+      previewRows.push(rowItem);
+      if (isValid) {
+        validRows.push(rowItem);
+      } else {
+        invalidRows.push(rowItem);
+      }
+    }
+
+    return res.json({
+      success: true,
+      headers,
+      totalCount: previewRows.length,
+      validCount: validRows.length,
+      invalidCount: invalidRows.length,
+      duplicateCountInFile: duplicateRegNosInFile.size,
+      duplicateCountInDb: duplicatesInDb.length,
+      rows: previewRows,
+      validRows,
+      invalidRows,
+      duplicateRegNosInFile: Array.from(duplicateRegNosInFile),
+      duplicatesInDb,
+    });
+  } catch (err: any) {
+    console.error('[Excel Preview Error]:', err);
+    return res.status(500).json({ error: `Failed to preview Excel: ${err.message || 'Unknown error'}` });
+  }
+});
+
+// Excel Student Upload (Saves Validated Records Directly to Database)
+app.post('/api/students/upload-excel', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No Excel file selected. Please choose a valid .xlsx or .xls file.' });
+    }
+
+    const origName = req.file.originalname || '';
+    if (!origName.match(/\.(xlsx|xls|csv)$/i)) {
+      return res.status(400).json({ error: 'Unsupported file format. Please upload .xlsx, .xls, or .csv.' });
+    }
+
+    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+    if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+      return res.status(400).json({ error: 'Excel file contains no worksheet sheets.' });
+    }
+
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rawRows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+
+    if (!rawRows || rawRows.length === 0) {
+      return res.status(400).json({ error: 'Excel worksheet is completely empty.' });
+    }
+
+    let headerRowIdx = -1;
+    for (let i = 0; i < Math.min(10, rawRows.length); i++) {
+      if (rawRows[i] && rawRows[i].some((cell: any) => cell !== null && cell !== undefined && String(cell).trim().length > 0)) {
+        headerRowIdx = i;
+        break;
+      }
+    }
+
+    if (headerRowIdx === -1) {
+      return res.status(400).json({ error: 'Could not locate header row in Excel worksheet.' });
+    }
+
+    const headers = rawRows[headerRowIdx].map((h: any) => (h !== null && h !== undefined ? String(h).trim() : ''));
+    let nameIdx = -1;
+    let regNoIdx = -1;
+    let deptIdx = -1;
+    let parentPhoneIdx = -1;
+    let studentPhoneIdx = -1;
+    let yearIdx = -1;
+    let emailIdx = -1;
+    let genderIdx = -1;
+    let sectionIdx = -1;
+
+    headers.forEach((h, idx) => {
+      const clean = h.toUpperCase().replace(/[^A-Z0-9\s_]/g, '').trim();
+      if (/^(REGISTER|REG|REGISTRATION|REGISTER NO|REG NO|REGISTER NUMBER|STUDENT ID|ROLL NO|REG_NO)$/.test(clean) || clean.includes('REGISTER') || clean.includes('REG NO') || clean.includes('ROLL')) {
+        if (regNoIdx === -1) regNoIdx = idx;
+      } else if (/^(NAME|STUDENT NAME|STUDENT_NAME|FULL NAME)$/.test(clean) || clean.includes('STUDENT NAME') || clean === 'NAME') {
+        if (nameIdx === -1) nameIdx = idx;
+      } else if (/^(DEPARTMENT|DEPT|BRANCH|DEPT CODE|STREAM)$/.test(clean) || clean.includes('DEPT') || clean.includes('BRANCH')) {
+        if (deptIdx === -1) deptIdx = idx;
+      } else if (/^(PARENT MOBILE|PARENT PHONE|PARENT_PHONE|GUARDIAN PHONE|FATHER MOBILE|MOTHER MOBILE)$/.test(clean) || clean.includes('PARENT')) {
+        if (parentPhoneIdx === -1) parentPhoneIdx = idx;
+      } else if (/^(STUDENT MOBILE|STUDENT PHONE|STUDENT_PHONE|OWN MOBILE|CANDIDATE PHONE)$/.test(clean) || clean.includes('STUDENT MOBILE') || clean.includes('STUDENT PHONE')) {
+        if (studentPhoneIdx === -1) studentPhoneIdx = idx;
+      } else if (/^(MOBILE|PHONE|PHONE NUMBER|CONTACT|MOBILE NO)$/.test(clean) || clean.includes('MOBILE') || clean.includes('PHONE')) {
+        if (parentPhoneIdx === -1) parentPhoneIdx = idx;
+      } else if (/^(YEAR|ACADEMIC YEAR|ACADEMIC_YEAR|CLASS|CURRENT YEAR)$/.test(clean) || clean.includes('YEAR')) {
+        if (yearIdx === -1) yearIdx = idx;
+      } else if (/^(EMAIL|E-MAIL|MAIL|STUDENT EMAIL)$/.test(clean) || clean.includes('EMAIL') || clean.includes('MAIL')) {
+        if (emailIdx === -1) emailIdx = idx;
+      } else if (/^(GENDER|SEX)$/.test(clean)) {
+        if (genderIdx === -1) genderIdx = idx;
+      } else if (/^(SECTION|SEC)$/.test(clean)) {
+        if (sectionIdx === -1) sectionIdx = idx;
+      }
+    });
+
+    if (nameIdx === -1 && headers.length > 0) nameIdx = 0;
+    if (regNoIdx === -1 && headers.length > 1) regNoIdx = 1;
+    if (deptIdx === -1 && headers.length > 2) deptIdx = 2;
+    if (parentPhoneIdx === -1 && headers.length > 3) parentPhoneIdx = 3;
+
+    const fallbackYear = normalizeAcademicYear(req.query?.academicYear || req.body?.academicYear || '1st Year');
+    const fallbackDept = (req.query?.department || req.body?.department || 'CSE').toString().toUpperCase();
+
+    const parsedStudents: Array<any> = [];
+    const validationErrors: string[] = [];
+    const seenReg = new Set<string>();
+
+    for (let r = headerRowIdx + 1; r < rawRows.length; r++) {
+      const row = rawRows[r];
+      if (!row || row.length === 0) continue;
+
+      const name = nameIdx >= 0 && row[nameIdx] !== undefined ? String(row[nameIdx]).trim() : '';
+      const registerNumber = regNoIdx >= 0 && row[regNoIdx] !== undefined ? String(row[regNoIdx]).trim().toUpperCase() : '';
+      const department = deptIdx >= 0 && row[deptIdx] !== undefined ? String(row[deptIdx]).trim().toUpperCase() : fallbackDept;
+      const rawParentPhone = parentPhoneIdx >= 0 && row[parentPhoneIdx] !== undefined ? String(row[parentPhoneIdx]).trim().replace(/\D/g, '') : '';
+      const parentMobile = rawParentPhone.slice(-10);
+      const studentMobile = studentPhoneIdx >= 0 && row[studentPhoneIdx] !== undefined ? String(row[studentPhoneIdx]).trim().replace(/\D/g, '').slice(-10) : '';
+      const academicYear = yearIdx >= 0 && row[yearIdx] !== undefined && String(row[yearIdx]).trim()
+        ? normalizeAcademicYear(String(row[yearIdx]).trim())
+        : fallbackYear;
+      const email = emailIdx >= 0 && row[emailIdx] !== undefined ? String(row[emailIdx]).trim() : '';
+      const gender = genderIdx >= 0 && row[genderIdx] !== undefined ? String(row[genderIdx]).trim() : '';
+      const section = sectionIdx >= 0 && row[sectionIdx] !== undefined ? String(row[sectionIdx]).trim() : '';
+
+      if (!name && !registerNumber && !parentMobile) continue;
+
       if (!registerNumber) {
         validationErrors.push(`Row ${r + 1}: Missing Register Number`);
         continue;
@@ -482,57 +757,237 @@ app.post('/api/students/upload-excel', upload.single('file'), async (req, res) =
         validationErrors.push(`Row ${r + 1} (${registerNumber}): Missing Student Name`);
         continue;
       }
-      if (!phoneNumber) {
-        validationErrors.push(`Row ${r + 1} (${registerNumber} - ${name}): Missing Parent Phone Number`);
+      if (!parentMobile || parentMobile.length !== 10) {
+        validationErrors.push(`Row ${r + 1} (${registerNumber}): Invalid 10-digit Parent Mobile`);
         continue;
       }
+
+      if (seenReg.has(registerNumber)) {
+        validationErrors.push(`Row ${r + 1} (${registerNumber}): Duplicate Register Number in spreadsheet`);
+        continue;
+      }
+      seenReg.add(registerNumber);
 
       parsedStudents.push({
         name,
         registerNumber,
-        department: department || 'CSE',
-        phoneNumber,
-        ...(marks ? { marks } : {})
+        department: department || fallbackDept,
+        academicYear,
+        year: academicYear,
+        section,
+        phoneNumber: parentMobile,
+        parentMobile,
+        studentMobile,
+        email,
+        gender,
       });
     }
 
     if (parsedStudents.length === 0) {
-      const detailMsg = validationErrors.length > 0
-        ? `Excel validation errors: ${validationErrors.slice(0, 4).join('; ')}`
-        : 'No valid student records found in Excel. Expected columns: Register Number, Student Name, Department, Parent Phone Number.';
-      console.error(`[Excel Upload Error] ${detailMsg}`);
-      return res.status(400).json({ error: detailMsg, validationErrors });
+      return res.status(400).json({
+        error: `No valid student records found. ${validationErrors.slice(0, 5).join('; ')}`,
+        validationErrors,
+      });
     }
 
-    console.log(`[Excel Upload API] Parsed ${parsedStudents.length} valid student records. Storing in database...`);
-
-    const result = await db.importStudentsBatchAsync(parsedStudents, (req as any).currentUser);
-
-    console.log(`[Excel Upload API] Database save success. Added: ${result.addedCount}, Updated: ${result.updatedCount || result.skippedCount}`);
+    const currentUser = (req as any).currentUser || 'VSBEC';
+    const result = await db.importStudentsBatchAsync(parsedStudents, currentUser);
 
     return res.json({
       success: true,
-      message: `Excel import successful! Added ${result.addedCount} new students, updated ${result.updatedCount || result.skippedCount} existing records.`,
+      message: `Excel import completed: ${result.addedCount} created, ${result.updatedCount || result.skippedCount} updated.`,
       added: result.addedCount,
       updated: result.updatedCount || result.skippedCount,
       totalParsed: parsedStudents.length,
-      parsedStudents,
-      validationWarnings: validationErrors.length > 0 ? validationErrors : undefined
+      validationWarnings: validationErrors.length > 0 ? validationErrors : undefined,
     });
-
   } catch (err: any) {
     console.error('[Excel Upload Fatal Server Error]:', err);
     return res.status(500).json({ error: `Internal server error during Excel processing: ${err.message || 'Unknown error'}` });
   }
 });
 
+// Update Student Record with Detailed Field-Level Audit Trail
 app.put('/api/students/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const updated = await db.updateStudentAsync(id, req.body, (req as any).currentUser);
+    const currentUserId = (req as any).currentUser || 'VSBEC';
+    const userRole = ((req as any).userRole || '').toUpperCase();
+    const dbUser = (await db.getUserByUserIdAsync(currentUserId)) || db.getUserByUserId(currentUserId);
+
+    // Permission enforcement for Staff
+    if (userRole === 'STAFF' && dbUser) {
+      const students = await db.getStudentsAsync();
+      const existing = students.find(s => s.id === id || s.registerNumber.toUpperCase() === id.toUpperCase());
+      if (existing && !db.canUserAccessStudent(dbUser, existing)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access Denied: You cannot modify students outside your assigned academic years and departments.'
+        });
+      }
+    }
+
+    const userObj = {
+      userId: currentUserId,
+      name: (req as any).user?.name || currentUserId,
+      role: userRole,
+    };
+
+    const updated = await db.updateStudentAsync(id, req.body, currentUserId, userObj.name, userRole);
     return res.json(updated);
   } catch (err: any) {
     return res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+// Student Modification Audit Trail Endpoint (Admin & Staff Oversight)
+app.get('/api/students/audit-history', async (req, res) => {
+  try {
+    const { registerNumber, department, academicYear } = req.query as any;
+    const history = await db.getStudentModificationHistories({
+      registerNumber,
+      department,
+      academicYear,
+    });
+    return res.json(history);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// Academic Year Promotion Endpoints
+app.get(['/api/promotion/preview', '/api/students/promote/preview'], async (req, res) => {
+  try {
+    const filters = {
+      year: (req.query.year as string) || undefined,
+      department: (req.query.department as string) || undefined,
+    };
+    const preview = await db.previewAcademicYearPromotion(filters);
+    return res.json(preview);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// Dedicated /api/students/promote endpoint (with /api/promotion/execute alias)
+app.post(['/api/students/promote', '/api/promotion/execute'], async (req, res) => {
+  try {
+    const currentUserId = (req as any).currentUser || 'VSBEC';
+    const userRole = ((req as any).userRole || '').toUpperCase();
+    const isCollegeAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN' ||
+      currentUserId.toUpperCase() === 'VSBEC' || currentUserId.toUpperCase() === 'ADMIN' || currentUserId.toUpperCase() === 'VYNEXTGEN';
+
+    if (!isCollegeAdmin) {
+      return res.status(403).json({ error: 'Access Denied: Only College Administrators can execute Annual Academic Promotion.' });
+    }
+
+    // Normalize payload to handle various shapes
+    const body = req.body || {};
+    const payload: any = {
+      academicSession: body.academicSession || `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
+      notes: body.notes || 'Academic Year Promotion executed by Administrator',
+    };
+
+    if (body.studentRegisterNumbers) {
+      payload.studentRegisterNumbers = body.studentRegisterNumbers;
+    } else if (body.registerNumber) {
+      payload.studentRegisterNumbers = [body.registerNumber];
+    } else if (body.studentIds) {
+      payload.studentIds = body.studentIds;
+    } else if (body.studentId) {
+      payload.studentIds = [body.studentId];
+    }
+
+    if (body.students) payload.students = body.students;
+    if (body.selectedYears) payload.selectedYears = body.selectedYears;
+    if (body.selectedDepartments) payload.selectedDepartments = body.selectedDepartments;
+
+    const userName = (req as any).user?.name || currentUserId;
+    const result = await db.executeAcademicYearPromotionAsync(payload, currentUserId, userName);
+    return res.json({
+      success: true,
+      message: `Annual academic year promotion executed successfully for ${result.totalPromoted} students.`,
+      totalPromoted: result.totalPromoted,
+      successfulCount: result.successfulCount,
+      failedCount: result.failedCount,
+      details: result.details,
+      promotedStudents: result.promotedStudents,
+      failedStudents: result.failedStudents,
+      result,
+    });
+  } catch (err: any) {
+    return res.status(400).json({ error: err.message });
+  }
+});
+
+app.get('/api/promotion/history', async (req, res) => {
+  try {
+    const history = await db.getAcademicPromotionHistoryAsync();
+    return res.json(history);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/promotion/history/export', async (req, res) => {
+  try {
+    const history = await db.getAcademicPromotionHistoryAsync();
+    const rows: string[] = [];
+    rows.push('Student Name,Register Number,Department,Previous Year,New Year,Academic Session,Promoted By,Promotion Date,Status');
+
+    for (const h of history) {
+      if (h.studentRecords && h.studentRecords.length > 0) {
+        for (const s of h.studentRecords) {
+          const sName = `"${(s.studentName || '').replace(/"/g, '""')}"`;
+          const sReg = `"${(s.registerNumber || '').replace(/"/g, '""')}"`;
+          const sDept = `"${(s.department || '').replace(/"/g, '""')}"`;
+          const sFrom = `"${(s.fromYear || '').replace(/"/g, '""')}"`;
+          const sTo = `"${(s.toYear || '').replace(/"/g, '""')}"`;
+          const sSession = `"${(h.academicSession || '').replace(/"/g, '""')}"`;
+          const sBy = `"${(s.promotedByName || s.promotedBy || h.promotedByName || h.promotedBy || '').replace(/"/g, '""')}"`;
+          const sDate = `"${(s.promotionDate || h.timestamp || '').replace(/"/g, '""')}"`;
+          const sStatus = `"${(s.status || 'SUCCESS').replace(/"/g, '""')}"`;
+          rows.push(`${sName},${sReg},${sDept},${sFrom},${sTo},${sSession},${sBy},${sDate},${sStatus}`);
+        }
+      } else if (h.promotions && h.promotions.length > 0) {
+        for (const p of h.promotions) {
+          rows.push(`"Cohort Batch","N/A","${p.department}","${p.fromYear}","${p.toYear}","${h.academicSession}","${h.promotedByName || h.promotedBy}","${h.timestamp}","SUCCESS (${p.count} students)"`);
+        }
+      }
+    }
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="VSB_Academic_Promotion_History.csv"');
+    return res.send(rows.join('\n'));
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// Clear All Students Endpoint (Permanent administrative wipe)
+app.delete(['/api/students/all', '/api/students/clear-all', '/api/students'], async (req, res) => {
+  try {
+    const currentUserId = (req as any).currentUser || (req.headers['x-user-id'] as string) || 'VSBEC';
+    const userRole = ((req as any).userRole || '').toUpperCase();
+    const isCollegeAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN' ||
+      currentUserId.toUpperCase() === 'VSBEC' || currentUserId.toUpperCase() === 'ADMIN' || currentUserId.toUpperCase() === 'VYNEXTGEN';
+
+    if (!isCollegeAdmin) {
+      return res.status(403).json({ success: false, message: 'Access Denied: Only College Administrators can permanently clear all student records.' });
+    }
+
+    const result = await db.deleteAllStudentsAsync(currentUserId);
+    return res.json({
+      success: true,
+      message: `Permanently deleted all ${result.deletedCount} student records from the database.`,
+      deletedCount: result.deletedCount,
+    });
+  } catch (err: any) {
+    console.error('[Student DELETE All Route Error]:', err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || 'Failed to clear all student records',
+    });
   }
 });
 
@@ -544,6 +999,15 @@ app.delete('/api/students/:id', async (req, res) => {
     }
 
     const cleanId = id.trim();
+    if (cleanId.toLowerCase() === 'all' || cleanId.toLowerCase() === 'clear-all') {
+      const currentUserId = (req as any).currentUser || (req.headers['x-user-id'] as string) || 'VSBEC';
+      const result = await db.deleteAllStudentsAsync(currentUserId);
+      return res.json({
+        success: true,
+        message: `Permanently deleted all ${result.deletedCount} student records from the database.`,
+        deletedCount: result.deletedCount,
+      });
+    }
     const cleanReg = cleanId.toUpperCase();
 
     // User authentication & role detection
@@ -816,13 +1280,24 @@ app.get('/api/staff', async (req, res) => {
 
 app.post('/api/staff', async (req, res) => {
   try {
-    const { name, staffId, department, phoneNumber, permissions } = req.body;
+    const { name, staffId, department, phoneNumber, permissions, email, assignedYears, assignedDepartments, status, password } = req.body;
     if (!name || !staffId || !department || !phoneNumber) {
       return res.status(400).json({ error: 'Name, Staff ID, Department, and Phone Number are required' });
     }
 
     const newStaff = await db.addStaffAsync(
-      { name, staffId, department, phoneNumber, permissions: permissions || ['send_sms', 'view_reports'] },
+      {
+        name,
+        staffId,
+        department,
+        phoneNumber,
+        email: email || '',
+        assignedYears: assignedYears || ['1st Year'],
+        assignedDepartments: assignedDepartments || [department],
+        status: status || 'active',
+        rawPassword: password || 'VSB123',
+        permissions: permissions || ['send_sms', 'view_reports'],
+      },
       (req as any).currentUser
     );
     return res.status(201).json(newStaff);
@@ -836,6 +1311,30 @@ app.put('/api/staff/:id', async (req, res) => {
     const { id } = req.params;
     const updated = await db.updateStaffAsync(id, req.body, (req as any).currentUser);
     return res.json(updated);
+  } catch (err: any) {
+    return res.status(400).json({ error: err.message });
+  }
+});
+
+app.post('/api/staff/:id/reset-password', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newPassword } = req.body;
+    if (!newPassword || newPassword.trim().length < 4) {
+      return res.status(400).json({ error: 'New password must be at least 4 characters long' });
+    }
+    const result = await db.resetStaffPasswordAsync(id, newPassword.trim(), (req as any).currentUser);
+    return res.json({ success: true, message: 'Password reset successfully', staffId: id });
+  } catch (err: any) {
+    return res.status(400).json({ error: err.message });
+  }
+});
+
+app.patch('/api/staff/:id/toggle-status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updated = await db.toggleStaffStatusAsync(id, (req as any).currentUser);
+    return res.json({ success: true, staff: updated });
   } catch (err: any) {
     return res.status(400).json({ error: err.message });
   }
@@ -873,7 +1372,7 @@ app.post(['/send-sms', '/api/send-sms'], async (req, res) => {
   }
 });
 
-// SMS Sending Module (Bulk / Group Dispatch)
+// SMS Sending Module (Bulk / Group Dispatch with Scope Verification)
 app.post('/api/sms/send', async (req, res) => {
   try {
     const { recipients, messageType, messageContent, channel, templateId } = req.body;
@@ -884,6 +1383,23 @@ app.post('/api/sms/send', async (req, res) => {
 
     if (!messageContent || !messageContent.trim()) {
       return res.status(400).json({ error: 'Message content cannot be empty' });
+    }
+
+    const userRole = ((req as any).userRole || '').toUpperCase();
+    const currentUserId = (req as any).currentUser || '';
+    const dbUser = (await db.getUserByUserIdAsync(currentUserId)) || db.getUserByUserId(currentUserId);
+
+    if (userRole === 'STAFF' && dbUser) {
+      for (const rec of recipients) {
+        if (!db.canUserAccessStudent(dbUser, {
+          department: rec.department,
+          academicYear: rec.academicYear || rec.year || '1st Year',
+        } as any)) {
+          return res.status(403).json({
+            error: `Access Denied: You cannot dispatch SMS to student ${rec.name || rec.registerNumber || ''} (${rec.department || 'N/A'}) outside your assigned academic years and departments.`
+          });
+        }
+      }
     }
 
     const sender = (req as any).currentUser;
